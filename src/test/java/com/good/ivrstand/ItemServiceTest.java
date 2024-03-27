@@ -72,7 +72,7 @@ public class ItemServiceTest {
     @Test
     public void testRemoveFromCategory() {
         itemService.addToCategory(1, 1);
-        itemService.removeFromCategory(1, 1);
+        itemService.removeFromCategory(1);
         int real = categoryService.getCategoryById(1).getItemsInCategory().size();
         assertEquals(0, real);
     }
@@ -113,11 +113,10 @@ public class ItemServiceTest {
     @Test
     public void testFindItemsByTitleAndCategory() {
         itemService.addToCategory(1, 1);
-        Category category = categoryService.getCategoryById(1);
         String request = "testItem";
 
         Pageable pageable = PageRequest.of(0, 10);
-        Page<Item> itemsPage = itemService.findItemsByTitleAndCategory(category, request, pageable);
+        Page<Item> itemsPage = itemService.findItemsByTitleAndCategory(1, request, pageable);
         List<Item> items = itemsPage.getContent();
 
         assertEquals(1, items.size());

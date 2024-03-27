@@ -13,7 +13,7 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
     Item findById(long id);
     void deleteById(long id);
     Page<Item> findByTitleContainingIgnoreCase(String title, Pageable pageable);
-    Page<Item> findByCategoryAndTitleContainingIgnoreCase(Category category, String title, Pageable pageable);
+    Page<Item> findByCategoryIdAndTitleContainingIgnoreCase(long categoryId, String title, Pageable pageable);
 
     @Query("SELECT i FROM Item i WHERE i.category IS NULL")
     Page<Item> findItemsWithNullCategory(Pageable pageable);

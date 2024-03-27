@@ -108,21 +108,17 @@ public class ItemService {
      * Удаляет услугу из категории.
      *
      * @param itemId     Идентификатор услуги.
-     * @param categoryId Идентификатор категории.
-     * @throws IllegalArgumentException Если услуга или категория с указанным идентификатором не найдены.
+     * @throws IllegalArgumentException Если услуга с указанным идентификатором не найдена.
      */
-    public void removeFromCategory(long itemId, long categoryId) {
+    public void removeFromCategory(long itemId) {
         Item item = itemRepository.findById(itemId);
-        Category category = categoryService.getCategoryById(categoryId);
 
         if (item == null)
             throw new IllegalArgumentException("Услуга с id " + itemId + " отсутствует");
-        else if (category == null)
-            throw new IllegalArgumentException("Категория с id " + categoryId + " отсутствует");
         else if (item.getCategory() != null) {
             item.setCategory(null);
             itemRepository.save(item);
-            log.info("Услуга с id {} удалена из категории с id {}", itemId, categoryId);
+            log.info("Услуга с id {} удалена из категории", itemId);
         } else
             log.error("Услуга с id {} не относится ни к одной из категорий!", itemId);
     }
@@ -161,13 +157,13 @@ public class ItemService {
     /**
      * Ищет услуги по категории и заголовку, с поддержкой пагинации.
      *
-     * @param category Категория для поиска.
+     * @param categoryId Категория для поиска.
      * @param title    Часть заголовка для поиска.
      * @param pageable Настройки пагинации.
      * @return Страница найденных услуг.
      */
-    public Page<Item> findItemsByTitleAndCategory(Category category, String title, Pageable pageable) {
-        return itemRepository.findByCategoryAndTitleContainingIgnoreCase(category, title, pageable);
+    public Page<Item> findItemsByTitleAndCategory(long categoryId, String title, Pageable pageable) {
+        return itemRepository.findByCategoryIdAndTitleContainingIgnoreCase(categoryId, title, pageable);
     }
 
     /**

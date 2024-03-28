@@ -50,14 +50,14 @@ public class CategoryController {
     }
 
     @GetMapping
-    public ResponseEntity<Page<Category>> getAllCategories(Pageable pageable) {
-        Page<Category> categories = categoryService.getAllCategoriesInBase(pageable);
+    public ResponseEntity<Page<CategoryDTO>> getAllCategories(Pageable pageable) {
+        Page<CategoryDTO> categories = categoryService.getAllCategoriesInBase(pageable).map(categoryAssembler::toModel);
         return ResponseEntity.ok(categories);
     }
 
     @GetMapping("/search")
-    public ResponseEntity<Page<Category>> findCategoriesByTitle(@RequestParam String title, Pageable pageable) {
-        Page<Category> categories = categoryService.findCategoriesByTitle(title, pageable);
+    public ResponseEntity<Page<CategoryDTO>> findCategoriesByTitle(@RequestParam String title, Pageable pageable) {
+        Page<CategoryDTO> categories = categoryService.findCategoriesByTitle(title, pageable).map(categoryAssembler::toModel);
         return ResponseEntity.ok(categories);
     }
 }

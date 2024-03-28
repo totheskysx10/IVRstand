@@ -62,26 +62,32 @@ public class ItemController {
     }
 
     @GetMapping
-    public ResponseEntity<Page<Item>> getAllItems(Pageable pageable) {
-        Page<Item> items = itemService.getAllItemsInBase(pageable);
+    public ResponseEntity<Page<ItemDTO>> getAllItems(Pageable pageable) {
+        Page<ItemDTO> items = itemService.getAllItemsInBase(pageable).map(itemAssembler::toModel);
         return ResponseEntity.ok(items);
     }
 
     @GetMapping("/search")
-    public ResponseEntity<Page<Item>> findItemsByTitle(@RequestParam String title, Pageable pageable) {
-        Page<Item> items = itemService.findItemsByTitle(title, pageable);
+    public ResponseEntity<Page<ItemDTO>> findItemsByTitle(@RequestParam String title, Pageable pageable) {
+        Page<ItemDTO> items = itemService.findItemsByTitle(title, pageable).map(itemAssembler::toModel);
         return ResponseEntity.ok(items);
     }
 
     @GetMapping("/search/withoutCategory")
-    public ResponseEntity<Page<Item>> findItemsWithoutCategory(Pageable pageable) {
-        Page<Item> items = itemService.findItemsWithoutCategory(pageable);
+    public ResponseEntity<Page<ItemDTO>> findItemsWithoutCategory(Pageable pageable) {
+        Page<ItemDTO> items = itemService.findItemsWithoutCategory(pageable).map(itemAssembler::toModel);
         return ResponseEntity.ok(items);
     }
 
     @GetMapping("/search/byCategoryAndTitle")
-    public ResponseEntity<Page<Item>> findItemsByCategoryAndTitle(@RequestParam long categoryId, @RequestParam String title, Pageable pageable) {
-        Page<Item> items = itemService.findItemsByTitleAndCategory(categoryId, title, pageable);
+    public ResponseEntity<Page<ItemDTO>> findItemsByCategoryAndTitle(@RequestParam long categoryId, @RequestParam String title, Pageable pageable) {
+        Page<ItemDTO> items = itemService.findItemsByTitleAndCategory(categoryId, title, pageable).map(itemAssembler::toModel);
+        return ResponseEntity.ok(items);
+    }
+
+    @GetMapping("/search/byCategory")
+    public ResponseEntity<Page<ItemDTO>> findItemsByCategory(@RequestParam long categoryId, Pageable pageable) {
+        Page<ItemDTO> items = itemService.findItemsByCategory(categoryId, pageable).map(itemAssembler::toModel);
         return ResponseEntity.ok(items);
     }
 

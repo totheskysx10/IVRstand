@@ -167,6 +167,17 @@ public class ItemService {
     }
 
     /**
+     * Ищет услуги по категории с поддержкой пагинации.
+     *
+     * @param categoryId Категория для поиска.
+     * @param pageable Настройки пагинации.
+     * @return Страница найденных услуг.
+     */
+    public Page<Item> findItemsByCategory(long categoryId, Pageable pageable) {
+        return itemRepository.findByCategoryId(categoryId, pageable);
+    }
+
+    /**
      * Обновляет описание услуги.
      *
      * @param itemId Идентификатор услуги.

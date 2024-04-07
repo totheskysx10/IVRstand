@@ -92,16 +92,19 @@ public class ItemService {
         Item item = itemRepository.findById(itemId);
         Category category = categoryService.getCategoryById(categoryId);
 
-        if (item == null)
-            throw new IllegalArgumentException("Услуга с id " + itemId + " отсутствует");
-        else if (category == null)
-            throw new IllegalArgumentException("Категория с id " + categoryId + " отсутствует");
-        else if (item.getCategory() == null) {
-            item.setCategory(category);
-            itemRepository.save(item);
-            log.info("Услуга с id {} добавлена в категорию с id {}", itemId, categoryId);
+        if (category.getChildrenCategories().isEmpty()) {
+            if (item == null)
+                throw new IllegalArgumentException("Услуга с id " + itemId + " отсутствует");
+            else if (category == null)
+                throw new IllegalArgumentException("Категория с id " + categoryId + " отсутствует");
+            else if (item.getCategory() == null) {
+                item.setCategory(category);
+                itemRepository.save(item);
+                log.info("Услуга с id {} добавлена в категорию с id {}", itemId, categoryId);
+            } else
+                log.error("Услуга с id {} уже в другой категории!", itemId);
         } else
-            log.error("Услуга с id {} уже в другой категории!", itemId);
+            log.error("В категории с id {} есть подкатегории - услугу можно добавить только в конечную подкатегорию!", categoryId);
     }
 
     /**

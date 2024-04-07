@@ -3,6 +3,7 @@ package com.good.ivrstand;
 import com.good.ivrstand.app.CategoryService;
 import com.good.ivrstand.app.ItemService;
 import com.good.ivrstand.domain.Category;
+import com.good.ivrstand.domain.Item;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -83,5 +84,34 @@ public class CategoryServiceTest {
         List<Category> categories = categoriessPage.getContent();
 
         assertEquals(2, categories.size());
+    }
+
+    @Sql("/testsss.sql")
+    @Test
+    public void testAddToCategory() {
+        categoryService.addToCategory(1, 2);
+        long real = categoryService.getCategoryById(1).getParentCategory().getId();
+        int size = categoryService.getCategoryById(2).getChildrenCategories().size();
+        assertEquals(2, real);
+        assertEquals(1, size);
+    }
+
+    @Sql("/testsss.sql")
+    @Test
+    public void testRemoveFromCategory() {
+        categoryService.addToCategory(1, 2);
+        categoryService.removeFromCategory(1);
+        int real = categoryService.getCategoryById(2).getChildrenCategories().size();
+        assertEquals(0, real);
+    }
+
+    @Sql("/testsss.sql")
+    @Test
+    public void testUpdateGifLinkToCategory() {
+        categoryService.updateGifLinkToCategory(1, "LINK_");
+
+        Category updatedCategory = categoryService.getCategoryById(1);
+
+        assertEquals("LINK_", updatedCategory.getGifLink());
     }
 }

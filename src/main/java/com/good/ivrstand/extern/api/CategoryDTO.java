@@ -1,5 +1,6 @@
 package com.good.ivrstand.extern.api;
 
+import jakarta.persistence.Column;
 import lombok.*;
 import org.springframework.hateoas.RepresentationModel;
 
@@ -14,6 +15,8 @@ public class CategoryDTO extends RepresentationModel<CategoryDTO> {
 
     @NonNull
     private String title;
-
     private List<Long> itemsInCategoryIds;
+    private long parentCategoryId;
+    private List<Long> childrenCategoryIds;
+    private String gifLink;
 }

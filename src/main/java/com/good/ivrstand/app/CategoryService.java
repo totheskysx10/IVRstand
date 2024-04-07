@@ -65,7 +65,8 @@ public class CategoryService {
 
     /**
      * Удаляет категорию по ее идентификатору,
-     * услуги из неё остаются нераспределёнными по категориям.
+     * услуги из неё остаются нераспределёнными по категориям,
+     * дочерние категории становятся детьми их дедушки
      *
      * @param categoryId Идентификатор категории.
      * @throws IllegalArgumentException Если категория с указанным идентификатором не найдена.
@@ -77,6 +78,9 @@ public class CategoryService {
         } else {
             for (Item i: foundCategory.getItemsInCategory()) {
                 i.setCategory(null);
+            }
+            for (Category c: foundCategory.getChildrenCategories()) {
+                c.setParentCategory(c.getParentCategory().getParentCategory());
             }
             categoryRepository.save(foundCategory);
             categoryRepository.deleteById(categoryId);
@@ -103,5 +107,70 @@ public class CategoryService {
      */
     public Page<Category> findCategoriesByTitle(String title, Pageable pageable) {
         return categoryRepository.findByTitleContainingIgnoreCase(title, pageable);
+    }
+
+    /**
+     * Добавляет подкатегорию в категорию.
+     *
+     * @param categoryId     Идентификатор подкатегории.
+     * @param parentId Идентификатор категорию.
+     * @throws IllegalArgumentException Если подкатегория или категория с указанным идентификатором не найдены.
+     */
+    public void addToCategory(long categoryId, long parentId) {
+        if (categoryId == parentId) {
+            throw new IllegalArgumentException("Идентификаторы категорий совпадают: " + categoryId);
+        }
+
+        Category category = categoryRepository.findById(categoryId);
+        Category parent = getCategoryById(parentId);
+
+        if (parent.getItemsInCategory().isEmpty()) {
+            if (category == null)
+                throw new IllegalArgumentException("Категория с id " + categoryId + " отсутствует");
+            else if (parent == null)
+                throw new IllegalArgumentException("Категория с id " + parentId + " отсутствует");
+            else if (category.getParentCategory() == null) {
+                category.setParentCategory(parent);
+                categoryRepository.save(category);
+                categoryRepository.save(parent);
+                log.info("Подкатегория с id {} добавлена в категорию с id {}", categoryId, parentId);
+            } else
+                log.error("Подкатегория с id {} уже в другой категории!", categoryId);
+        } else
+            log.error("В категории с id {} есть услуги - продолжение дерева невозможно!", parentId);
+    }
+
+    /**
+     * Удаляет подкатегорию из категории.
+     *
+     * @param categoryId     Идентификатор подкатегории.
+     * @throws IllegalArgumentException Если подкатегория с указанным идентификатором не найдена.
+     */
+    public void removeFromCategory(long categoryId) {
+        Category category = categoryRepository.findById(categoryId);
+
+        if (category == null)
+            throw new IllegalArgumentException("Услуга с id " + categoryId + " отсутствует");
+        else if (category.getParentCategory() != null) {
+            category.setParentCategory(null);
+            categoryRepository.save(category);
+            log.info("Подкатегория с id {} удалена из категории", categoryId);
+        } else
+            log.error("Подкатегория с id {} не относится ни к одной из категорий!", categoryId);
+    }
+
+    /**
+     * Обновляет ссылку на GIF-анимацию категории.
+     *
+     * @param categoryId Идентификатор категории.
+     * @param gifLink   Новая ссылка на GIF.
+     */
+    public void updateGifLinkToCategory(long categoryId, String gifLink) {
+        Category category = getCategoryById(categoryId);
+        if (category != null) {
+            category.setGifLink(gifLink);
+            categoryRepository.save(category);
+            log.info("Ссылка на GIF обновлена для категории с id {}", categoryId);
+        }
     }
 }

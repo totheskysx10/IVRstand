@@ -2,7 +2,6 @@ package com.good.ivrstand.extern.api;
 
 import com.good.ivrstand.app.CategoryService;
 import com.good.ivrstand.domain.Category;
-import com.good.ivrstand.domain.Item;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -30,6 +29,8 @@ public class CategoryController {
         Category newCategory = Category.builder()
                 .title(categoryDTO.getTitle())
                 .itemsInCategory(new ArrayList<>())
+                .childrenCategories(new ArrayList<>())
+                .gifLink(categoryDTO.getGifLink())
                 .build();
 
         categoryService.createCategory(newCategory);
@@ -59,5 +60,17 @@ public class CategoryController {
     public ResponseEntity<Page<CategoryDTO>> findCategoriesByTitle(@RequestParam String title, Pageable pageable) {
         Page<CategoryDTO> categories = categoryService.findCategoriesByTitle(title, pageable).map(categoryAssembler::toModel);
         return ResponseEntity.ok(categories);
+    }
+
+    @PutMapping("/{categoryId}/parent/set/{parentId}")
+    public ResponseEntity<Void> addToCategory(@PathVariable long categoryId, @PathVariable long parentId) {
+        categoryService.addToCategory(categoryId, parentId);
+        return ResponseEntity.ok().build();
+    }
+
+    @PutMapping("/{categoryId}/children/remove/{childId}")
+    public ResponseEntity<Void> removeFromCategory(@PathVariable long childId) {
+        categoryService.removeFromCategory(childId);
+        return ResponseEntity.ok().build();
     }
 }

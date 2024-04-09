@@ -4,10 +4,10 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class IvRstandApplication {
+public class IvrStandApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(IvRstandApplication.class, args);
+		SpringApplication.run(IvrStandApplication.class, args);
 	}
 
 }

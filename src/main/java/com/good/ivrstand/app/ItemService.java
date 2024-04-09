@@ -1,5 +1,6 @@
 package com.good.ivrstand.app;
 
+import com.good.ivrstand.domain.Addition;
 import com.good.ivrstand.domain.Category;
 import com.good.ivrstand.domain.Item;
 import lombok.extern.slf4j.Slf4j;
@@ -19,10 +20,13 @@ public class ItemService {
     private final ItemRepository itemRepository;
     private final CategoryService categoryService;
 
+    private final AdditionService additionService;
+
     @Autowired
-    public ItemService(ItemRepository itemRepository, CategoryService categoryService) {
+    public ItemService(ItemRepository itemRepository, CategoryService categoryService, AdditionService additionService) {
         this.itemRepository = itemRepository;
         this.categoryService = categoryService;
+        this.additionService = additionService;
     }
 
     /**
@@ -67,6 +71,7 @@ public class ItemService {
 
     /**
      * Удаляет услугу по ее идентификатору.
+     * Если к услуге привязано дополнение, удаляет и его.
      *
      * @param itemId Идентификатор услуги.
      * @throws IllegalArgumentException Если услуга с указанным идентификатором не найдена.
@@ -76,8 +81,12 @@ public class ItemService {
         if (foundItem == null) {
             throw new IllegalArgumentException("Услуга с id " + itemId + " не найдена");
         } else {
+            if (foundItem.getAdditions().size() != 0)
+                foundItem.getAdditions().stream()
+                        .map(Addition::getId)
+                        .forEach(additionService::deleteAddition);
             itemRepository.deleteById(itemId);
-            log.info("Удалёна услуга с id {}", itemId);
+            log.info("Удалена услуга с id {}", itemId);
         }
     }
 

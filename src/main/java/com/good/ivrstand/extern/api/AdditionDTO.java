@@ -3,13 +3,10 @@ package com.good.ivrstand.extern.api;
 import lombok.*;
 import org.springframework.hateoas.RepresentationModel;
 
-import java.util.List;
-
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class ItemDTO extends RepresentationModel<ItemDTO> {
-
+public class AdditionDTO extends RepresentationModel<AdditionDTO> {
     private long id;
 
     @NonNull
@@ -20,7 +17,5 @@ public class ItemDTO extends RepresentationModel<ItemDTO> {
 
     private String gifLink;
 
-    private long categoryId;
-
-    private List<Long> additionIds;
+    private long itemId;
 }

@@ -15,6 +15,7 @@ import java.util.List;
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Builder
 public class Category {
+
     /**
      * Идентификатор категории.
      */
@@ -64,16 +65,5 @@ public class Category {
     @Column(name = "cat_gif_link")
     @Getter
     @Setter
-    @NonNull
     private String gifLink;
-
-    /**
-     * Устанавливает список услуг, относящихся к данной категории.
-     *
-     * @param items Список услуг.
-     */
-    public void setItemsInCategoryIfEmpty(List<Item> items) {
-        if (items.isEmpty())
-            this.itemsInCategory = items;
-    }
 }

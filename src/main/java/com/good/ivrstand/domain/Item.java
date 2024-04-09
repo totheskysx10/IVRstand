@@ -3,6 +3,8 @@ package com.good.ivrstand.domain;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.List;
+
 /**
  * Класс, представляющий сущность услуги.
  */
@@ -46,7 +48,6 @@ public class Item {
     @Column(name = "gif_link")
     @Getter
     @Setter
-    @NonNull
     private String gifLink;
 
     /**
@@ -57,4 +58,12 @@ public class Item {
     @ManyToOne
     @JoinColumn(name = "category_id")
     private Category category;
+
+    /**
+     * Дополнения к услуге.
+     */
+    @Getter
+    @Setter
+    @OneToMany(mappedBy = "item", cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
+    private List<Addition> additions;
 }

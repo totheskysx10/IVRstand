@@ -84,7 +84,7 @@ public class CategoryService {
             }
             categoryRepository.save(foundCategory);
             categoryRepository.deleteById(categoryId);
-            log.info("Удалёна категория с id {}", categoryId);
+            log.info("Удалена категория с id {}", categoryId);
         }
     }
 
@@ -107,6 +107,16 @@ public class CategoryService {
      */
     public Page<Category> findCategoriesByTitle(String title, Pageable pageable) {
         return categoryRepository.findByTitleContainingIgnoreCase(title, pageable);
+    }
+
+    /**
+     * Ищет нераспределённые категории (без детей и родителя), с поддержкой пагинации.
+     *
+     * @param pageable Настройки пагинации.
+     * @return Страница найденных категорий.
+     */
+    public Page<Category> findUnallocatedCategories(Pageable pageable) {
+        return categoryRepository.findUnallocatedCategories(pageable);
     }
 
     /**

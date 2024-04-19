@@ -6,8 +6,12 @@ import com.good.ivrstand.domain.Item;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
+
+import java.util.*;
 
 /**
  * Сервисный класс для работы с услугами (Items).
@@ -42,6 +46,11 @@ public class ItemService {
             throw new IllegalArgumentException("Услуга не может быть null");
         }
 
+        Item existing = itemRepository.findByTitleIgnoreCase(item.getTitle());
+        if (existing != null) {
+            throw new IllegalArgumentException("Такая услуга уже есть в базе!");
+        }
+
         try {
             Item savedItem = itemRepository.save(item);
             log.info("Создана услуга с id {}", savedItem.getId());
@@ -62,8 +71,7 @@ public class ItemService {
         Item foundItem = itemRepository.findById(itemId);
         if (foundItem == null) {
             throw new IllegalArgumentException("Услуга с id " + itemId + " не найдена");
-        }
-        else {
+        } else {
             log.info("Найдена услуга с id {}", itemId);
             return foundItem;
         }
@@ -119,7 +127,7 @@ public class ItemService {
     /**
      * Удаляет услугу из категории.
      *
-     * @param itemId     Идентификатор услуги.
+     * @param itemId Идентификатор услуги.
      * @throws IllegalArgumentException Если услуга с указанным идентификатором не найдена.
      */
     public void removeFromCategory(long itemId) {
@@ -153,7 +161,7 @@ public class ItemService {
      * @return Страница найденных услуг.
      */
     public Page<Item> findItemsByTitle(String title, Pageable pageable) {
-        return itemRepository.findByTitleContainingIgnoreCase(title, pageable);
+        return itemRepository.findByTitle(title, pageable);
     }
 
     /**
@@ -170,19 +178,19 @@ public class ItemService {
      * Ищет услуги по категории и заголовку, с поддержкой пагинации.
      *
      * @param categoryId Категория для поиска.
-     * @param title    Часть заголовка для поиска.
-     * @param pageable Настройки пагинации.
+     * @param title      Часть заголовка для поиска.
+     * @param pageable   Настройки пагинации.
      * @return Страница найденных услуг.
      */
     public Page<Item> findItemsByTitleAndCategory(long categoryId, String title, Pageable pageable) {
-        return itemRepository.findByCategoryIdAndTitleContainingIgnoreCase(categoryId, title, pageable);
+        return itemRepository.findByTitleAndCategoryId(categoryId, title, pageable);
     }
 
     /**
      * Ищет услуги по категории с поддержкой пагинации.
      *
      * @param categoryId Категория для поиска.
-     * @param pageable Настройки пагинации.
+     * @param pageable   Настройки пагинации.
      * @return Страница найденных услуг.
      */
     public Page<Item> findItemsByCategory(long categoryId, Pageable pageable) {
@@ -207,8 +215,8 @@ public class ItemService {
     /**
      * Обновляет ссылку на GIF-анимацию услуги.
      *
-     * @param itemId Идентификатор услуги.
-     * @param gifLink   Новая ссылка на GIF услуги.
+     * @param itemId  Идентификатор услуги.
+     * @param gifLink Новая ссылка на GIF услуги.
      */
     public void updateGifLinkToItem(long itemId, String gifLink) {
         Item item = getItemById(itemId);
@@ -217,5 +225,92 @@ public class ItemService {
             itemRepository.save(item);
             log.info("Ссылка на GIF обновлена для услуги с id {}", itemId);
         }
+    }
+
+    /**
+     * Находит услуги, похожие на заданный заголовок, путем поиска ключевых слов в базе данных.
+     * Поиск осуществляется путем разделения заголовка на слова и поиска каждого слова
+     * индивидуально в заголовках и ключевых словах услуг. Результаты поиска агрегируются
+     * и обрабатываются для определения наиболее релевантного ключевого слова. Затем услуги,
+     * связанные с этим ключевым словом, возвращаются в пагинированном виде.
+     *
+     * @param title    Заголовок, для которого требуется найти похожие услуги.
+     * @param pageable Информация о пагинации.
+     * @return Страница с услугами, считающимися похожими на заданный заголовок.
+     */
+    public Page<Item> findSimilarItems(String title, Pageable pageable) {
+
+        String[] wordArray = title.split("\\s+");
+
+        List<Item> searchResults = new ArrayList<>();
+        for (String word : wordArray) {
+            if (word.length() >= 3) {
+                Page<Item> pageTitle = itemRepository.findByTitleContainingIgnoreCase(word, PageRequest.of(0, Integer.MAX_VALUE));
+                List<Item> itemsTitle = pageTitle.getContent();
+                Page<Item> pageKey = itemRepository.findByKeyWordContainingIgnoreCase(word, PageRequest.of(0, Integer.MAX_VALUE));
+                List<Item> itemsKey = pageKey.getContent();
+                searchResults.addAll(itemsTitle);
+                searchResults.addAll(itemsKey);
+            }
+        }
+
+        String searchWord = null;
+        Map<String, Integer> frequencies = new HashMap<>();
+
+        for (String word : wordArray) {
+            for (Item item : searchResults) {
+                if (calculateLevenshtein(item.getKeyWord(), word) < 4) {
+                    searchWord = item.getKeyWord();
+                    break;
+                } else {
+                    if (frequencies.containsKey(item.getKeyWord())) {
+                        int currentFrequency = frequencies.get(item.getKeyWord());
+                        frequencies.put(item.getKeyWord(), currentFrequency + 1);
+                    } else {
+                        frequencies.put(item.getKeyWord(), 1);
+                    }
+                }
+            }
+        }
+
+        if (searchWord == null) {
+            Map.Entry<String, Integer> entryWithMaxValue = frequencies.entrySet().stream()
+                    .max(Map.Entry.comparingByValue())
+                    .orElseThrow();
+            searchWord = entryWithMaxValue.getKey();
+        }
+
+        return itemRepository.findByKeyWordIgnoreCase(searchWord, pageable);
+    }
+
+    private int calculateLevenshtein(String x, String y) {
+        int[][] dp = new int[x.length() + 1][y.length() + 1];
+
+        for (int i = 0; i <= x.length(); i++) {
+            for (int j = 0; j <= y.length(); j++) {
+                if (i == 0) {
+                    dp[i][j] = j;
+                } else if (j == 0) {
+                    dp[i][j] = i;
+                } else {
+                    dp[i][j] = min(dp[i - 1][j - 1]
+                                    + costOfSubstitution(x.charAt(i - 1), y.charAt(j - 1)),
+                            dp[i - 1][j] + 1,
+                            dp[i][j - 1] + 1);
+                }
+            }
+        }
+
+        return dp[x.length()][y.length()];
+
+    }
+
+    private int costOfSubstitution(char a, char b) {
+        return a == b ? 0 : 1;
+    }
+
+    private int min(int... numbers) {
+        return Arrays.stream(numbers)
+                .min().orElse(Integer.MAX_VALUE);
     }
 }

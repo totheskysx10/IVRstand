@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
+import java.util.List;
 
 @RestController
 @RequestMapping("/items")
@@ -37,6 +38,7 @@ public class ItemController {
                 .description(itemDTO.getDescription())
                 .gifLink(itemDTO.getGifLink())
                 .additions(new ArrayList<>())
+                .keyWord(itemDTO.getKeyWord())
                 .build();
 
         itemService.createItem(newItem);
@@ -130,5 +132,12 @@ public class ItemController {
     public ResponseEntity<Void> updateItemGifLink(@PathVariable long id, @RequestBody String gifLink) {
         itemService.updateGifLinkToItem(id, gifLink);
         return ResponseEntity.ok().build();
+    }
+    @Operation(summary = "Найти похожие на запрос услуги", description = "Поиск похожих услуг по введённому запросу.")
+    @ApiResponse(responseCode = "200")
+    @GetMapping("/search/similar")
+    public ResponseEntity<Page<ItemDTO>> findSimilarItems(@RequestParam String title, Pageable pageable) {
+        Page<ItemDTO> items = itemService.findSimilarItems(title, pageable).map(itemAssembler::toModel);
+        return ResponseEntity.ok(items);
     }
 }

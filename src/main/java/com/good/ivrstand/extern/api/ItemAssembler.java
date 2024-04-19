@@ -32,6 +32,7 @@ public class ItemAssembler extends RepresentationModelAssemblerSupport<Item, Ite
             itemDTO.setAdditionIds(item.getAdditions().stream()
                     .map(Addition::getId)
                     .collect(Collectors.toList()));
+        itemDTO.setKeyWord(item.getKeyWord());
 
         itemDTO.add(linkTo(methodOn(ItemController.class).getItemById(item.getId())).withSelfRel());
 

@@ -36,6 +36,11 @@ public class CategoryService {
             throw new IllegalArgumentException("Категория не может быть null");
         }
 
+        Category existing = categoryRepository.findByTitleIgnoreCase(category.getTitle());
+        if (existing != null) {
+            throw new IllegalArgumentException("Такая категория уже есть в базе!");
+        }
+
         try {
             Category savedCategory = categoryRepository.save(category);
             log.info("Создана категория с id {}", savedCategory.getId());
@@ -106,7 +111,7 @@ public class CategoryService {
      * @return Страница найденных категорий.
      */
     public Page<Category> findCategoriesByTitle(String title, Pageable pageable) {
-        return categoryRepository.findByTitleContainingIgnoreCase(title, pageable);
+        return categoryRepository.findByTitle(title, pageable);
     }
 
     /**

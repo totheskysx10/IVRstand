@@ -6,7 +6,6 @@ import com.good.ivrstand.domain.Item;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
@@ -46,10 +45,10 @@ public class ItemService {
             throw new IllegalArgumentException("Услуга не может быть null");
         }
 
-        Item existing = itemRepository.findByTitleIgnoreCase(item.getTitle());
-        if (existing != null) {
-            throw new IllegalArgumentException("Такая услуга уже есть в базе!");
-        }
+//        Item existing = itemRepository.findByTitleIgnoreCase(item.getTitle());
+//        if (existing != null) {
+//            throw new IllegalArgumentException("Такая услуга уже есть в базе!");
+//        }
 
         try {
             Item savedItem = itemRepository.save(item);

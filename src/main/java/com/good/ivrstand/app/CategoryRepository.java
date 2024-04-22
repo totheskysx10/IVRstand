@@ -1,7 +1,6 @@
 package com.good.ivrstand.app;
 
 import com.good.ivrstand.domain.Category;
-import com.good.ivrstand.domain.Item;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;

@@ -6,3 +6,10 @@ spring:
     url: jdbc:postgresql://localhost:5432/postgres
     username: postgres
     password: 1
+
+telegram:
+  bot:
+    help_password: helpme
+    search_password: searcherror
+    username: ivr_stand_bot
+    token:

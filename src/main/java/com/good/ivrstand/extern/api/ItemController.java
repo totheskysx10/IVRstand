@@ -17,6 +17,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/items")
+@CrossOrigin(origins = {"http://127.0.0.1:5500", "https://good-web-ivr.netlify.app"})
 @Tag(name = "ItemController", description = "Контроллер для управления услугами")
 public class ItemController {
 

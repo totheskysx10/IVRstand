@@ -100,4 +100,20 @@ public class CategoryController {
         categoryService.removeFromCategory(childId);
         return ResponseEntity.ok().build();
     }
+
+    @Operation(summary = "Обновить ссылку на GIF-превью категории", description = "Обновляет ссылку на GIF-превью категории по её идентификатору.")
+    @ApiResponse(responseCode = "200", description = "Ссылка на GIF-превью категории успешно обновлена")
+    @PutMapping("/{id}/gif-preview")
+    public ResponseEntity<Void> updateCategoryGifPreview(@PathVariable long id, @RequestBody String gifPreview) {
+        categoryService.updateGifPreviewToCategory(id, gifPreview);
+        return ResponseEntity.ok().build();
+    }
+
+    @Operation(summary = "Обновить ссылку на GIF категории", description = "Обновляет ссылку на GIF категории по её идентификатору.")
+    @ApiResponse(responseCode = "200", description = "Ссылка на GIF категории успешно обновлена")
+    @PutMapping("/{id}/gif")
+    public ResponseEntity<Void> updateCategoryGifLink(@PathVariable long id, @RequestBody String gifLink) {
+        categoryService.updateGifLinkToCategory(id, gifLink);
+        return ResponseEntity.ok().build();
+    }
 }

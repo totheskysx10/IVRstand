@@ -15,6 +15,8 @@ public class AdditionDTO extends RepresentationModel<AdditionDTO> {
     @NonNull
     private String description;
 
+    private String gifPreview;
+
     private String gifLink;
 
     private long itemId;

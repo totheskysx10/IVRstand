@@ -120,11 +120,31 @@ public class AdditionServiceTest {
 
     @Sql("/testsss.sql")
     @Test
+    public void testUpdateGifPreviewToAddition() {
+        Addition addition = Addition.builder()
+                .title("title")
+                .description("test")
+                .gifLink("link")
+                .gifPreview("lnk")
+                .item(itemService.getItemById(1))
+                .build();
+        additionService.createAddition(addition);
+
+        additionService.updateGifPreviewToAddition(1, "pLINK_");
+
+        Addition updatedAddition = additionService.getAdditionById(1);
+
+        assertEquals("pLINK_", updatedAddition.getGifPreview());
+    }
+
+    @Sql("/testsss.sql")
+    @Test
     public void testUpdateGifLinkToAddition() {
         Addition addition = Addition.builder()
                 .title("title")
                 .description("test")
                 .gifLink("link")
+                .gifPreview("lnk")
                 .item(itemService.getItemById(1))
                 .build();
         additionService.createAddition(addition);

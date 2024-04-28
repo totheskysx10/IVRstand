@@ -227,6 +227,21 @@ public class ItemService {
     }
 
     /**
+     * Обновляет ссылку на GIF-превью услуги.
+     *
+     * @param itemId  Идентификатор услуги.
+     * @param gifPreview Новая ссылка на GIF превью услуги.
+     */
+    public void updateGifPreviewToItem(long itemId, String gifPreview) {
+        Item item = getItemById(itemId);
+        if (item != null) {
+            item.setGifPreview(gifPreview);
+            itemRepository.save(item);
+            log.info("Ссылка на GIF-превью обновлена для услуги с id {}", itemId);
+        }
+    }
+
+    /**
      * Находит услуги, похожие на заданный заголовок, путем поиска ключевых слов в базе данных.
      * Поиск осуществляется путем разделения заголовка на слова и поиска каждого слова
      * индивидуально в заголовках и ключевых словах услуг. Результаты поиска агрегируются

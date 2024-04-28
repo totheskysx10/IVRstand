@@ -45,6 +45,14 @@ public class Addition {
     private String description;
 
     /**
+     * Ссылка на превью GIF-анимации дополненияю.
+     */
+    @Column(name = "addition_gif_preview")
+    @Getter
+    @Setter
+    private String gifPreview;
+
+    /**
      * Ссылка на GIF-анимацию к дополнению.
      */
     @Column(name = "addition_gif_link")

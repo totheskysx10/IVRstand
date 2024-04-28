@@ -43,6 +43,14 @@ public class Item {
     private String description;
 
     /**
+     * Ссылка на первью GIF анимаци услуги.
+     */
+    @Column(name = "gif_preview")
+    @Getter
+    @Setter
+    private String gifPreview;
+
+    /**
      * Ссылка на GIF анимацию, связанную с услугой.
      */
     @Column(name = "gif_link")

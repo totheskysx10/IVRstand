@@ -60,6 +60,14 @@ public class Category {
     private Category parentCategory;
 
     /**
+     * Ссылка на превью GIF анимации категории.
+     */
+    @Column(name = "cat_gif_preview")
+    @Getter
+    @Setter
+    private String gifPreview;
+
+    /**
      * Ссылка на GIF анимацию, связанную с категорией.
      */
     @Column(name = "cat_gif_link")

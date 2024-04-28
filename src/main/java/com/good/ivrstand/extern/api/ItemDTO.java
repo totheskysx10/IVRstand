@@ -18,6 +18,8 @@ public class ItemDTO extends RepresentationModel<ItemDTO> {
     @NonNull
     private String description;
 
+    private String gifPreview;
+
     private String gifLink;
 
     private long categoryId;

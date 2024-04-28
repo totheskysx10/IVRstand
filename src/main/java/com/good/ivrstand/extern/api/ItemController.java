@@ -127,6 +127,14 @@ public class ItemController {
         return ResponseEntity.ok().build();
     }
 
+    @Operation(summary = "Обновить ссылку на GIF-превью услуги", description = "Обновляет ссылку на GIF-превью услуги по ее идентификатору.")
+    @ApiResponse(responseCode = "200", description = "Ссылка на GIF-превью услуги успешно обновлена")
+    @PutMapping("/{id}/gif-preview")
+    public ResponseEntity<Void> updateItemGifPreview(@PathVariable long id, @RequestBody String gifPreview) {
+        itemService.updateGifPreviewToItem(id, gifPreview);
+        return ResponseEntity.ok().build();
+    }
+
     @Operation(summary = "Обновить ссылку на GIF услуги", description = "Обновляет ссылку на GIF услуги по ее идентификатору.")
     @ApiResponse(responseCode = "200", description = "Ссылка на GIF услуги успешно обновлена")
     @PutMapping("/{id}/gif")
@@ -134,6 +142,7 @@ public class ItemController {
         itemService.updateGifLinkToItem(id, gifLink);
         return ResponseEntity.ok().build();
     }
+
     @Operation(summary = "Найти похожие на запрос услуги", description = "Поиск похожих услуг по введённому запросу.")
     @ApiResponse(responseCode = "200")
     @GetMapping("/search/similar")

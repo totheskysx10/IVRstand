@@ -140,4 +140,14 @@ public class ItemServiceTest {
 
         assertEquals("LINK_", updatedItem.getGifLink());
     }
+
+    @Sql("/testsss.sql")
+    @Test
+    public void testUpdateGifPreviewToItem() {
+        itemService.updateGifPreviewToItem(1, "pLINK_");
+
+        Item updatedItem = itemService.getItemById(1);
+
+        assertEquals("pLINK_", updatedItem.getGifPreview());
+    }
 }

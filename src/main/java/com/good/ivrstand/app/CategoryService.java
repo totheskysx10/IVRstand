@@ -188,4 +188,19 @@ public class CategoryService {
             log.info("Ссылка на GIF обновлена для категории с id {}", categoryId);
         }
     }
+
+    /**
+     * Обновляет ссылку на GIF-превью категории.
+     *
+     * @param categoryId Идентификатор категории.
+     * @param gifPreview   Новая ссылка на GIF превью.
+     */
+    public void updateGifPreviewToCategory(long categoryId, String gifPreview) {
+        Category category = getCategoryById(categoryId);
+        if (category != null) {
+            category.setGifPreview(gifPreview);
+            categoryRepository.save(category);
+            log.info("Ссылка на GIF-превью обновлена для категории с id {}", categoryId);
+        }
+    }
 }

@@ -21,6 +21,7 @@ public class AdditionAssembler extends RepresentationModelAssemblerSupport<Addit
         additionDTO.setId(addition.getId());
         additionDTO.setTitle(addition.getTitle());
         additionDTO.setDescription(addition.getDescription());
+        additionDTO.setGifPreview(addition.getGifPreview());
         additionDTO.setGifLink(addition.getGifLink());
         additionDTO.setItemId(addition.getItem().getId());
 

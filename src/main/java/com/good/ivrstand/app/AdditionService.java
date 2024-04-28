@@ -116,6 +116,21 @@ public class AdditionService {
     }
 
     /**
+     * Обновляет ссылку на GIF-превью дополнения.
+     *
+     * @param additionId Идентификатор дополнения.
+     * @param gifPreview   Новая ссылка на GIF превью.
+     */
+    public void updateGifPreviewToAddition(long additionId, String gifPreview) {
+        Addition addition = getAdditionById(additionId);
+        if (addition != null) {
+            addition.setGifPreview(gifPreview);
+            additionRepository.save(addition);
+            log.info("Ссылка на GIF-превью обновлена для дополнения с id {}", additionId);
+        }
+    }
+
+    /**
      * Ищет дополнения по идентификатору категории, с поддержкой пагинации.
      *
      * @param itemId    Идентификатор услуги.

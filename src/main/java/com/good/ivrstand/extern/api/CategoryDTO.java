@@ -15,8 +15,14 @@ public class CategoryDTO extends RepresentationModel<CategoryDTO> {
 
     @NonNull
     private String title;
+
     private List<Long> itemsInCategoryIds;
+
     private long parentCategoryId;
+
     private List<Long> childrenCategoryIds;
+
+    private String gifPreview;
+
     private String gifLink;
 }

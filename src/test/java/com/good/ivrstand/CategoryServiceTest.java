@@ -125,4 +125,14 @@ public class CategoryServiceTest {
 
         assertEquals("LINK_", updatedCategory.getGifLink());
     }
+
+    @Sql("/testsss.sql")
+    @Test
+    public void testUpdateGifPreviewToCategory() {
+        categoryService.updateGifPreviewToCategory(1, "pLINK_");
+
+        Category updatedCategory = categoryService.getCategoryById(1);
+
+        assertEquals("pLINK_", updatedCategory.getGifPreview());
+    }
 }

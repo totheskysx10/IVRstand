@@ -82,6 +82,14 @@ public class AdditionController {
         return ResponseEntity.ok().build();
     }
 
+    @Operation(summary = "Обновить ссылку на GIF-превью дополнения", description = "Обновляет ссылку на GIF-превью дополнения по его идентификатору.")
+    @ApiResponse(responseCode = "200", description = "Ссылка на GIF-превью дополнения успешно обновлена")
+    @PutMapping("/{id}/gif-preview")
+    public ResponseEntity<Void> updateAdditionGifPreview(@PathVariable long id, @RequestBody String gifPreview) {
+        additionService.updateGifPreviewToAddition(id, gifPreview);
+        return ResponseEntity.ok().build();
+    }
+
     @Operation(summary = "Обновить ссылку на GIF дополнения", description = "Обновляет ссылку на GIF дополнения по его идентификатору.")
     @ApiResponse(responseCode = "200", description = "Ссылка на GIF дополнения успешно обновлена")
     @PutMapping("/{id}/gif")

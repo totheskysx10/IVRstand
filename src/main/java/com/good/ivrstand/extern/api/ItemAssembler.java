@@ -25,7 +25,7 @@ public class ItemAssembler extends RepresentationModelAssemblerSupport<Item, Ite
         itemDTO.setId(item.getId());
         itemDTO.setTitle(item.getTitle());
         itemDTO.setDescription(item.getDescription());
-        item.setGifPreview(item.getGifPreview());
+        itemDTO.setGifPreview(item.getGifPreview());
         itemDTO.setGifLink(item.getGifLink());
         if (item.getCategory() != null)
             itemDTO.setCategoryId(item.getCategory().getId());

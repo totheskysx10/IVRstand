@@ -290,7 +290,12 @@ public class ItemService {
         if (searchWord == null) {
             Map.Entry<String, Integer> entryWithMaxValue = frequencies.entrySet().stream()
                     .max(Map.Entry.comparingByValue())
-                    .orElseThrow();
+                    .orElse(null);
+
+            if (entryWithMaxValue == null) {
+                return Page.empty();
+            }
+
             searchWord = entryWithMaxValue.getKey();
         }
 

@@ -4,6 +4,7 @@ import com.good.ivrstand.app.ItemService;
 import com.good.ivrstand.domain.Item;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -144,10 +145,17 @@ public class ItemController {
     }
 
     @Operation(summary = "Найти похожие на запрос услуги", description = "Поиск похожих услуг по введённому запросу.")
-    @ApiResponse(responseCode = "200")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Успешное выполнение запроса"),
+            @ApiResponse(responseCode = "204", description = "Пустой возврат")
+    })
     @GetMapping("/search/similar")
     public ResponseEntity<Page<ItemDTO>> findSimilarItems(@RequestParam String title, Pageable pageable) {
         Page<ItemDTO> items = itemService.findSimilarItems(title, pageable).map(itemAssembler::toModel);
+
+        if (items.isEmpty())
+            return ResponseEntity.noContent().build();
+
         return ResponseEntity.ok(items);
     }
 }

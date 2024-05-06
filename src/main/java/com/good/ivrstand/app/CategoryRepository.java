@@ -87,4 +87,7 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
 
     @Query("SELECT c FROM Category c WHERE SIZE(c.childrenCategories) = 0 AND c.parentCategory IS NULL")
     Page<Category> findUnallocatedCategories(Pageable pageable);
+
+    @Query("SELECT c FROM Category c WHERE c.parentCategory IS NULL")
+    Page<Category> findMainCategories(Pageable pageable);
 }

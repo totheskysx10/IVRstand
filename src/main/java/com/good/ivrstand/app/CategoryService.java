@@ -125,6 +125,16 @@ public class CategoryService {
     }
 
     /**
+     * Ищет главные категории, с поддержкой пагинации.
+     *
+     * @param pageable Настройки пагинации.
+     * @return Страница найденных категорий.
+     */
+    public Page<Category> findMainCategories(Pageable pageable) {
+        return categoryRepository.findMainCategories(pageable);
+    }
+
+    /**
      * Добавляет подкатегорию в категорию.
      *
      * @param categoryId     Идентификатор подкатегории.

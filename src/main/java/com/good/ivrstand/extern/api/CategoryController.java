@@ -85,6 +85,14 @@ public class CategoryController {
         return ResponseEntity.ok(categories);
     }
 
+    @Operation(summary = "Найти главные категории", description = "Поиск категорий, которые лежат в главном меню.")
+    @ApiResponse(responseCode = "200")
+    @GetMapping("/search/main")
+    public ResponseEntity<Page<CategoryDTO>> findMainCategories(Pageable pageable) {
+        Page<CategoryDTO> categories = categoryService.findMainCategories(pageable).map(categoryAssembler::toModel);
+        return ResponseEntity.ok(categories);
+    }
+
     @Operation(summary = "Установить родительскую категорию", description = "Устанавливает указанную категорию в качестве родительской для другой категории.")
     @ApiResponse(responseCode = "200", description = "Родительская категория успешно установлена")
     @PutMapping("/{categoryId}/parent/set/{parentId}")

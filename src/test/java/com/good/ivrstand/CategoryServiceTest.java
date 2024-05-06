@@ -99,6 +99,17 @@ public class CategoryServiceTest {
 
     @Sql("/testsss.sql")
     @Test
+    public void testFindMainCategories() {
+        Pageable pageable = PageRequest.of(0, 10);
+        categoryService.addToCategory(1, 2);
+        Page<Category> categoriesPage = categoryService.findMainCategories(pageable);
+        List<Category> categories = categoriesPage.getContent();
+
+        assertEquals(1, categories.size());
+    }
+
+    @Sql("/testsss.sql")
+    @Test
     public void testAddToCategory() {
         categoryService.addToCategory(1, 2);
         long real = categoryService.getCategoryById(1).getParentCategory().getId();

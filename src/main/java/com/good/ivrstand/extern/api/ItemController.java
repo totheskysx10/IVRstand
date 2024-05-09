@@ -81,42 +81,82 @@ public class ItemController {
     }
 
     @Operation(summary = "Получить все услуги", description = "Получает список всех услуг.")
-    @ApiResponse(responseCode = "200")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Успешное выполнение запроса"),
+            @ApiResponse(responseCode = "204", description = "Пустой возврат")
+    })
     @GetMapping
     public ResponseEntity<Page<ItemDTO>> getAllItems(Pageable pageable) {
         Page<ItemDTO> items = itemService.getAllItemsInBase(pageable).map(itemAssembler::toModel);
+
+        if (items.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+
         return ResponseEntity.ok(items);
     }
 
     @Operation(summary = "Найти услуги по заголовку (заголовок можно ввести частично)", description = "Поиск услуг по заголовку (или его части).")
-    @ApiResponse(responseCode = "200")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Успешное выполнение запроса"),
+            @ApiResponse(responseCode = "204", description = "Пустой возврат")
+    })
     @GetMapping("/search")
     public ResponseEntity<Page<ItemDTO>> findItemsByTitle(@RequestParam String title, Pageable pageable) {
         Page<ItemDTO> items = itemService.findItemsByTitle(title, pageable).map(itemAssembler::toModel);
+
+        if (items.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+
         return ResponseEntity.ok(items);
     }
 
     @Operation(summary = "Найти услуги без категории", description = "Поиск услуг, которые не принадлежат ни одной категории.")
-    @ApiResponse(responseCode = "200")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Успешное выполнение запроса"),
+            @ApiResponse(responseCode = "204", description = "Пустой возврат")
+    })
     @GetMapping("/search/withoutCategory")
     public ResponseEntity<Page<ItemDTO>> findItemsWithoutCategory(Pageable pageable) {
         Page<ItemDTO> items = itemService.findItemsWithoutCategory(pageable).map(itemAssembler::toModel);
+
+        if (items.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+
         return ResponseEntity.ok(items);
     }
 
     @Operation(summary = "Найти услуги по категории и заголовку (заголовок можно ввести частично)", description = "Поиск услуг по категории и заголовку (или его части).")
-    @ApiResponse(responseCode = "200")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Успешное выполнение запроса"),
+            @ApiResponse(responseCode = "204", description = "Пустой возврат")
+    })
     @GetMapping("/search/byCategoryAndTitle")
     public ResponseEntity<Page<ItemDTO>> findItemsByCategoryAndTitle(@RequestParam long categoryId, @RequestParam String title, Pageable pageable) {
         Page<ItemDTO> items = itemService.findItemsByTitleAndCategory(categoryId, title, pageable).map(itemAssembler::toModel);
+
+        if (items.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+
         return ResponseEntity.ok(items);
     }
 
     @Operation(summary = "Найти услуги по категории", description = "Поиск услуг по категории.")
-    @ApiResponse(responseCode = "200")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Успешное выполнение запроса"),
+            @ApiResponse(responseCode = "204", description = "Пустой возврат")
+    })
     @GetMapping("/search/byCategory")
     public ResponseEntity<Page<ItemDTO>> findItemsByCategory(@RequestParam long categoryId, Pageable pageable) {
         Page<ItemDTO> items = itemService.findItemsByCategory(categoryId, pageable).map(itemAssembler::toModel);
+
+        if (items.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+
         return ResponseEntity.ok(items);
     }
 

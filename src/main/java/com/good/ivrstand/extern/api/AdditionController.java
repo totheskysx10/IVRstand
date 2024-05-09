@@ -5,6 +5,7 @@ import com.good.ivrstand.app.ItemService;
 import com.good.ivrstand.domain.Addition;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -99,10 +100,18 @@ public class AdditionController {
     }
 
     @Operation(summary = "Найти дополнения по их услуге", description = "Поиск дополнений, которые принадлежат определённой услуге.")
-    @ApiResponse(responseCode = "200")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Успешное выполнение запроса"),
+            @ApiResponse(responseCode = "204", description = "Пустой возврат")
+    })
     @GetMapping("/search/item/{itemId}")
     public ResponseEntity<Page<AdditionDTO>> findByItemId(@PathVariable long itemId, Pageable pageable) {
         Page<AdditionDTO> additions = additionService.findByItemId(itemId, pageable).map(additionAssembler::toModel);
+
+        if (additions.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+
         return ResponseEntity.ok(additions);
     }
 }

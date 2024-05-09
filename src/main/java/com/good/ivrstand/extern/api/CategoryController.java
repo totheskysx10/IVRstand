@@ -4,6 +4,7 @@ import com.good.ivrstand.app.CategoryService;
 import com.good.ivrstand.domain.Category;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -66,19 +67,35 @@ public class CategoryController {
     @GetMapping
     public ResponseEntity<Page<CategoryDTO>> getAllCategories(Pageable pageable) {
         Page<CategoryDTO> categories = categoryService.getAllCategoriesInBase(pageable).map(categoryAssembler::toModel);
+
+        if (categories.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+
         return ResponseEntity.ok(categories);
     }
 
     @Operation(summary = "Найти категории по заголовку (заголовок можно ввести частично)", description = "Поиск категорий по заголовку (или его части).")
-    @ApiResponse(responseCode = "200", description = "Категории найдены")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Успешное выполнение запроса"),
+            @ApiResponse(responseCode = "204", description = "Пустой возврат")
+    })
     @GetMapping("/search")
     public ResponseEntity<Page<CategoryDTO>> findCategoriesByTitle(@RequestParam String title, Pageable pageable) {
         Page<CategoryDTO> categories = categoryService.findCategoriesByTitle(title, pageable).map(categoryAssembler::toModel);
+
+        if (categories.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+
         return ResponseEntity.ok(categories);
     }
 
     @Operation(summary = "Найти нераспределенные категории", description = "Поиск категорий, которые не принадлежат ни одной другой категории.")
-    @ApiResponse(responseCode = "200")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Успешное выполнение запроса"),
+            @ApiResponse(responseCode = "204", description = "Пустой возврат")
+    })
     @GetMapping("/search/unallocated")
     public ResponseEntity<Page<CategoryDTO>> findUnallocatedCategories(Pageable pageable) {
         Page<CategoryDTO> categories = categoryService.findUnallocatedCategories(pageable).map(categoryAssembler::toModel);
@@ -86,10 +103,18 @@ public class CategoryController {
     }
 
     @Operation(summary = "Найти главные категории", description = "Поиск категорий, которые лежат в главном меню.")
-    @ApiResponse(responseCode = "200")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Успешное выполнение запроса"),
+            @ApiResponse(responseCode = "204", description = "Пустой возврат")
+    })
     @GetMapping("/search/main")
     public ResponseEntity<Page<CategoryDTO>> findMainCategories(Pageable pageable) {
         Page<CategoryDTO> categories = categoryService.findMainCategories(pageable).map(categoryAssembler::toModel);
+
+        if (categories.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+
         return ResponseEntity.ok(categories);
     }
 
@@ -103,7 +128,7 @@ public class CategoryController {
 
     @Operation(summary = "Удалить дочернюю категорию из родительской категории", description = "Удаляет указанную категорию из списка дочерних категорий родительской категории.")
     @ApiResponse(responseCode = "200", description = "Подкатегория успешно удалена из категории")
-    @PutMapping("/{categoryId}/children/remove/{childId}")
+    @PutMapping("/children/remove/{childId}")
     public ResponseEntity<Void> removeFromCategory(@PathVariable long childId) {
         categoryService.removeFromCategory(childId);
         return ResponseEntity.ok().build();

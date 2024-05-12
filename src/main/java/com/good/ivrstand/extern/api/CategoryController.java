@@ -17,7 +17,7 @@ import java.util.ArrayList;
 
 @RestController
 @RequestMapping("/categories")
-@CrossOrigin(origins = {"http://127.0.0.1:5500", "https://good-web-ivr.netlify.app"})
+@CrossOrigin(origins = {"http://127.0.0.1:5500", "https://good-web-ivr.netlify.app", "https://deploy-preview-12--good-web-ivr.netlify.app", "https://deploy-preview-11--good-web-ivr.netlify.app/"})
 @Tag(name = "CategoryController", description = "Контроллер для управления категориями")
 public class CategoryController {
 

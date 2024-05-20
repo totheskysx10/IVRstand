@@ -115,6 +115,13 @@ public class ItemService {
                 throw new IllegalArgumentException("Категория с id " + categoryId + " отсутствует");
             else if (item.getCategory() == null) {
                 item.setCategory(category);
+
+                Category topCategory = category;
+                while (topCategory.getParentCategory() != null) {
+                    topCategory = topCategory.getParentCategory();
+                }
+                item.setKeyWord(topCategory.getTitle());
+
                 itemRepository.save(item);
                 log.info("Услуга с id {} добавлена в категорию с id {}", itemId, categoryId);
             } else

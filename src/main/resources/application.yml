@@ -1,5 +1,5 @@
 server:
-  port: 5003
+  port: 8080
 
 spring:
   datasource:
@@ -9,8 +9,11 @@ spring:
 
 springdoc:
   swagger-ui:
+    disable-swagger-default-url: true
     path: /ivr-good/swagger-ui.html
     configUrl: /ivr-good/v3/api-docs/swagger-config
+  api-docs:
+    path: /v3/api-docs
 
 openapi-info:
   url: https://pincode-dev.ru/ivr-good

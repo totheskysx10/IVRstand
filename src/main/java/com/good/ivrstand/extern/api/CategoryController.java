@@ -47,12 +47,20 @@ public class CategoryController {
     }
 
     @Operation(summary = "Получить категорию по ID", description = "Получает информацию о категории по ее идентификатору.")
-    @ApiResponse(responseCode = "200", description = "Категория найдена")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Категория найдена"),
+            @ApiResponse(responseCode = "204", description = "Категория не найдена")
+    })
     @GetMapping("/{id}")
     public ResponseEntity<CategoryDTO> getCategoryById(@PathVariable long id) {
-        Category category = categoryService.getCategoryById(id);
-        return ResponseEntity.ok(categoryAssembler.toModel(category));
+        try {
+            Category category = categoryService.getCategoryById(id);
+            return ResponseEntity.ok(categoryAssembler.toModel(category));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.noContent().build();
+        }
     }
+
 
     @Operation(summary = "Удалить категорию", description = "Удаляет категорию по ее идентификатору.")
     @ApiResponse(responseCode = "204", description = "Категория успешно удалена")

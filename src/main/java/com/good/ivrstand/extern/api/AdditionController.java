@@ -32,33 +32,48 @@ public class AdditionController {
     }
 
     @Operation(summary = "Создать дополнение", description = "Создает новое дополнение для указанной услуги.")
-    @ApiResponse(responseCode = "201", description = "Дополнение успешно создано")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Дополнение успешно создан"),
+            @ApiResponse(responseCode = "400", description = "Некорректный запрос"),
+            @ApiResponse(responseCode = "204", description = "Нет такой услуги")
+    })
     @PostMapping
     public ResponseEntity<AdditionDTO> createAddition(@RequestBody AdditionDTO additionDTO) {
-        if (additionDTO.getItemId() == 0) {
-            return ResponseEntity.badRequest().build();
+        try {
+            if (additionDTO.getItemId() == 0) {
+                return ResponseEntity.badRequest().build();
+            }
+
+            Addition newAddition = Addition.builder()
+                    .title(additionDTO.getTitle())
+                    .description(additionDTO.getDescription())
+                    .gifLink(additionDTO.getGifLink())
+                    .item(itemService.getItemById(additionDTO.getItemId()))
+                    .build();
+
+            additionService.createAddition(newAddition);
+
+            return new ResponseEntity<>(additionAssembler.toModel(newAddition), HttpStatus.CREATED);
+        } catch (Exception e) {
+            return ResponseEntity.noContent().build();
         }
-
-        Addition newAddition = Addition.builder()
-                .title(additionDTO.getTitle())
-                .description(additionDTO.getDescription())
-                .gifLink(additionDTO.getGifLink())
-                .item(itemService.getItemById(additionDTO.getItemId()))
-                .build();
-
-        additionService.createAddition(newAddition);
-
-        return new ResponseEntity<>(additionAssembler.toModel(newAddition), HttpStatus.CREATED);
     }
+
 
     @Operation(summary = "Получить дополнение по ID", description = "Получает дополнение по его идентификатору.")
-    @ApiResponse(responseCode = "200", description = "Дополнение найдено")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Дополнение найдено"),
+            @ApiResponse(responseCode = "204", description = "Дополнение не найдено")
+    })
     @GetMapping("/{id}")
     public ResponseEntity<AdditionDTO> getAdditionById(@PathVariable long id) {
-        Addition addition = additionService.getAdditionById(id);
-        return ResponseEntity.ok(additionAssembler.toModel(addition));
+        try {
+            Addition addition = additionService.getAdditionById(id);
+            return ResponseEntity.ok(additionAssembler.toModel(addition));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.noContent().build();
+        }
     }
-
     @Operation(summary = "Удалить дополнение", description = "Удаляет дополнение по его идентификатору.")
     @ApiResponse(responseCode = "204", description = "Дополнение успешно удалено")
     @DeleteMapping("/{id}")

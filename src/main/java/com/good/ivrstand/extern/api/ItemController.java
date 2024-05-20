@@ -48,12 +48,20 @@ public class ItemController {
     }
 
     @Operation(summary = "Получить услугу по ID", description = "Получает информацию об услуге по ее идентификатору.")
-    @ApiResponse(responseCode = "200", description = "Услуга найдена")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Услуга найдена"),
+            @ApiResponse(responseCode = "204", description = "Услуга не найдена")
+    })
     @GetMapping("/{id}")
     public ResponseEntity<ItemDTO> getItemById(@PathVariable long id) {
-        Item item = itemService.getItemById(id);
-        return ResponseEntity.ok(itemAssembler.toModel(item));
+        try {
+            Item item = itemService.getItemById(id);
+            return ResponseEntity.ok(itemAssembler.toModel(item));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.noContent().build();
+        }
     }
+
 
     @Operation(summary = "Удалить услугу", description = "Удаляет услугу по ее идентификатору.")
     @ApiResponse(responseCode = "204", description = "Услуга успешно удалена")

@@ -24,3 +24,6 @@ telegram:
     search_password: searcherror
     username: ivr_stand_bot
     token:
+
+flask-api:
+  url: http://localhost:5004

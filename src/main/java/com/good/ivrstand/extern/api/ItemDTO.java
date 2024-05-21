@@ -25,7 +25,4 @@ public class ItemDTO extends RepresentationModel<ItemDTO> {
     private long categoryId;
 
     private List<Long> additionIds;
-
-    @NonNull
-    private String keyWord;
 }

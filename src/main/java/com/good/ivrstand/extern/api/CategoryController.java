@@ -17,7 +17,6 @@ import java.util.ArrayList;
 
 @RestController
 @RequestMapping("/categories")
-@CrossOrigin(origins = {"http://127.0.0.1:5500", "https://good-web-ivr.netlify.app", "https://deploy-preview-12--good-web-ivr.netlify.app", "https://deploy-preview-11--good-web-ivr.netlify.app/"})
 @Tag(name = "CategoryController", description = "Контроллер для управления категориями")
 public class CategoryController {
 
@@ -75,22 +74,6 @@ public class CategoryController {
     @GetMapping
     public ResponseEntity<Page<CategoryDTO>> getAllCategories(Pageable pageable) {
         Page<CategoryDTO> categories = categoryService.getAllCategoriesInBase(pageable).map(categoryAssembler::toModel);
-
-        if (categories.isEmpty()) {
-            return ResponseEntity.noContent().build();
-        }
-
-        return ResponseEntity.ok(categories);
-    }
-
-    @Operation(summary = "Найти категории по заголовку (заголовок можно ввести частично)", description = "Поиск категорий по заголовку (или его части).")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Успешное выполнение запроса"),
-            @ApiResponse(responseCode = "204", description = "Пустой возврат")
-    })
-    @GetMapping("/search")
-    public ResponseEntity<Page<CategoryDTO>> findCategoriesByTitle(@RequestParam String title, Pageable pageable) {
-        Page<CategoryDTO> categories = categoryService.findCategoriesByTitle(title, pageable).map(categoryAssembler::toModel);
 
         if (categories.isEmpty()) {
             return ResponseEntity.noContent().build();

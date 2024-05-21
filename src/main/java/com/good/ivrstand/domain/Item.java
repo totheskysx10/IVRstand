@@ -74,13 +74,4 @@ public class Item {
     @Setter
     @OneToMany(mappedBy = "item", cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
     private List<Addition> additions;
-
-    /**
-     * Ключевое слово услуги.
-     */
-    @Column(name = "item_keyword")
-    @Getter
-    @Setter
-    @NonNull
-    private String keyWord;
 }

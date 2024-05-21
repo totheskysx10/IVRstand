@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/additions")
-@CrossOrigin(origins = {"http://127.0.0.1:5500", "https://good-web-ivr.netlify.app", "https://deploy-preview-12--good-web-ivr.netlify.app", "https://deploy-preview-11--good-web-ivr.netlify.app/"})
 @Tag(name = "AdditionController", description = "Контроллер для управления дополнениями к услугам")
 public class AdditionController {
 

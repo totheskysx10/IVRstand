@@ -110,19 +110,6 @@ public class ItemServiceTest {
 
     @Sql("/testsss.sql")
     @Test
-    public void testFindItemsByTitleAndCategory() {
-        itemService.addToCategory(1, 1);
-        String request = "testItem";
-
-        Pageable pageable = PageRequest.of(0, 10);
-        Page<Item> itemsPage = itemService.findItemsByTitleAndCategory(1, request, pageable);
-        List<Item> items = itemsPage.getContent();
-
-        assertEquals(1, items.size());
-    }
-
-    @Sql("/testsss.sql")
-    @Test
     public void testUpdateDescriptionToItem() {
         itemService.updateDescriptionToItem(1, "DEEEESC");
 

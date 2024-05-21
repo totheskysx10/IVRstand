@@ -17,7 +17,6 @@ import java.util.ArrayList;
 
 @RestController
 @RequestMapping("/items")
-@CrossOrigin(origins = {"http://127.0.0.1:5500", "https://good-web-ivr.netlify.app", "https://deploy-preview-12--good-web-ivr.netlify.app", "https://deploy-preview-11--good-web-ivr.netlify.app/"})
 @Tag(name = "ItemController", description = "Контроллер для управления услугами")
 public class ItemController {
 
@@ -39,7 +38,6 @@ public class ItemController {
                 .description(itemDTO.getDescription())
                 .gifLink(itemDTO.getGifLink())
                 .additions(new ArrayList<>())
-                .keyWord(itemDTO.getKeyWord())
                 .build();
 
         itemService.createItem(newItem);
@@ -135,22 +133,6 @@ public class ItemController {
         return ResponseEntity.ok(items);
     }
 
-    @Operation(summary = "Найти услуги по категории и заголовку (заголовок можно ввести частично)", description = "Поиск услуг по категории и заголовку (или его части).")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Успешное выполнение запроса"),
-            @ApiResponse(responseCode = "204", description = "Пустой возврат")
-    })
-    @GetMapping("/search/byCategoryAndTitle")
-    public ResponseEntity<Page<ItemDTO>> findItemsByCategoryAndTitle(@RequestParam long categoryId, @RequestParam String title, Pageable pageable) {
-        Page<ItemDTO> items = itemService.findItemsByTitleAndCategory(categoryId, title, pageable).map(itemAssembler::toModel);
-
-        if (items.isEmpty()) {
-            return ResponseEntity.noContent().build();
-        }
-
-        return ResponseEntity.ok(items);
-    }
-
     @Operation(summary = "Найти услуги по категории", description = "Поиск услуг по категории.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Успешное выполнение запроса"),
@@ -189,20 +171,5 @@ public class ItemController {
     public ResponseEntity<Void> updateItemGifLink(@PathVariable long id, @RequestBody String gifLink) {
         itemService.updateGifLinkToItem(id, gifLink);
         return ResponseEntity.ok().build();
-    }
-
-    @Operation(summary = "Найти похожие на запрос услуги", description = "Поиск похожих услуг по введённому запросу.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Успешное выполнение запроса"),
-            @ApiResponse(responseCode = "204", description = "Пустой возврат")
-    })
-    @GetMapping("/search/similar")
-    public ResponseEntity<Page<ItemDTO>> findSimilarItems(@RequestParam String title, Pageable pageable) {
-        Page<ItemDTO> items = itemService.findSimilarItems(title, pageable).map(itemAssembler::toModel);
-
-        if (items.isEmpty())
-            return ResponseEntity.noContent().build();
-
-        return ResponseEntity.ok(items);
     }
 }

@@ -77,17 +77,6 @@ public class CategoryServiceTest {
 
     @Sql("/testsss.sql")
     @Test
-    public void testFindCategoriesByTitle() {
-        Pageable pageable = PageRequest.of(0, 10);
-        String request = "Category";
-        Page<Category> categoriesPage = categoryService.findCategoriesByTitle(request, pageable);
-        List<Category> categories = categoriesPage.getContent();
-
-        assertEquals(2, categories.size());
-    }
-
-    @Sql("/testsss.sql")
-    @Test
     public void testFindUnallocatedCategories() {
         Pageable pageable = PageRequest.of(0, 10);
         categoryService.addToCategory(1, 2);

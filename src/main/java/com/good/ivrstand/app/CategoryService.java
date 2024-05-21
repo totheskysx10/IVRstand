@@ -18,12 +18,9 @@ import org.springframework.stereotype.Component;
 public class CategoryService {
     private final CategoryRepository categoryRepository;
 
-    private final ItemRepository itemRepository;
-
     @Autowired
-    public CategoryService(CategoryRepository categoryRepository, ItemRepository itemRepository) {
+    public CategoryService(CategoryRepository categoryRepository) {
         this.categoryRepository = categoryRepository;
-        this.itemRepository = itemRepository;
     }
 
     /**
@@ -89,13 +86,6 @@ public class CategoryService {
             }
             for (Category c: foundCategory.getChildrenCategories()) {
                 c.setParentCategory(c.getParentCategory().getParentCategory());
-
-                Category topCategory = c;
-                while (topCategory.getParentCategory() != null) {
-                    topCategory = topCategory.getParentCategory();
-                }
-                String keyWord = topCategory.getTitle();
-                updateItemsKeyword(keyWord, foundCategory);
             }
             categoryRepository.save(foundCategory);
             categoryRepository.deleteById(categoryId);
@@ -111,17 +101,6 @@ public class CategoryService {
      */
     public Page<Category> getAllCategoriesInBase(Pageable pageable) {
         return categoryRepository.findAll(pageable);
-    }
-
-    /**
-     * Ищет категории по заголовку, с поддержкой пагинации.
-     *
-     * @param title    Часть заголовка для поиска.
-     * @param pageable Настройки пагинации.
-     * @return Страница найденных категорий.
-     */
-    public Page<Category> findCategoriesByTitle(String title, Pageable pageable) {
-        return categoryRepository.findByTitle(title, pageable);
     }
 
     /**
@@ -156,20 +135,16 @@ public class CategoryService {
             throw new IllegalArgumentException("Идентификаторы категорий совпадают: " + categoryId);
         }
 
-        Category category = getCategoryById(categoryId);
+        Category category = categoryRepository.findById(categoryId);
         Category parent = getCategoryById(parentId);
 
         if (parent.getItemsInCategory().isEmpty()) {
-            if (category.getParentCategory() == null) {
+            if (category == null)
+                throw new IllegalArgumentException("Категория с id " + categoryId + " отсутствует");
+            else if (parent == null)
+                throw new IllegalArgumentException("Категория с id " + parentId + " отсутствует");
+            else if (category.getParentCategory() == null) {
                 category.setParentCategory(parent);
-
-                Category topCategory = category;
-                while (topCategory.getParentCategory() != null) {
-                    topCategory = topCategory.getParentCategory();
-                }
-                String keyWord = topCategory.getTitle();
-                updateItemsKeyword(keyWord, category);
-
                 categoryRepository.save(category);
                 categoryRepository.save(parent);
                 log.info("Подкатегория с id {} добавлена в категорию с id {}", categoryId, parentId);
@@ -189,7 +164,7 @@ public class CategoryService {
         Category category = categoryRepository.findById(categoryId);
 
         if (category == null)
-            throw new IllegalArgumentException("Категория с id " + categoryId + " отсутствует");
+            throw new IllegalArgumentException("Услуга с id " + categoryId + " отсутствует");
         else if (category.getParentCategory() != null) {
             category.setParentCategory(null);
             categoryRepository.save(category);
@@ -225,34 +200,6 @@ public class CategoryService {
             category.setGifPreview(gifPreview);
             categoryRepository.save(category);
             log.info("Ссылка на GIF-превью обновлена для категории с id {}", categoryId);
-        }
-    }
-
-    /**
-     * Обновляет ключевое слово для всех услуг в данной категории и её дочерних категориях.
-     * Если категория содержит услуги, обновляет ключевое слово для каждой в категории.
-     * В противном случае рекурсивно проходит по дочерним категориям, пока не найдёт категории с непустыми списками услуг, и обновляет их ключевые слова.
-     *
-     * @param keyword ключевое слово, которое нужно установить для услуг
-     * @param category корневая категория, с которой начинается обход
-     */
-    private void updateItemsKeyword(String keyword, Category category) {
-        if (!category.getItemsInCategory().isEmpty())
-            for (Item item: category.getItemsInCategory()) {
-                item.setKeyWord(keyword);
-                itemRepository.save(item);
-            }
-        else {
-            for (Category child : category.getChildrenCategories()) {
-                if (!child.getItemsInCategory().isEmpty())
-                    for (Item item : child.getItemsInCategory()) {
-                        item.setKeyWord(keyword);
-                        itemRepository.save(item);
-                    }
-                else {
-                    updateItemsKeyword(keyword, child);
-                }
-            }
         }
     }
 }

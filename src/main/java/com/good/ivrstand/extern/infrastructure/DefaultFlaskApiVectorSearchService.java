@@ -1,6 +1,7 @@
 package com.good.ivrstand.extern.infrastructure;
 
 import com.good.ivrstand.app.FlaskApiVectorSearchService;
+import com.good.ivrstand.domain.TitleRequest;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
@@ -16,16 +17,15 @@ public class DefaultFlaskApiVectorSearchService implements FlaskApiVectorSearchS
         this.flaskApiVectorSearchClient = flaskApiVectorSearchClient;
     }
 
-    public List<String> getEmbeddings(List<String> dialog) {
+    public List<Long> getEmbeddings(List<String> dialog) {
         Map<String, Object> requestData = new HashMap<>();
         requestData.put("dialog", dialog);
 
         return flaskApiVectorSearchClient.getEmbeddings(requestData);
     }
 
-    public void addTitle(String title) {
-        String requestBody = "{\"text\": \"" + title + "\"}";
-        flaskApiVectorSearchClient.addTitle(requestBody);
+    public void addTitle(TitleRequest titleRequest) {
+        flaskApiVectorSearchClient.addTitle(titleRequest);
     }
 
     public void deleteTitle(String title) {

@@ -63,7 +63,7 @@ public class CategoryService {
             throw new IllegalArgumentException("Категория с id " + categoryId + " не найдена");
         }
         else {
-            log.info("Найдена категория с id {}", categoryId);
+            log.debug("Найдена категория с id {}", categoryId);
             return foundCategory;
         }
     }

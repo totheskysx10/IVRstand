@@ -54,7 +54,7 @@ public class AdditionService {
             throw new IllegalArgumentException("Дополнение с id " + additionId + " не найдено");
         }
         else {
-            log.info("Найдено дополнение с id {}", additionId);
+            log.debug("Найдено дополнение с id {}", additionId);
             return foundAddition;
         }
     }

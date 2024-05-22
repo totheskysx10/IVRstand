@@ -1,9 +1,6 @@
 package com.good.ivrstand.app;
 
-import com.good.ivrstand.domain.Addition;
-import com.good.ivrstand.domain.Category;
-import com.good.ivrstand.domain.Item;
-import com.good.ivrstand.domain.TitleRequest;
+import com.good.ivrstand.domain.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -54,8 +51,8 @@ public class ItemService {
 
         try {
             Item savedItem = itemRepository.save(item);
-            TitleRequest titleRequest = new TitleRequest(savedItem.getTitle() + " " + savedItem.getDescription(), savedItem.getId());
-            flaskApiVectorSearchService.addTitle(titleRequest);
+            AddTitleRequest addTitleRequest = new AddTitleRequest(savedItem.getTitle() + " " + savedItem.getDescription(), savedItem.getId());
+            flaskApiVectorSearchService.addTitle(addTitleRequest);
             log.info("Создана услуга с id {}", savedItem.getId());
             return savedItem;
         } catch (Exception e) {
@@ -97,7 +94,8 @@ public class ItemService {
                         .map(Addition::getId)
                         .forEach(additionService::deleteAddition);
             itemRepository.deleteById(itemId);
-            flaskApiVectorSearchService.deleteTitle(foundItem.getTitle() + " " + foundItem.getDescription());
+            TitleRequest titleRequest = new TitleRequest(foundItem.getTitle() + " " + foundItem.getDescription());
+            flaskApiVectorSearchService.deleteTitle(titleRequest);
             log.info("Удалена услуга с id {}", itemId);
         }
     }

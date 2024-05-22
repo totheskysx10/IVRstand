@@ -1,11 +1,10 @@
 package com.good.ivrstand.domain;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
-import lombok.Data;
 
 @AllArgsConstructor
-@Data
 public class TitleRequest {
+    @JsonProperty("text")
     private String text;
-    private long id;
 }

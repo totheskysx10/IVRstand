@@ -1,6 +1,7 @@
 package com.good.ivrstand.extern.infrastructure;
 
 
+import com.good.ivrstand.domain.AddTitleRequest;
 import com.good.ivrstand.domain.TitleRequest;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.MediaType;
@@ -16,8 +17,8 @@ public interface FlaskApiVectorSearchClient {
     List<Long> getEmbeddings(@RequestBody Map<String, Object> requestData);
 
     @PostMapping(value = "/add_title", consumes = MediaType.APPLICATION_JSON_VALUE)
-    void addTitle(@RequestBody TitleRequest request);
+    void addTitle(@RequestBody AddTitleRequest request);
 
     @PostMapping(value = "/delete_title", consumes = MediaType.APPLICATION_JSON_VALUE)
-    void deleteTitle(@RequestBody String requestData);
+    void deleteTitle(@RequestBody TitleRequest request);
 }

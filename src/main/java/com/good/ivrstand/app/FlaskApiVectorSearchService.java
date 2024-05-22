@@ -1,5 +1,6 @@
 package com.good.ivrstand.app;
 
+import com.good.ivrstand.domain.AddTitleRequest;
 import com.good.ivrstand.domain.TitleRequest;
 
 import java.util.List;
@@ -22,13 +23,13 @@ public interface FlaskApiVectorSearchService {
      *
      * @param request объект запроса с данными
      */
-    void addTitle(TitleRequest request);
+    void addTitle(AddTitleRequest request);
 
     /**
      * Удаляет заголовок услуги из Flask-сервиса.
      *
-     * @param title строка заголовка, который необходимо удалить
+     * @param title объект со строкой заголовка, который необходимо удалить
      */
-    void deleteTitle(String title);
+    void deleteTitle(TitleRequest title);
 }
 

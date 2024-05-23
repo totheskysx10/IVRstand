@@ -1,21 +1,27 @@
 server:
-  port: 8080
+  port: 5003
 
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/postgres
+    url: jdbc:postgresql://dbivr:5432/postgres
     username: postgres
     password: 1
+  jpa:
+    hibernate:
+      ddl-auto: update
 
 springdoc:
   swagger-ui:
     disable-swagger-default-url: true
-    path: /ivr-good/swagger-ui.html
+    path: /swagger-ui.html
     configUrl: /ivr-good/v3/api-docs/swagger-config
+    urls:
+      - name: Default API
+        url: /ivr-good/v3/api-docs
   api-docs:
     path: /v3/api-docs
 
-openapi-info:
+openapi-requests:
   url: https://pincode-dev.ru/ivr-good
 
 telegram:
@@ -26,4 +32,4 @@ telegram:
     token:
 
 flask-api:
-  url: http://localhost:5004
+  url: http://ivrgoodvector:5004

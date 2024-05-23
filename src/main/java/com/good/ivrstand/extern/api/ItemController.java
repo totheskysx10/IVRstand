@@ -31,18 +31,23 @@ public class ItemController {
 
     @Operation(summary = "Создать услугу", description = "Создает новую услугу.")
     @ApiResponse(responseCode = "201", description = "Услуга успешно создана")
+    @ApiResponse(responseCode = "409", description = "Ошибка валидации")
     @PostMapping
     public ResponseEntity<ItemDTO> createItem(@RequestBody ItemDTO itemDTO) {
-        Item newItem = Item.builder()
-                .title(itemDTO.getTitle())
-                .description(itemDTO.getDescription())
-                .gifLink(itemDTO.getGifLink())
-                .additions(new ArrayList<>())
-                .build();
+        try {
+            Item newItem = Item.builder()
+                    .title(itemDTO.getTitle())
+                    .description(itemDTO.getDescription())
+                    .gifLink(itemDTO.getGifLink())
+                    .additions(new ArrayList<>())
+                    .build();
 
-        itemService.createItem(newItem);
+            itemService.createItem(newItem);
 
-        return new ResponseEntity<>(itemAssembler.toModel(newItem), HttpStatus.CREATED);
+            return new ResponseEntity<>(itemAssembler.toModel(newItem), HttpStatus.CREATED);
+        } catch (IllegalArgumentException ex) {
+            return new ResponseEntity<>(HttpStatus.CONFLICT);
+        }
     }
 
     @Operation(summary = "Получить услугу по ID", description = "Получает информацию об услуге по ее идентификатору.")

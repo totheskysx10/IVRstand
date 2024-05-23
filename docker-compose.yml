@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  dbivr:
+    image: postgres
+    restart: always
+    container_name: dbivr
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1
+      TZ: 'Asia/Yekaterinburg'
+    volumes:
+      - db-data:/var/lib/postgresql/data
+      - ./ivr.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5440:5432"
+    networks:
+      - net2
+
+  ivr-good:
+    image: ivr-good-img:latest
+    container_name: ivr-good
+    depends_on:
+      - dbivr
+    restart: always
+    ports:
+      - "5003:5003"
+    networks:
+      - net2
+    environment:
+      TZ: 'Asia/Yekaterinburg'
+
+  ivrgoodvector:
+    image: ivr-vector-img
+    container_name: ivrgoodvector
+    depends_on:
+      - dbivr
+    restart: always
+    ports:
+      - "5004:5004"
+    networks:
+      - net2
+    environment:
+      DB_HOST: dbivr
+      DB_PORT: 5432
+      DB_NAME: postgres
+      DB_USER: postgres
+      DB_PASS: 1
+
+networks:
+  net2:
+    driver: bridge
+
+volumes:
+  db-data:

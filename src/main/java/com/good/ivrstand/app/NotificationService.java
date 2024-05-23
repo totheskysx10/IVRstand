@@ -100,6 +100,10 @@ public class NotificationService extends TelegramLongPollingBot {
                     sendMessageToChat("Вы подписались на уведомления об ошибках поиска", chatId);
                 }
             } else if (messageText.equals("/removehelp")) {
+
+                if (chats.isEmpty())
+                    sendMessageToChat("Вы не были подписаны на уведомления о вызове помощи", chatId);
+
                 for (NotificationChat chat : chats) {
                     if (chat.getNotificationCategory() == NotificationCategory.HELP) {
                         notificationChatRepository.deleteById(chat.getId());
@@ -111,6 +115,10 @@ public class NotificationService extends TelegramLongPollingBot {
                     }
                 }
             } else if (messageText.equals("/removesearch")) {
+
+                if (chats.isEmpty())
+                    sendMessageToChat("Вы не были подписаны на уведомления об ошибках поиска", chatId);
+
                 for (NotificationChat chat : chats) {
                     if (chat.getNotificationCategory() == NotificationCategory.SEARCH_ERROR) {
                         notificationChatRepository.deleteById(chat.getId());

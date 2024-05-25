@@ -74,4 +74,13 @@ public class Category {
     @Getter
     @Setter
     private String gifLink;
+
+    /**
+     * Иконки к категории.
+     */
+    @Getter
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "cat_icons", joinColumns = @JoinColumn(name = "category_id"))
+    @Column(name = "icon_link")
+    private List<String> iconLinks;
 }

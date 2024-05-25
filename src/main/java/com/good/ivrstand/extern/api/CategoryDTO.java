@@ -25,4 +25,6 @@ public class CategoryDTO extends RepresentationModel<CategoryDTO> {
     private String gifPreview;
 
     private String gifLink;
+
+    private List<String> iconLinks;
 }

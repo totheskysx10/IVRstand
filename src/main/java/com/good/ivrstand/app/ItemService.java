@@ -250,4 +250,40 @@ public class ItemService {
             log.info("Ссылка на GIF-превью обновлена для услуги с id {}", itemId);
         }
     }
+
+    /**
+     * Добавляет иконку для услуги.
+     *
+     * @param itemId  Идентификатор услуги.
+     * @param iconLink Иконка.
+     */
+    public void addIcon(long itemId, String iconLink) {
+        Item item = getItemById(itemId);
+        if (item != null) {
+            if (!item.getIconLinks().contains(iconLink)) {
+                item.getIconLinks().add(iconLink);
+                itemRepository.save(item);
+                log.info("Добавлена иконка для услуги с id {}", itemId);
+            }
+            else
+                log.warn("Иконка для услуги с id {} уже была добавлена раннее!", itemId);
+        }
+    }
+
+    /**
+     * Удаляет иконку у услуги.
+     *
+     * @param itemId  Идентификатор услуги.
+     * @param iconLink Иконка.
+     */
+    public void removeIcon(long itemId, String iconLink) {
+        Item item = getItemById(itemId);
+        if (item != null) {
+            if (item.getIconLinks().contains(iconLink)) {
+                item.getIconLinks().remove(iconLink);
+                itemRepository.save(item);
+                log.info("Удалена иконка для услуги с id {}", itemId);
+            }
+        }
+    }
 }

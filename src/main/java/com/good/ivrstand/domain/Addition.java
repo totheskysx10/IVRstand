@@ -3,6 +3,8 @@ package com.good.ivrstand.domain;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.List;
+
 /**
  * Класс, представляющий сущность дополнения к услуге.
  */
@@ -68,4 +70,13 @@ public class Addition {
     @Getter
     @NonNull
     private Item item;
+
+    /**
+     * Иконки к дополнению.
+     */
+    @Getter
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "addition_icons", joinColumns = @JoinColumn(name = "addition_id"))
+    @Column(name = "icon_link")
+    private List<String> iconLinks;
 }

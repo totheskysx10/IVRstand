@@ -41,6 +41,7 @@ public class ItemController {
                     .gifPreview(itemDTO.getGifPreview())
                     .gifLink(itemDTO.getGifLink())
                     .additions(new ArrayList<>())
+                    .iconLinks(new ArrayList<>())
                     .build();
 
             itemService.createItem(newItem);
@@ -176,6 +177,22 @@ public class ItemController {
     @PutMapping("/{id}/gif")
     public ResponseEntity<Void> updateItemGifLink(@PathVariable long id, @RequestBody String gifLink) {
         itemService.updateGifLinkToItem(id, gifLink);
+        return ResponseEntity.ok().build();
+    }
+
+    @Operation(summary = "Добавить иконку услуги", description = "Добавляет иконку для услуги по ее идентификатору.")
+    @ApiResponse(responseCode = "200", description = "Иконка для услуги успешно добавлена")
+    @PutMapping("/{id}/icon/add")
+    public ResponseEntity<Void> addItemIcon(@PathVariable long id, @RequestBody String iconLink) {
+        itemService.addIcon(id, iconLink);
+        return ResponseEntity.ok().build();
+    }
+
+    @Operation(summary = "Удалить иконку услуги", description = "Удаляет иконку для услуги по ее идентификатору.")
+    @ApiResponse(responseCode = "200", description = "Иконка для услуги успешно удалена")
+    @PutMapping("/{id}/icon/remove")
+    public ResponseEntity<Void> removeItemIcon(@PathVariable long id, @RequestBody String iconLink) {
+        itemService.removeIcon(id, iconLink);
         return ResponseEntity.ok().build();
     }
 }

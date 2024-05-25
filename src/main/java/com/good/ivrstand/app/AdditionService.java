@@ -2,6 +2,7 @@ package com.good.ivrstand.app;
 
 
 import com.good.ivrstand.domain.Addition;
+import com.good.ivrstand.domain.Category;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -139,5 +140,41 @@ public class AdditionService {
      */
     public Page<Addition> findByItemId(long itemId, Pageable pageable) {
         return additionRepository.findByItemId(itemId, pageable);
+    }
+
+    /**
+     * Добавляет иконку для дополнения.
+     *
+     * @param additionId  Идентификатор дополнения.
+     * @param iconLink Иконка.
+     */
+    public void addIcon(long additionId, String iconLink) {
+        Addition addition = getAdditionById(additionId);
+        if (addition != null) {
+            if (!addition.getIconLinks().contains(iconLink)) {
+                addition.getIconLinks().add(iconLink);
+                additionRepository.save(addition);
+                log.info("Добавлена иконка для дополнения с id {}", additionId);
+            }
+            else
+                log.warn("Иконка для дополнения с id {} уже была добавлена раннее!", additionId);
+        }
+    }
+
+    /**
+     * Удаляет иконку у дополнения.
+     *
+     * @param additionId  Идентификатор дополнения.
+     * @param iconLink Иконка.
+     */
+    public void removeIcon(long additionId, String iconLink) {
+        Addition addition = getAdditionById(additionId);
+        if (addition != null) {
+            if (addition.getIconLinks().contains(iconLink)) {
+                addition.getIconLinks().remove(iconLink);
+                additionRepository.save(addition);
+                log.info("Удалена иконка для дополнения с id {}", additionId);
+            }
+        }
     }
 }

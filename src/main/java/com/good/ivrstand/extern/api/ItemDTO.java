@@ -25,4 +25,6 @@ public class ItemDTO extends RepresentationModel<ItemDTO> {
     private long categoryId;
 
     private List<Long> additionIds;
+
+    private List<String> iconLinks;
 }

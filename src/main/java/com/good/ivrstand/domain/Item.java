@@ -74,4 +74,13 @@ public class Item {
     @Setter
     @OneToMany(mappedBy = "item", cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
     private List<Addition> additions;
+
+    /**
+     * Иконки к услуге.
+     */
+    @Getter
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "item_icons", joinColumns = @JoinColumn(name = "item_id"))
+    @Column(name = "icon_link")
+    private List<String> iconLinks;
 }

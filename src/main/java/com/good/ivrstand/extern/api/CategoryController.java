@@ -39,6 +39,7 @@ public class CategoryController {
                 .childrenCategories(new ArrayList<>())
                 .gifPreview(categoryDTO.getGifPreview())
                 .gifLink(categoryDTO.getGifLink())
+                .iconLinks(new ArrayList<>())
                 .build();
 
         categoryService.createCategory(newCategory);
@@ -139,6 +140,22 @@ public class CategoryController {
     @PutMapping("/{id}/gif")
     public ResponseEntity<Void> updateCategoryGifLink(@PathVariable long id, @RequestBody String gifLink) {
         categoryService.updateGifLinkToCategory(id, gifLink);
+        return ResponseEntity.ok().build();
+    }
+
+    @Operation(summary = "Добавить иконку категории", description = "Добавляет иконку для категории по ее идентификатору.")
+    @ApiResponse(responseCode = "200", description = "Иконка для категории успешно добавлена")
+    @PutMapping("/{id}/icon/add")
+    public ResponseEntity<Void> addCategoryIcon(@PathVariable long id, @RequestBody String iconLink) {
+        categoryService.addIcon(id, iconLink);
+        return ResponseEntity.ok().build();
+    }
+
+    @Operation(summary = "Удалить иконку категории", description = "Удаляет иконку для категории по ее идентификатору.")
+    @ApiResponse(responseCode = "200", description = "Иконка для категории успешно удалена")
+    @PutMapping("/{id}/icon/remove")
+    public ResponseEntity<Void> removeCategoryIcon(@PathVariable long id, @RequestBody String iconLink) {
+        categoryService.removeIcon(id, iconLink);
         return ResponseEntity.ok().build();
     }
 }

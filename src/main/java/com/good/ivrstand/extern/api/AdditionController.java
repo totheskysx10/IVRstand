@@ -14,6 +14,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
+
 @RestController
 @RequestMapping("/additions")
 @Tag(name = "AdditionController", description = "Контроллер для управления дополнениями к услугам")
@@ -49,6 +51,7 @@ public class AdditionController {
                     .gifPreview(additionDTO.getGifPreview())
                     .gifLink(additionDTO.getGifLink())
                     .item(itemService.getItemById(additionDTO.getItemId()))
+                    .iconLinks(new ArrayList<>())
                     .build();
 
             additionService.createAddition(newAddition);
@@ -128,5 +131,21 @@ public class AdditionController {
         }
 
         return ResponseEntity.ok(additions);
+    }
+
+    @Operation(summary = "Добавить иконку дополнения", description = "Добавляет иконку для дополнения по его идентификатору.")
+    @ApiResponse(responseCode = "200", description = "Иконка для дополнения успешно добавлена")
+    @PutMapping("/{id}/icon/add")
+    public ResponseEntity<Void> addAdditionIcon(@PathVariable long id, @RequestBody String iconLink) {
+        additionService.addIcon(id, iconLink);
+        return ResponseEntity.ok().build();
+    }
+
+    @Operation(summary = "Удалить иконку дополнения", description = "Удаляет иконку для дополнения по его идентификатору.")
+    @ApiResponse(responseCode = "200", description = "Иконка для дополнения успешно удалена")
+    @PutMapping("/{id}/icon/remove")
+    public ResponseEntity<Void> removeAdditionIcon(@PathVariable long id, @RequestBody String iconLink) {
+        additionService.removeIcon(id, iconLink);
+        return ResponseEntity.ok().build();
     }
 }

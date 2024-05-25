@@ -202,4 +202,40 @@ public class CategoryService {
             log.info("Ссылка на GIF-превью обновлена для категории с id {}", categoryId);
         }
     }
+
+    /**
+     * Добавляет иконку для категории.
+     *
+     * @param categoryId  Идентификатор категории.
+     * @param iconLink Иконка.
+     */
+    public void addIcon(long categoryId, String iconLink) {
+        Category category = getCategoryById(categoryId);
+        if (category != null) {
+            if (!category.getIconLinks().contains(iconLink)) {
+                category.getIconLinks().add(iconLink);
+                categoryRepository.save(category);
+                log.info("Добавлена иконка для категории с id {}", categoryId);
+            }
+            else
+                log.warn("Иконка для категории с id {} уже была добавлена раннее!", categoryId);
+        }
+    }
+
+    /**
+     * Удаляет иконку у категории.
+     *
+     * @param categoryId  Идентификатор категории.
+     * @param iconLink Иконка.
+     */
+    public void removeIcon(long categoryId, String iconLink) {
+        Category category = getCategoryById(categoryId);
+        if (category != null) {
+            if (category.getIconLinks().contains(iconLink)) {
+                category.getIconLinks().remove(iconLink);
+                categoryRepository.save(category);
+                log.info("Удалена иконка для категории с id {}", categoryId);
+            }
+        }
+    }
 }

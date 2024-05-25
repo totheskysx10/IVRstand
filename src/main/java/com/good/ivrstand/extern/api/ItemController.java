@@ -38,6 +38,7 @@ public class ItemController {
             Item newItem = Item.builder()
                     .title(itemDTO.getTitle())
                     .description(itemDTO.getDescription())
+                    .gifPreview(itemDTO.getGifPreview())
                     .gifLink(itemDTO.getGifLink())
                     .additions(new ArrayList<>())
                     .build();

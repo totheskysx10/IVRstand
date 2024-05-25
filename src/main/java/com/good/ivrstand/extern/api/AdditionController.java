@@ -46,6 +46,7 @@ public class AdditionController {
             Addition newAddition = Addition.builder()
                     .title(additionDTO.getTitle())
                     .description(additionDTO.getDescription())
+                    .gifPreview(additionDTO.getGifPreview())
                     .gifLink(additionDTO.getGifLink())
                     .item(itemService.getItemById(additionDTO.getItemId()))
                     .build();

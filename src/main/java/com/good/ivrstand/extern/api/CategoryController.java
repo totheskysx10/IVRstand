@@ -37,6 +37,7 @@ public class CategoryController {
                 .title(categoryDTO.getTitle())
                 .itemsInCategory(new ArrayList<>())
                 .childrenCategories(new ArrayList<>())
+                .gifPreview(categoryDTO.getGifPreview())
                 .gifLink(categoryDTO.getGifLink())
                 .build();
 

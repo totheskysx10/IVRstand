@@ -211,8 +211,12 @@ public class ItemService {
     public void updateDescriptionToItem(long itemId, String desc) {
         Item item = getItemById(itemId);
         if (item != null) {
+            TitleRequest titleRequest = new TitleRequest(item.getTitle() + " " + item.getDescription());
+            flaskApiVectorSearchService.deleteTitle(titleRequest);
             item.setDescription(desc);
             itemRepository.save(item);
+            AddTitleRequest addTitleRequest = new AddTitleRequest(item.getTitle() + " " + item.getDescription(), item.getId());
+            flaskApiVectorSearchService.addTitle(addTitleRequest);
             log.info("Описание обновлено для услуги с id {}", itemId);
         }
     }

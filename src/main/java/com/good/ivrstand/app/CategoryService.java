@@ -204,38 +204,17 @@ public class CategoryService {
     }
 
     /**
-     * Добавляет иконку для категории.
+     * Обновляет ссылку на главную иконку категории.
      *
-     * @param categoryId  Идентификатор категории.
-     * @param iconLink Иконка.
+     * @param categoryId Идентификатор категории.
+     * @param icon   Новая ссылка на главную иконку.
      */
-    public void addIcon(long categoryId, String iconLink) {
+    public void updateMainIconToCategory(long categoryId, String icon) {
         Category category = getCategoryById(categoryId);
         if (category != null) {
-            if (!category.getIconLinks().contains(iconLink)) {
-                category.getIconLinks().add(iconLink);
-                categoryRepository.save(category);
-                log.info("Добавлена иконка для категории с id {}", categoryId);
-            }
-            else
-                log.warn("Иконка для категории с id {} уже была добавлена раннее!", categoryId);
-        }
-    }
-
-    /**
-     * Удаляет иконку у категории.
-     *
-     * @param categoryId  Идентификатор категории.
-     * @param iconLink Иконка.
-     */
-    public void removeIcon(long categoryId, String iconLink) {
-        Category category = getCategoryById(categoryId);
-        if (category != null) {
-            if (category.getIconLinks().contains(iconLink)) {
-                category.getIconLinks().remove(iconLink);
-                categoryRepository.save(category);
-                log.info("Удалена иконка для категории с id {}", categoryId);
-            }
+            category.setMainIconLink(icon);
+            categoryRepository.save(category);
+            log.info("Ссылка на главную иконку обновлена для категории с id {}", categoryId);
         }
     }
 }

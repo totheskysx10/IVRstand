@@ -34,7 +34,7 @@ public class CategoryAssembler extends RepresentationModelAssemblerSupport<Categ
                 .collect(Collectors.toList()));
         categoryDTO.setGifPreview(category.getGifPreview());
         categoryDTO.setGifLink(category.getGifLink());
-        categoryDTO.setIconLinks(category.getIconLinks());
+        categoryDTO.setMainIconLink(category.getMainIconLink());
 
         categoryDTO.add(linkTo(methodOn(CategoryController.class).getCategoryById(category.getId())).withSelfRel());
 

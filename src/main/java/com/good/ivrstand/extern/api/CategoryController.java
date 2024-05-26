@@ -39,7 +39,6 @@ public class CategoryController {
                 .childrenCategories(new ArrayList<>())
                 .gifPreview(categoryDTO.getGifPreview())
                 .gifLink(categoryDTO.getGifLink())
-                .iconLinks(new ArrayList<>())
                 .build();
 
         categoryService.createCategory(newCategory);
@@ -143,19 +142,11 @@ public class CategoryController {
         return ResponseEntity.ok().build();
     }
 
-    @Operation(summary = "Добавить иконку категории", description = "Добавляет иконку для категории по ее идентификатору.")
-    @ApiResponse(responseCode = "200", description = "Иконка для категории успешно добавлена")
-    @PutMapping("/{id}/icon/add")
-    public ResponseEntity<Void> addCategoryIcon(@PathVariable long id, @RequestBody String iconLink) {
-        categoryService.addIcon(id, iconLink);
-        return ResponseEntity.ok().build();
-    }
-
-    @Operation(summary = "Удалить иконку категории", description = "Удаляет иконку для категории по ее идентификатору.")
-    @ApiResponse(responseCode = "200", description = "Иконка для категории успешно удалена")
-    @PutMapping("/{id}/icon/remove")
-    public ResponseEntity<Void> removeCategoryIcon(@PathVariable long id, @RequestBody String iconLink) {
-        categoryService.removeIcon(id, iconLink);
+    @Operation(summary = "Обновить ссылку на главную иконку категории", description = "Обновляет ссылку на главную иконку категории по ее идентификатору.")
+    @ApiResponse(responseCode = "200", description = "Ссылка на главную иконку категории успешно обновлена")
+    @PutMapping("/{id}/main-icon")
+    public ResponseEntity<Void> updateCategoryMainIcon(@PathVariable long id, @RequestBody String link) {
+        categoryService.updateMainIconToCategory(id, link);
         return ResponseEntity.ok().build();
     }
 }

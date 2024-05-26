@@ -4,6 +4,7 @@ CREATE TABLE categories (
                             parent_category_id BIGINT,
                             cat_gif_preview VARCHAR,
                             cat_gif_link VARCHAR,
+                            cat_main_icon_link VARCHAR,
                             FOREIGN KEY (parent_category_id) REFERENCES categories(category_id)
 );
 
@@ -37,12 +38,6 @@ CREATE TABLE item_icons (
                             id SERIAL PRIMARY KEY,
                             item_id BIGINT REFERENCES items (item_id),
                             icon_link TEXT NOT NULL
-);
-
-CREATE TABLE cat_icons (
-                           id SERIAL PRIMARY KEY,
-                           category_id BIGINT REFERENCES categories (category_id),
-                           icon_link TEXT NOT NULL
 );
 
 CREATE TABLE addition_icons (

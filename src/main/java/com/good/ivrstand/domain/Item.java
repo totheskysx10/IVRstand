@@ -83,4 +83,12 @@ public class Item {
     @CollectionTable(name = "item_icons", joinColumns = @JoinColumn(name = "item_id"))
     @Column(name = "icon_link")
     private List<String> iconLinks;
+
+    /**
+     * Ссылка на главную иконку, связанную с услугой.
+     */
+    @Column(name = "main_icon_link")
+    @Getter
+    @Setter
+    private String mainIconLink;
 }

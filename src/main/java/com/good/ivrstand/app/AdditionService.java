@@ -132,6 +132,21 @@ public class AdditionService {
     }
 
     /**
+     * Обновляет ссылку на главную иконку дополнения.
+     *
+     * @param additionId Идентификатор дополнения.
+     * @param icon   Новая ссылка на главную иконку.
+     */
+    public void updateMainIconToAddition(long additionId, String icon) {
+        Addition addition = getAdditionById(additionId);
+        if (addition != null) {
+            addition.setMainIconLink(icon);
+            additionRepository.save(addition);
+            log.info("Ссылка на главную иконку обновлена для дополнения с id {}", additionId);
+        }
+    }
+
+    /**
      * Ищет дополнения по идентификатору категории, с поддержкой пагинации.
      *
      * @param itemId    Идентификатор услуги.

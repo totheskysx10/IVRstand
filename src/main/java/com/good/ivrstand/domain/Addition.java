@@ -79,4 +79,12 @@ public class Addition {
     @CollectionTable(name = "addition_icons", joinColumns = @JoinColumn(name = "addition_id"))
     @Column(name = "icon_link")
     private List<String> iconLinks;
+
+    /**
+     * Ссылка на главную иконку, связанную с дополнением.
+     */
+    @Column(name = "addition_main_icon_link")
+    @Getter
+    @Setter
+    private String mainIconLink;
 }

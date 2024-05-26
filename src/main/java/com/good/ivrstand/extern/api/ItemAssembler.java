@@ -34,6 +34,7 @@ public class ItemAssembler extends RepresentationModelAssemblerSupport<Item, Ite
                     .map(Addition::getId)
                     .collect(Collectors.toList()));
         itemDTO.setIconLinks(item.getIconLinks());
+        itemDTO.setMainIconLink(item.getMainIconLink());
 
         itemDTO.add(linkTo(methodOn(ItemController.class).getItemById(item.getId())).withSelfRel());
 

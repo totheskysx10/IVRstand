@@ -237,6 +237,21 @@ public class ItemService {
     }
 
     /**
+     * Обновляет ссылку на главную иконку услуги.
+     *
+     * @param itemId Идентификатор услуги.
+     * @param icon   Новая ссылка на главную иконку.
+     */
+    public void updateMainIconToItem(long itemId, String icon) {
+        Item item = getItemById(itemId);
+        if (item != null) {
+            item.setMainIconLink(icon);
+            itemRepository.save(item);
+            log.info("Ссылка на главную иконку обновлена для услуги с id {}", itemId);
+        }
+    }
+
+    /**
      * Обновляет ссылку на GIF-превью услуги.
      *
      * @param itemId  Идентификатор услуги.

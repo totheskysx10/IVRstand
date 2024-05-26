@@ -117,6 +117,14 @@ public class AdditionController {
         return ResponseEntity.ok().build();
     }
 
+    @Operation(summary = "Обновить ссылку на главную иконку дополнения", description = "Обновляет ссылку на главную иконку дополнения по его идентификатору.")
+    @ApiResponse(responseCode = "200", description = "Ссылка на главную иконку дополнения успешно обновлена")
+    @PutMapping("/{id}/main-icon")
+    public ResponseEntity<Void> updateAdditionMainIcon(@PathVariable long id, @RequestBody String link) {
+        additionService.updateMainIconToAddition(id, link);
+        return ResponseEntity.ok().build();
+    }
+
     @Operation(summary = "Найти дополнения по их услуге", description = "Поиск дополнений, которые принадлежат определённой услуге.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Успешное выполнение запроса"),

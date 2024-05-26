@@ -180,6 +180,14 @@ public class ItemController {
         return ResponseEntity.ok().build();
     }
 
+    @Operation(summary = "Обновить ссылку на главную иконку услуги", description = "Обновляет ссылку на главную иконку услуги по ее идентификатору.")
+    @ApiResponse(responseCode = "200", description = "Ссылка на главную иконку услуги успешно обновлена")
+    @PutMapping("/{id}/main-icon")
+    public ResponseEntity<Void> updateItemMainIcon(@PathVariable long id, @RequestBody String link) {
+        itemService.updateMainIconToItem(id, link);
+        return ResponseEntity.ok().build();
+    }
+
     @Operation(summary = "Добавить иконку услуги", description = "Добавляет иконку для услуги по ее идентификатору.")
     @ApiResponse(responseCode = "200", description = "Иконка для услуги успешно добавлена")
     @PutMapping("/{id}/icon/add")

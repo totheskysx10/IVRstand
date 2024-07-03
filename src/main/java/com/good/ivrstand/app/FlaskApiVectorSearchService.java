@@ -31,5 +31,10 @@ public interface FlaskApiVectorSearchService {
      * @param title объект со строкой заголовка, который необходимо удалить
      */
     void deleteTitle(TitleRequest title);
+
+    /**
+     * Синхронизирует базу данных Qdrant с данными в PostgreSQL
+     */
+    void syncDatabase();
 }
 

@@ -21,4 +21,7 @@ public interface FlaskApiVectorSearchClient {
 
     @PostMapping(value = "/delete_title", consumes = MediaType.APPLICATION_JSON_VALUE)
     void deleteTitle(@RequestBody TitleRequest request);
+
+    @PostMapping(value = "/sync_database", consumes = MediaType.APPLICATION_JSON_VALUE)
+    void syncDatabase();
 }

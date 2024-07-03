@@ -32,4 +32,8 @@ public class DefaultFlaskApiVectorSearchService implements FlaskApiVectorSearchS
     public void deleteTitle(TitleRequest title) {
         flaskApiVectorSearchClient.deleteTitle(title);
     }
+
+    public void syncDatabase() {
+        flaskApiVectorSearchClient.syncDatabase();
+    }
 }

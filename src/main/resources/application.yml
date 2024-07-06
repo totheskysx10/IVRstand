@@ -6,12 +6,25 @@ server:
 
 spring:
   datasource:
-    url: jdbc:postgresql://dbivr:5432/postgres
+    url: jdbc:postgresql://localhost:5432/postgres
     username: postgres
     password: 1
   jpa:
     hibernate:
       ddl-auto: update
+  mail:
+    host: smtp.mail.ru
+    port: 587
+    username: min095@list.ru
+    password:
+    properties:
+      mail:
+        transport:
+          protocol: smtp
+        smtp:
+          auth: true
+          starttls:
+            enable: true
 
 springdoc:
   swagger-ui:
@@ -34,5 +47,11 @@ telegram:
     username: ivr_stand_bot
     token:
 
+auth:
+  reset-password:
+    link: http://localhost:5003/users/update-password?userId=
+  confirm-email:
+    link: http://localhost:5003/users/confirm-email?userId=
+
 flask-api:
-  url: http://ivrgoodvector:5004
+  url: http://localhost:5004

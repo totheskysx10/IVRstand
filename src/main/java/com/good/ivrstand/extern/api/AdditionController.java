@@ -52,6 +52,7 @@ public class AdditionController {
                     .gifLink(additionDTO.getGifLink())
                     .item(itemService.getItemById(additionDTO.getItemId()))
                     .iconLinks(new ArrayList<>())
+                    .mainIconLink(additionDTO.getMainIconLink())
                     .build();
 
             additionService.createAddition(newAddition);

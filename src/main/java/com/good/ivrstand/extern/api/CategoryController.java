@@ -39,6 +39,7 @@ public class CategoryController {
                 .childrenCategories(new ArrayList<>())
                 .gifPreview(categoryDTO.getGifPreview())
                 .gifLink(categoryDTO.getGifLink())
+                .mainIconLink(categoryDTO.getMainIconLink())
                 .build();
 
         categoryService.createCategory(newCategory);

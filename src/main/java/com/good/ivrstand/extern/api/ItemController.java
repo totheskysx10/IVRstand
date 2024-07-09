@@ -42,6 +42,7 @@ public class ItemController {
                     .gifLink(itemDTO.getGifLink())
                     .additions(new ArrayList<>())
                     .iconLinks(new ArrayList<>())
+                    .mainIconLink(itemDTO.getMainIconLink())
                     .build();
 
             itemService.createItem(newItem);

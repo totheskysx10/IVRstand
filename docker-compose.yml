@@ -19,7 +19,9 @@ services:
       - net2
 
   ivr-good:
-    image: ivr-good-img:latest
+  build:
+    context: .
+    dockerfile: Dockerfile
     container_name: ivr-good
     depends_on:
       - dbivr
@@ -32,11 +34,14 @@ services:
       TZ: 'Asia/Yekaterinburg'
 
   ivrgoodvector:
-    image: ivr-vector-img
+    build:
+      context: /home/akhidov/ivr-good/VectorSearch
+      dockerfile: Dockerfile
     container_name: ivrgoodvector
     depends_on:
       - dbivr
-      - qdrant
+      - ivr-good
+        - ivrgoodqdrant
     restart: always
     ports:
       - "5004:5004"
@@ -48,11 +53,11 @@ services:
       DB_NAME: postgres
       DB_USER: postgres
       DB_PASS: 1
-      QDRANT_HOST: qdrant
+      QDRANT_HOST: ivrgoodqdrant
       QDRANT_PORT: 6333
 
   ivrgoodqdrant:
-    image: ivr-qdrant-img
+    image: qdrant/qdrant
     container_name: ivrgoodqdrant
     restart: always
     ports:
@@ -60,6 +65,8 @@ services:
       - "6336:6334"
     networks:
       - net2
+  volumes:
+    - /home/akhidov/ivr-good/IVRstand:/qdrant/storage_ivr
 
 networks:
   net2:
@@ -67,3 +74,4 @@ networks:
 
 volumes:
   db-data:
+  qdrant_data_ivr:

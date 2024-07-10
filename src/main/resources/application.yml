@@ -6,7 +6,7 @@ server:
 
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/postgres
+    url: jdbc:postgresql://dbivr:5432/postgres
     username: postgres
     password: 1
   jpa:
@@ -16,7 +16,7 @@ spring:
     host: smtp.mail.ru
     port: 587
     username: min095@list.ru
-    password:
+    password: f4pBAwL8BEm7BWs1x1B1
     properties:
       mail:
         transport:
@@ -25,6 +25,12 @@ spring:
           auth: true
           starttls:
             enable: true
+  autoconfigure:
+    exclude: io.awspring.cloud.autoconfigure.s3.S3AutoConfiguration
+  servlet:
+    multipart:
+      max-file-size: 1024MB
+      max-request-size: 1024MB
 
 springdoc:
   swagger-ui:
@@ -40,6 +46,12 @@ springdoc:
 openapi-requests:
   url: https://pincode-dev.ru/ivr-good
 
+yandex:
+  cloud:
+    access:
+    secret:
+    bucket: totheskysx10-ivr
+
 telegram:
   bot:
     help_password: helpme
@@ -54,4 +66,4 @@ auth:
     link: http://localhost:5003/users/confirm-email?userId=
 
 flask-api:
-  url: http://localhost:5004
+  url: http://ivrgoodvector:5004

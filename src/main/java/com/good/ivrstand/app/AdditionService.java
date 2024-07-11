@@ -192,4 +192,18 @@ public class AdditionService {
             }
         }
     }
+
+    /**
+     * Чистит иконки у дополнения.
+     *
+     * @param additionId  Идентификатор дополнения.
+     */
+    public void clearIcons(long additionId) {
+        Addition addition = getAdditionById(additionId);
+        if (addition != null) {
+            addition.getIconLinks().clear();
+            additionRepository.save(addition);
+            log.info("Очищены иконки у дополнения {}", additionId);
+        }
+    }
 }

@@ -157,4 +157,12 @@ public class AdditionController {
         additionService.removeIcon(id, iconLink);
         return ResponseEntity.ok().build();
     }
+
+    @Operation(summary = "Очистить иконки дополнения", description = "Очищает иконки дополнения по его идентификатору.")
+    @ApiResponse(responseCode = "200", description = "Иконки дополнения очищены")
+    @PutMapping("/{id}/clear-icons")
+    public ResponseEntity<Void> clearIcons(@PathVariable long id) {
+        additionService.clearIcons(id);
+        return ResponseEntity.ok().build();
+    }
 }

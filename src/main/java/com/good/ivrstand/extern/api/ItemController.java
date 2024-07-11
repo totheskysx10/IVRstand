@@ -204,4 +204,12 @@ public class ItemController {
         itemService.removeIcon(id, iconLink);
         return ResponseEntity.ok().build();
     }
+
+    @Operation(summary = "Очистить иконки услуги", description = "Очищает иконки услуги по её идентификатору.")
+    @ApiResponse(responseCode = "200", description = "Иконки услуги очищены")
+    @PutMapping("/{id}/clear-icons")
+    public ResponseEntity<Void> clearIcons(@PathVariable long id) {
+        itemService.clearIcons(id);
+        return ResponseEntity.ok().build();
+    }
 }

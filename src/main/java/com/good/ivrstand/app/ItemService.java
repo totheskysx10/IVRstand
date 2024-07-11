@@ -301,4 +301,18 @@ public class ItemService {
             }
         }
     }
+
+    /**
+     * Чистит иконки у услуги.
+     *
+     * @param itemId  Идентификатор услуги.
+     */
+    public void clearIcons(long itemId) {
+        Item item = getItemById(itemId);
+        if (item != null) {
+            item.getIconLinks().clear();
+            itemRepository.save(item);
+            log.info("Очищены иконки у услуги {}", itemId);
+        }
+    }
 }

@@ -3,6 +3,10 @@ package com.good.ivrstand.extern.api;
 import com.good.ivrstand.app.S3Service;
 import com.good.ivrstand.exception.FileDuplicateException;
 import com.good.ivrstand.exception.NoSuchFileException;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -15,6 +19,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+@Tag(name = "S3Controller", description = "Контроллер для управления S3")
 @RestController
 @RequestMapping("/s3")
 public class S3Controller {
@@ -25,8 +30,14 @@ public class S3Controller {
         this.s3Service = s3Service;
     }
 
+    @Operation(summary = "Загрузить файл в S3", description = "Загружает файл в указанную папку в S3.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Файл успешно загружен"),
+            @ApiResponse(responseCode = "409", description = "Файл с таким именем уже существует"),
+            @ApiResponse(responseCode = "500", description = "Ошибка при загрузке файла")
+    })
     @PostMapping("/upload")
-    public ResponseEntity<Map<String, String>> uploadFile(@RequestParam("file") MultipartFile multipartFile, @RequestParam("folder") String folder) throws IOException {
+    public ResponseEntity<Map<String, String>> uploadFile(@RequestParam("file") MultipartFile multipartFile, @RequestParam("folder") String folder) {
         Map<String, String> response = new HashMap<>();
         try {
             String link = s3Service.uploadFile(multipartFile, folder);
@@ -44,6 +55,12 @@ public class S3Controller {
         }
     }
 
+    @Operation(summary = "Удалить файл из S3", description = "Удаляет файл из S3 по указанной ссылке.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Файл успешно удален"),
+            @ApiResponse(responseCode = "204", description = "Файл не найден"),
+            @ApiResponse(responseCode = "500", description = "Ошибка при удалении файла")
+    })
     @PostMapping("/delete")
     public ResponseEntity<Void> deleteFile(@RequestParam("link") String link) {
         try {

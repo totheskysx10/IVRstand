@@ -44,10 +44,10 @@ public class ItemService {
             throw new IllegalArgumentException("Услуга не может быть null");
         }
 
-        Item existing = itemRepository.findByTitleIgnoreCase(item.getTitle());
-        if (existing != null) {
-            throw new IllegalArgumentException("Такая услуга уже есть в базе!");
-        }
+//        Item existing = itemRepository.findByTitleIgnoreCase(item.getTitle());
+//        if (existing != null) {
+//            throw new IllegalArgumentException("Такая услуга уже есть в базе!");
+//        }
 
         try {
             Item savedItem = itemRepository.save(item);

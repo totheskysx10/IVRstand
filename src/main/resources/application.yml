@@ -50,7 +50,7 @@ yandex:
   cloud:
     access:
     secret:
-    bucket: totheskysx10-ivr
+    bucket: akhidov-ivr
 
 telegram:
   bot:

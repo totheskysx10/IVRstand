@@ -94,7 +94,12 @@ public class ItemService {
                         .map(Addition::getId)
                         .forEach(additionService::deleteAddition);
             itemRepository.deleteById(itemId);
-            TitleRequest titleRequest = new TitleRequest(foundItem.getTitle() + " " + foundItem.getDescription());
+            TitleRequest titleRequest;
+            if (foundItem.getCategory() != null) {
+                titleRequest = new TitleRequest(foundItem.getTitle() + " " + foundItem.getCategory().getTitle() + " " + foundItem.getDescription());
+            } else {
+                titleRequest = new TitleRequest(foundItem.getTitle() + " " + foundItem.getDescription());
+            }
             flaskApiVectorSearchService.deleteTitle(titleRequest);
             log.info("Удалена услуга с id {}", itemId);
         }
@@ -119,6 +124,10 @@ public class ItemService {
             else if (item.getCategory() == null) {
                 item.setCategory(category);
                 itemRepository.save(item);
+                TitleRequest titleRequest = new TitleRequest(item.getTitle() + " " + item.getDescription());
+                flaskApiVectorSearchService.deleteTitle(titleRequest);
+                AddTitleRequest addTitleRequest = new AddTitleRequest(item.getTitle() + " " + category.getTitle() + " " + item.getDescription(), item.getId());
+                flaskApiVectorSearchService.addTitle(addTitleRequest);
                 log.info("Услуга с id {} добавлена в категорию с id {}", itemId, categoryId);
             } else
                 log.error("Услуга с id {} уже в другой категории!", itemId);
@@ -138,8 +147,12 @@ public class ItemService {
         if (item == null)
             throw new IllegalArgumentException("Услуга с id " + itemId + " отсутствует");
         else if (item.getCategory() != null) {
+            TitleRequest titleRequest = new TitleRequest(item.getTitle() + " " + item.getCategory().getTitle() + " " + item.getDescription());
+            flaskApiVectorSearchService.deleteTitle(titleRequest);
             item.setCategory(null);
             itemRepository.save(item);
+            AddTitleRequest addTitleRequest = new AddTitleRequest(item.getTitle() + " " + item.getDescription(), item.getId());
+            flaskApiVectorSearchService.addTitle(addTitleRequest);
             log.info("Услуга с id {} удалена из категории", itemId);
         } else
             log.error("Услуга с id {} не относится ни к одной из категорий!", itemId);
@@ -211,11 +224,19 @@ public class ItemService {
     public void updateDescriptionToItem(long itemId, String desc) {
         Item item = getItemById(itemId);
         if (item != null) {
-            TitleRequest titleRequest = new TitleRequest(item.getTitle() + " " + item.getDescription());
+            TitleRequest titleRequest;
+            if (item.getCategory() != null)
+                titleRequest = new TitleRequest(item.getTitle() + " " + item.getCategory().getTitle() + " " + item.getDescription());
+            else
+                titleRequest = new TitleRequest(item.getTitle() + " " + item.getDescription());
             flaskApiVectorSearchService.deleteTitle(titleRequest);
             item.setDescription(desc);
             itemRepository.save(item);
-            AddTitleRequest addTitleRequest = new AddTitleRequest(item.getTitle() + " " + item.getDescription(), item.getId());
+            AddTitleRequest addTitleRequest;
+            if (item.getCategory() != null)
+                addTitleRequest = new AddTitleRequest(item.getTitle() + " " + item.getCategory().getTitle() + " " + item.getDescription(), item.getId());
+            else
+                addTitleRequest = new AddTitleRequest(item.getTitle() + " " + item.getDescription(), item.getId());
             flaskApiVectorSearchService.addTitle(addTitleRequest);
             log.info("Описание обновлено для услуги с id {}", itemId);
         }

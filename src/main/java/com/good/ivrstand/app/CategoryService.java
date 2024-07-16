@@ -1,7 +1,9 @@
 package com.good.ivrstand.app;
 
+import com.good.ivrstand.domain.AddTitleRequest;
 import com.good.ivrstand.domain.Category;
 import com.good.ivrstand.domain.Item;
+import com.good.ivrstand.domain.TitleRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -17,10 +19,12 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class CategoryService {
     private final CategoryRepository categoryRepository;
+    private final FlaskApiVectorSearchService flaskApiVectorSearchService;
 
     @Autowired
-    public CategoryService(CategoryRepository categoryRepository) {
+    public CategoryService(CategoryRepository categoryRepository, FlaskApiVectorSearchService flaskApiVectorSearchService) {
         this.categoryRepository = categoryRepository;
+        this.flaskApiVectorSearchService = flaskApiVectorSearchService;
     }
 
     /**
@@ -82,7 +86,11 @@ public class CategoryService {
             throw new IllegalArgumentException("Категория с id " + categoryId + " не найдена");
         } else {
             for (Item i: foundCategory.getItemsInCategory()) {
+                TitleRequest titleRequest = new TitleRequest(i.getTitle() + " " + i.getCategory().getTitle() + " " + i.getDescription());
+                flaskApiVectorSearchService.deleteTitle(titleRequest);
                 i.setCategory(null);
+                AddTitleRequest addTitleRequest = new AddTitleRequest(i.getTitle() + " " + i.getDescription(), i.getId());
+                flaskApiVectorSearchService.addTitle(addTitleRequest);
             }
             for (Category c: foundCategory.getChildrenCategories()) {
                 c.setParentCategory(c.getParentCategory().getParentCategory());

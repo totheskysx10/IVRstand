@@ -19,9 +19,9 @@ services:
       - net2
 
   ivr-good:
-  build:
-    context: .
-    dockerfile: Dockerfile
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: ivr-good
     depends_on:
       - dbivr
@@ -35,13 +35,13 @@ services:
 
   ivrgoodvector:
     build:
-      context: /home/akhidov/ivr-good/VectorSearch
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: vector/Dockerfile
     container_name: ivrgoodvector
     depends_on:
       - dbivr
       - ivr-good
-        - ivrgoodqdrant
+      - ivrgoodqdrant
     restart: always
     ports:
       - "5004:5004"
@@ -65,8 +65,8 @@ services:
       - "6336:6334"
     networks:
       - net2
-  volumes:
-    - /home/akhidov/ivr-good/IVRstand:/qdrant/storage_ivr
+    volumes:
+      - /home/akhidov/ivr-good/IVRstand:/qdrant/storage_ivr
 
 networks:
   net2:

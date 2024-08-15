@@ -36,15 +36,15 @@ springdoc:
   swagger-ui:
     disable-swagger-default-url: true
     path: /swagger-ui.html
-    configUrl: /ivr-good/v3/api-docs/swagger-config
+    configUrl: /backend/v3/api-docs/swagger-config
     urls:
       - name: Default API
-        url: /ivr-good/v3/api-docs
+        url: /backend/v3/api-docs
   api-docs:
     path: /v3/api-docs
 
 openapi-requests:
-  url: https://pincode-dev.ru/ivr-good
+  url: https://ivr.ds-hub.ru/backend
 
 yandex:
   cloud:

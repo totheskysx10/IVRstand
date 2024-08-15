@@ -35,8 +35,8 @@ services:
 
   ivrgoodvector:
     build:
-      context: .
-      dockerfile: vector/Dockerfile
+      context: ./vector
+      dockerfile: Dockerfile
     container_name: ivrgoodvector
     depends_on:
       - dbivr

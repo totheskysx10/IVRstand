@@ -1,7 +1,9 @@
-package com.good.ivrstand.extern.api;
+package com.good.ivrstand.extern.api.controller;
 
 import com.good.ivrstand.app.CategoryService;
 import com.good.ivrstand.domain.Category;
+import com.good.ivrstand.extern.api.assembler.CategoryAssembler;
+import com.good.ivrstand.extern.api.dto.CategoryDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;

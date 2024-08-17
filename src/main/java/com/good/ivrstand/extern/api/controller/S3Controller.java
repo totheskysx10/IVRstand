@@ -1,4 +1,4 @@
-package com.good.ivrstand.extern.api;
+package com.good.ivrstand.extern.api.controller;
 
 import com.good.ivrstand.app.S3Service;
 import com.good.ivrstand.exception.FileDuplicateException;

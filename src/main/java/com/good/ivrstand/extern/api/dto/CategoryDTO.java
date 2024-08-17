@@ -1,6 +1,5 @@
-package com.good.ivrstand.extern.api;
+package com.good.ivrstand.extern.api.dto;
 
-import jakarta.persistence.Column;
 import lombok.*;
 import org.springframework.hateoas.RepresentationModel;
 

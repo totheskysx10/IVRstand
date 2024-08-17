@@ -1,4 +1,4 @@
-package com.good.ivrstand.extern.api;
+package com.good.ivrstand.extern.api.controller;
 
 import com.good.ivrstand.app.QdrantService;
 import io.swagger.v3.oas.annotations.Operation;

@@ -1,11 +1,16 @@
-package com.good.ivrstand.extern.api;
+package com.good.ivrstand.extern.api.dto;
 
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 @Data
-public class UserUpdatePasswordDTO {
+public class UserRegisterDTO {
+
+    @NotBlank
+    @Email
+    private String username;
 
     @NotBlank
     @Size(min = 5, message = "Не меньше 5 знаков")
@@ -14,4 +19,12 @@ public class UserUpdatePasswordDTO {
     @NotBlank
     @Size(min = 5, message = "Не меньше 5 знаков")
     private String passwordConfirm;
+
+    @Size(max = 100)
+    @NotBlank
+    private String firstName;
+
+    @Size(max = 100)
+    @NotBlank
+    private String lastName;
 }

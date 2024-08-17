@@ -1,8 +1,9 @@
-package com.good.ivrstand.extern.api;
+package com.good.ivrstand.extern.api.assembler;
 
 import com.good.ivrstand.domain.Addition;
-import com.good.ivrstand.domain.Category;
 import com.good.ivrstand.domain.Item;
+import com.good.ivrstand.extern.api.dto.ItemDTO;
+import com.good.ivrstand.extern.api.controller.ItemController;
 import org.springframework.hateoas.server.mvc.RepresentationModelAssemblerSupport;
 import org.springframework.stereotype.Component;
 

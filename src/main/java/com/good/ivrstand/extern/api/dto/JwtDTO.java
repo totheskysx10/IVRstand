@@ -1,4 +1,4 @@
-package com.good.ivrstand.extern.api;
+package com.good.ivrstand.extern.api.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

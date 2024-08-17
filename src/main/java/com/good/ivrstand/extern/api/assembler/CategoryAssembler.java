@@ -1,9 +1,12 @@
-package com.good.ivrstand.extern.api;
+package com.good.ivrstand.extern.api.assembler;
 
 import com.good.ivrstand.app.CategoryService;
 import com.good.ivrstand.domain.Category;
 import com.good.ivrstand.domain.Item;
+import com.good.ivrstand.extern.api.controller.CategoryController;
+import com.good.ivrstand.extern.api.dto.CategoryDTO;
 import org.springframework.hateoas.server.mvc.RepresentationModelAssemblerSupport;
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.stereotype.Component;
 
 import java.util.stream.Collectors;
@@ -36,7 +39,7 @@ public class CategoryAssembler extends RepresentationModelAssemblerSupport<Categ
         categoryDTO.setGifLink(category.getGifLink());
         categoryDTO.setMainIconLink(category.getMainIconLink());
 
-        categoryDTO.add(linkTo(methodOn(CategoryController.class).getCategoryById(category.getId())).withSelfRel());
+        categoryDTO.add(WebMvcLinkBuilder.linkTo(methodOn(CategoryController.class).getCategoryById(category.getId())).withSelfRel());
 
         return categoryDTO;
     }

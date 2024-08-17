@@ -1,10 +1,12 @@
-package com.good.ivrstand.extern.api;
+package com.good.ivrstand.extern.api.controller;
 
 import com.good.ivrstand.app.UserService;
 import com.good.ivrstand.domain.User;
 import com.good.ivrstand.exception.NotConfirmedEmailException;
 import com.good.ivrstand.exception.TokenException;
-import com.good.ivrstand.exception.UserDuplicateException;
+import com.good.ivrstand.extern.api.assembler.UserAssembler;
+import com.good.ivrstand.extern.api.dto.UserDTO;
+import com.good.ivrstand.extern.api.dto.UserUpdatePasswordDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -13,8 +15,6 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.ArrayList;
 
 @RestController
 @RequestMapping("/users")

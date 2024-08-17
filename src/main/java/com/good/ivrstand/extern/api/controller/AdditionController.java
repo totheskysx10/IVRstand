@@ -1,8 +1,10 @@
-package com.good.ivrstand.extern.api;
+package com.good.ivrstand.extern.api.controller;
 
 import com.good.ivrstand.app.AdditionService;
 import com.good.ivrstand.app.ItemService;
 import com.good.ivrstand.domain.Addition;
+import com.good.ivrstand.extern.api.assembler.AdditionAssembler;
+import com.good.ivrstand.extern.api.dto.AdditionDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;

@@ -1,8 +1,11 @@
-package com.good.ivrstand.extern.api;
+package com.good.ivrstand.extern.api.controller;
 
 import com.good.ivrstand.app.UserService;
 import com.good.ivrstand.domain.User;
 import com.good.ivrstand.exception.UserDuplicateException;
+import com.good.ivrstand.extern.api.dto.JwtDTO;
+import com.good.ivrstand.extern.api.dto.UserLoginDTO;
+import com.good.ivrstand.extern.api.dto.UserRegisterDTO;
 import com.good.ivrstand.extern.infrastructure.authentication.JwtService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -14,7 +17,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;

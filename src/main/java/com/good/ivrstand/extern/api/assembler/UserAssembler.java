@@ -1,7 +1,9 @@
-package com.good.ivrstand.extern.api;
+package com.good.ivrstand.extern.api.assembler;
 
 import com.good.ivrstand.domain.Role;
 import com.good.ivrstand.domain.User;
+import com.good.ivrstand.extern.api.dto.UserDTO;
+import com.good.ivrstand.extern.api.controller.UserController;
 import org.springframework.hateoas.server.mvc.RepresentationModelAssemblerSupport;
 import org.springframework.stereotype.Component;
 

@@ -43,15 +43,26 @@ public class UserService implements UserDetailsService {
     }
 
     /**
+     * Получение пользователя по имени пользователя
+     * <p>
+     * Нужен для Spring Security
+     *
+     * @return пользователь
+     */
+    public UserDetailsService userDetailsService() {
+        return this::loadUserByUsername;
+    }
+
+    /**
      * Загружает пользователя по его email.
      *
-     * @param email email пользователя
+     * @param username имя пользователя
      * @return детали пользователя
      * @throws UsernameNotFoundException если пользователь не найден
      */
     @Override
-    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        User user = userRepository.findByUsername(email);
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        User user = userRepository.findByUsername(username);
 
         if (user == null)
             throw new UsernameNotFoundException("User not found");

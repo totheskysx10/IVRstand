@@ -1,4 +1,4 @@
-package com.good.ivrstand.extern.infrastructure;
+package com.good.ivrstand.extern.infrastructure.authentication;
 
 import com.good.ivrstand.app.UserRepository;
 import com.good.ivrstand.domain.User;

@@ -1,5 +1,6 @@
 package com.good.ivrstand.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 import lombok.*;
@@ -60,6 +61,7 @@ public class User implements UserDetails {
             inverseJoinColumns = @JoinColumn(name = "role_id")
     )
     @Getter
+    @JsonIgnore
     private List<Role> roles;
 
     /**

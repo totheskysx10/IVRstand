@@ -29,37 +29,6 @@ public class UserController {
         this.userAssembler = userAssembler;
     }
 
-    @Operation(summary = "Создать пользователя", description = "Создает нового пользователя.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Пользователь успешно создан"),
-            @ApiResponse(responseCode = "409", description = "Ошибка валидации"),
-            @ApiResponse(responseCode = "204", description = "Пользователь не найден")
-    })
-    @PostMapping
-    public ResponseEntity<UserRegisterDTO> createUser(@Valid @RequestBody UserRegisterDTO userRegisterDTO) {
-        if (!userRegisterDTO.getPassword().equals(userRegisterDTO.getPasswordConfirm())) {
-            return ResponseEntity.badRequest().build();
-        }
-        try {
-            User user = User.builder()
-                    .username(userRegisterDTO.getUsername())
-                    .password(userRegisterDTO.getPassword())
-                    .email(userRegisterDTO.getEmail())
-                    .firstName(userRegisterDTO.getFirstName())
-                    .lastName(userRegisterDTO.getLastName())
-                    .roles(new ArrayList<>())
-                    .emailConfirmed(false)
-                    .resetToken("no-token")
-                    .build();
-            userService.createUser(user);
-            return new ResponseEntity<>(userRegisterDTO, HttpStatus.CREATED);
-        } catch (UserDuplicateException ex) {
-            return new ResponseEntity<>(HttpStatus.CONFLICT);
-        } catch (IllegalArgumentException ex) {
-            return ResponseEntity.noContent().build();
-        }
-    }
-
     @Operation(summary = "Обновить пароль", description = "Обновляет пароль пользователя.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Пароль успешно обновлен"),
@@ -155,12 +124,12 @@ public class UserController {
             @ApiResponse(responseCode = "403", description = "Email не подтвержден")
     })
     @PutMapping("/admin/{userId}")
-    public ResponseEntity<Void> giveAdminRulesToUser(@PathVariable long userId) {
+    public ResponseEntity<String> giveAdminRulesToUser(@PathVariable long userId) {
         try {
             userService.giveAdminRulesToUser(userId);
             return ResponseEntity.ok().build();
         } catch (NotConfirmedEmailException e) {
-            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+            return new ResponseEntity<>("Почта не подтверждена", HttpStatus.FORBIDDEN);
         }
     }
     @Operation(summary = "Снять права администратора", description = "Снимает с пользователя права администратора.")

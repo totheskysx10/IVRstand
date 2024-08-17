@@ -1,5 +1,6 @@
 package com.good.ivrstand.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
@@ -40,6 +41,7 @@ public class Role implements GrantedAuthority {
      */
     @ManyToMany(mappedBy = "roles", fetch = FetchType.EAGER)
     @Getter
+    @JsonIgnore
     private List<User> users;
 
     /**

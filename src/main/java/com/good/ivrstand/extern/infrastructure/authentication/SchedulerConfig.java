@@ -1,4 +1,4 @@
-package com.good.ivrstand.extern.infrastructure;
+package com.good.ivrstand.extern.infrastructure.authentication;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

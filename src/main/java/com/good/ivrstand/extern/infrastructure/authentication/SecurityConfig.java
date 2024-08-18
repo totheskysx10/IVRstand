@@ -49,9 +49,9 @@ public class SecurityConfig {
                             return new AuthorizationDecision(securityContextService.isCurrentAuthId(userId));
                         })
                         .requestMatchers(HttpMethod.GET, "/users/**").authenticated()
+                        //.requestMatchers("/users/admin/**", "/users/no-admin/**").hasRole("ADMIN") // TODO lock
                         .requestMatchers("/users/**", "/swagger-ui/**", "/v3/api-docs/**", "/v3/api-docs").permitAll()
-                        //.anyRequest().hasRole("ADMIN") //TODO
-                        .anyRequest().permitAll()
+                        .anyRequest().hasRole("ADMIN")
                 )
                 .sessionManagement(manager -> manager.sessionCreationPolicy(STATELESS))
                 .addFilterBefore(jwtAuthorizationFilter, UsernamePasswordAuthenticationFilter.class)

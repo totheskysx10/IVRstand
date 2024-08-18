@@ -1,6 +1,7 @@
 package com.good.ivrstand.extern.infrastructure.authentication;
 
 import com.good.ivrstand.app.UserService;
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -35,35 +36,44 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
         String jwt = null;
         String username = null;
 
-        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-            jwt = authorizationHeader.substring(7);
-            username = jwtService.extractUsername(jwt);
-        }
-
-        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            UserDetails userDetails;
-            try {
-                userDetails = userService
-                        .userDetailsService()
-                        .loadUserByUsername(username);
-            } catch (UsernameNotFoundException ex) {
-                response.setStatus(HttpStatus.NO_CONTENT.value());
-                return;
+        try {
+            if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+                jwt = authorizationHeader.substring(7);
+                username = jwtService.extractUsername(jwt);
             }
 
-            if (jwtService.validateToken(jwt, userDetails)) {
-                SecurityContext context = SecurityContextHolder.createEmptyContext();
-                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                        userDetails,
-                        null,
-                        userDetails.getAuthorities()
-                );
-                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                context.setAuthentication(authToken);
-                SecurityContextHolder.setContext(context);
+            if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                UserDetails userDetails;
+                try {
+                    userDetails = userService
+                            .userDetailsService()
+                            .loadUserByUsername(username);
+                } catch (UsernameNotFoundException ex) {
+                    response.setStatus(HttpStatus.FORBIDDEN.value());
+                    response.getWriter().write("User with this token was deleted!");
+                    response.getWriter().flush();
+                    return;
+                }
+
+                if (jwtService.validateToken(jwt, userDetails)) {
+                    SecurityContext context = SecurityContextHolder.createEmptyContext();
+                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                            userDetails,
+                            null,
+                            userDetails.getAuthorities()
+                    );
+                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    context.setAuthentication(authToken);
+                    SecurityContextHolder.setContext(context);
+                }
             }
+
+            filterChain.doFilter(request, response);
+        } catch (ExpiredJwtException e) {
+            response.setStatus(HttpStatus.FORBIDDEN.value());
+            response.getWriter().write("JWT expired!");
+            response.getWriter().flush();
         }
 
-        filterChain.doFilter(request, response);
     }
 }

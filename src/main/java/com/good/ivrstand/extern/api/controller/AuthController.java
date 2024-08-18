@@ -7,6 +7,7 @@ import com.good.ivrstand.extern.api.dto.JwtDTO;
 import com.good.ivrstand.extern.api.dto.UserLoginDTO;
 import com.good.ivrstand.extern.api.dto.UserRegisterDTO;
 import com.good.ivrstand.extern.infrastructure.authentication.JwtService;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -98,25 +99,31 @@ public class AuthController {
 
     @Operation(summary = "Получить айди юзера по токену", description = "Получает айди юзера по токену.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Успешно получено"),
-            @ApiResponse(responseCode = "204", description = "Такого юзера по айди из токена нет")
+            @ApiResponse(responseCode = "200", description = "Успешно получено. Вернётся в формате \"id\": 0"),
+            @ApiResponse(responseCode = "403", description = "Токен истёк. Вернётся \"JWT expired!\": 403")
     })
     @GetMapping("/get-id")
     public ResponseEntity<Map<String, Long>> getIdFromToken(@RequestBody Map<String, String> requestBody) {
-        String token = requestBody.get("token");
-        Object id = jwtService.extractId(token);
+        try {
+            String token = requestBody.get("token");
+            Object id = jwtService.extractId(token);
 
-        Long idLong;
-        if (id instanceof Long)
-            idLong = (Long) id;
-        else if (id instanceof Integer) {
-            idLong = ((Integer) id).longValue();
-        } else {
-            throw new IllegalArgumentException("Unexpected type for id: " + id.getClass().getName());
+            Long idLong;
+            if (id instanceof Long)
+                idLong = (Long) id;
+            else if (id instanceof Integer) {
+                idLong = ((Integer) id).longValue();
+            } else {
+                throw new IllegalArgumentException("Unexpected type for id: " + id.getClass().getName());
+            }
+
+            Map<String, Long> response = new HashMap<>();
+            response.put("id", idLong);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (ExpiredJwtException e) {
+            Map<String, Long> responseError = new HashMap<>();
+            responseError.put("JWT expired!", 403L);
+            return new ResponseEntity<>(responseError, HttpStatus.FORBIDDEN);
         }
-
-        Map<String, Long> response = new HashMap<>();
-        response.put("id", idLong);
-        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }

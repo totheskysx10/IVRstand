@@ -9,4 +9,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class JwtDTO {
     private String token;
+    private String refreshToken;
 }

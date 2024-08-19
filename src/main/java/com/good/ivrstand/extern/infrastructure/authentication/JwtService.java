@@ -1,5 +1,6 @@
 package com.good.ivrstand.extern.infrastructure.authentication;
 
+import com.good.ivrstand.app.EncodeService;
 import com.good.ivrstand.domain.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -19,7 +20,25 @@ import java.util.function.Function;
 public class JwtService {
 
     @Value("${auth.key}")
-    private String key;
+    private String signKey;
+
+    @Value("${auth.refresh-key}")
+    private String refreshKey;
+
+    /**
+     * Генерация токена обновления
+     *
+     * @param userDetails данные пользователя
+     * @param password пароль
+     * @return токен
+     */
+    public String generateRefreshToken(UserDetails userDetails, String password) {
+        Map<String, Object> claims = new HashMap<>();
+        if (userDetails instanceof User customUserDetails) {
+            claims.put("password", password);
+        }
+        return generateToken(claims, userDetails, refreshKey);
+    }
 
     /**
      * Генерация токена
@@ -34,7 +53,7 @@ public class JwtService {
             claims.put("id", id);
             claims.put("roles", customUserDetails.getRoles());
         }
-        return generateToken(claims, userDetails);
+        return generateToken(claims, userDetails, signKey);
     }
 
     /**
@@ -46,7 +65,19 @@ public class JwtService {
      */
     public boolean validateToken(String token, UserDetails userDetails) {
         String username = extractUsername(token);
-        return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
+        return (username.equals(userDetails.getUsername()) && !isTokenExpired(token, signKey));
+    }
+
+    /**
+     * Проверка токена обновления на просроченность
+     *
+     * @param token токен
+     * @param userDetails детали пользователя
+     * @return true, если токен просрочен
+     */
+    public boolean validateRefreshToken(String token, String refreshToken, UserDetails userDetails) {
+        String username = extractUsername(token);
+        return (username.equals(userDetails.getUsername()) && !isTokenExpired(refreshToken, refreshKey));
     }
 
     /**
@@ -55,8 +86,8 @@ public class JwtService {
      * @param token токен
      * @return true, если токен просрочен
      */
-    private boolean isTokenExpired(String token) {
-        return extractExpiration(token).before(new Date());
+    private boolean isTokenExpired(String token, String key) {
+        return extractExpiration(token, key).before(new Date());
     }
 
     /**
@@ -66,7 +97,7 @@ public class JwtService {
      * @return имя юзера
      */
     public String extractUsername(String token) {
-        return extractClaim(token, Claims::getSubject);
+        return extractClaim(token, Claims::getSubject, signKey);
     }
 
     /**
@@ -76,7 +107,17 @@ public class JwtService {
      * @return ID пользователя
      */
     public Object extractId(String token) {
-        return extractClaim(token, claims -> claims.get("id"));
+        return extractClaim(token, claims -> claims.get("id"), signKey);
+    }
+
+    /**
+     * Извлечение пароля из токена
+     *
+     * @param token токен
+     * @return пароль пользователя, шифрованный
+     */
+    public Object extractPassword(String token) {
+        return extractClaim(token, claims -> claims.get("password"), refreshKey);
     }
 
     /**
@@ -86,13 +127,13 @@ public class JwtService {
      * @param userDetails данные пользователя
      * @return токен
      */
-    private String generateToken(Map<String, Object> extraClaims, UserDetails userDetails) {
+    private String generateToken(Map<String, Object> extraClaims, UserDetails userDetails, String key) {
         return Jwts.builder()
                 .claims(extraClaims)
                 .subject(userDetails.getUsername())
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + 12 * 60 * 60 * 1000))
-                .signWith(getSignInKey(), Jwts.SIG.HS256)
+                .signWith(getSignInKey(key), Jwts.SIG.HS256)
                 .compact();
     }
 
@@ -102,9 +143,9 @@ public class JwtService {
      * @param token токен
      * @return данные
      */
-    private Claims getAllClaimsFromToken(String token) {
+    private Claims getAllClaimsFromToken(String token, String key) {
         return Jwts.parser()
-                .verifyWith(getSignInKey())
+                .verifyWith(getSignInKey(key))
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
@@ -118,8 +159,8 @@ public class JwtService {
      * @param <T>             тип данных
      * @return данные
      */
-    private <T> T extractClaim(String token, Function<Claims, T> claimsResolvers) {
-        final Claims claims = getAllClaimsFromToken(token);
+    private <T> T extractClaim(String token, Function<Claims, T> claimsResolvers, String key) {
+        final Claims claims = getAllClaimsFromToken(token, key);
         return claimsResolvers.apply(claims);
     }
 
@@ -129,8 +170,8 @@ public class JwtService {
      * @param token токен
      * @return дата истечения
      */
-    private Date extractExpiration(String token) {
-        return extractClaim(token, Claims::getExpiration);
+    private Date extractExpiration(String token, String key) {
+        return extractClaim(token, Claims::getExpiration, key);
     }
 
     /**
@@ -138,7 +179,7 @@ public class JwtService {
      *
      * @return ключ
      */
-    private SecretKey getSignInKey() {
+    private SecretKey getSignInKey(String key) {
         byte[] keyBytes = Decoders.BASE64.decode(key);
         return Keys.hmacShaKeyFor(keyBytes);
     }

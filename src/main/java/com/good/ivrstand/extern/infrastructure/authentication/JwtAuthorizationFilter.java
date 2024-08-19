@@ -2,11 +2,13 @@ package com.good.ivrstand.extern.infrastructure.authentication;
 
 import com.good.ivrstand.app.UserService;
 import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.security.SignatureException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -73,7 +75,10 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
             response.setStatus(HttpStatus.FORBIDDEN.value());
             response.getWriter().write("JWT expired!");
             response.getWriter().flush();
+        } catch (SignatureException e) {
+            response.setStatus(HttpStatus.FORBIDDEN.value());
+            response.getWriter().write("JWT error! Use main token instead of refresh token!");
+            response.getWriter().flush();
         }
-
     }
 }

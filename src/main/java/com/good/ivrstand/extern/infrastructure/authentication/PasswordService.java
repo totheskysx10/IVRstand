@@ -1,11 +1,11 @@
 package com.good.ivrstand.extern.infrastructure.authentication;
 
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.stereotype.Service;
 
-@Configuration
-public class EncoderConfig {
+@Service
+public class PasswordService {
 
     @Bean
     public BCryptPasswordEncoder bCryptPasswordEncoder() {

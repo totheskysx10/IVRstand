@@ -13,10 +13,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
-import javax.crypto.Cipher;
-import javax.crypto.spec.SecretKeySpec;
-import java.util.Base64;
-
 /**
  * Сервисный класс для работы с пользователями
  */
@@ -30,16 +26,16 @@ public class UserService implements UserDetailsService {
     private final EmailService emailService;
     private final MailBuilder mailBuilder;
     private final TokenService tokenService;
-    private static final String ALGORITHM = "AES";
-    private static final String SECRET_KEY = "50B43E83D3BDEB279CB0AD14055EE20B";
+    private final EncodeService encodeService;
 
-    public UserService(UserRepository userRepository, BCryptPasswordEncoder bCryptPasswordEncoder, RoleService roleService, EmailService emailService, MailBuilder mailBuilder, TokenService tokenService) {
+    public UserService(UserRepository userRepository, BCryptPasswordEncoder bCryptPasswordEncoder, RoleService roleService, EmailService emailService, MailBuilder mailBuilder, TokenService tokenService, EncodeService encodeService) {
         this.userRepository = userRepository;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
         this.roleService = roleService;
         this.emailService = emailService;
         this.mailBuilder = mailBuilder;
         this.tokenService = tokenService;
+        this.encodeService = encodeService;
     }
 
     /**
@@ -138,7 +134,7 @@ public class UserService implements UserDetailsService {
      * @param token токен сброса
      */
     public void updatePassword(String userId, String pass, String token) {
-        long id = Long.parseLong(decrypt(userId));
+        long id = Long.parseLong(encodeService.decrypt(userId));
         User user = getUserById(id);
         if (user.getResetToken().equals(token)) {
             user.setPassword(bCryptPasswordEncoder.encode(pass));
@@ -162,7 +158,7 @@ public class UserService implements UserDetailsService {
         if (user == null)
             throw new IllegalArgumentException("Пользователь не может быть null");
 
-        String id = encrypt(user.getId().toString());
+        String id = encodeService.encrypt(user.getId().toString());
         String token = tokenService.generateResetPasswordToken();
 
         EmailData emailData = mailBuilder.buildResetPasswordMessage(user.getEmail(), id, token);
@@ -179,7 +175,7 @@ public class UserService implements UserDetailsService {
      * @param userId зашифрованный ID пользователя
      */
     public void confirmEmail(String userId) {
-        long id = Long.parseLong(decrypt(userId));
+        long id = Long.parseLong(encodeService.decrypt(userId));
         User user = getUserById(id);
         user.setEmailConfirmed(true);
         userRepository.save(user);
@@ -198,7 +194,7 @@ public class UserService implements UserDetailsService {
         if (user == null)
             throw new IllegalArgumentException("Пользователь не может быть null");
 
-        String id = encrypt(user.getId().toString());
+        String id = encodeService.encrypt(user.getId().toString());
 
         EmailData emailData = mailBuilder.buildConfirmEmailMessage(user.getEmail(), id);
         emailService.sendEmail(emailData);
@@ -269,33 +265,5 @@ public class UserService implements UserDetailsService {
             userRepository.save(user);
             log.info("Фамилия обновлена для пользователя с id {}", userId);
         }
-    }
-
-    private static String encrypt(String plainText) {
-        try {
-            SecretKeySpec secretKey = new SecretKeySpec(SECRET_KEY.getBytes(), ALGORITHM);
-            Cipher cipher = Cipher.getInstance(ALGORITHM);
-            cipher.init(Cipher.ENCRYPT_MODE, secretKey);
-            byte[] encryptedBytes = cipher.doFinal(plainText.getBytes());
-            return Base64.getEncoder().encodeToString(encryptedBytes);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    private static String decrypt(String encryptedText) {
-        try {
-            encryptedText = encryptedText.replaceAll("\\s", "+");
-            SecretKeySpec secretKey = new SecretKeySpec(SECRET_KEY.getBytes(), ALGORITHM);
-            Cipher cipher = Cipher.getInstance(ALGORITHM);
-            cipher.init(Cipher.DECRYPT_MODE, secretKey);
-            byte[] encryptedBytes = Base64.getDecoder().decode(encryptedText);
-            byte[] decryptedBytes = cipher.doFinal(encryptedBytes);
-            return new String(decryptedBytes);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
     }
 }

@@ -65,6 +65,7 @@ auth:
   confirm-email:
     link: http://localhost:5003/users/confirm-email?userId=
   key: 0U79LNR5Y34DGENK5J52CAQDKKXU3457KT91AA0ZOZKJS99V72SE7U1H40SY944S
+  refresh-key: I992T8DZ6WBSOALB977S06WFZO3XEQ6HWOK2PUP4PUYUCC9MNYWEDJSXAX9WDTUI
 
 flask-api:
   url: http://ivrgoodvector:5004

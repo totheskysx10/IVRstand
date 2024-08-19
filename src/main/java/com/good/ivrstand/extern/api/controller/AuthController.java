@@ -115,16 +115,8 @@ public class AuthController {
     public ResponseEntity<Map<String, Long>> getIdFromToken(@RequestBody TokenDTO tokenDTO) {
         try {
             String token = tokenDTO.getToken();
-            Object id = jwtService.extractId(token);
-
-            Long idLong;
-            if (id instanceof Long)
-                idLong = (Long) id;
-            else if (id instanceof Integer) {
-                idLong = ((Integer) id).longValue();
-            } else {
-                throw new IllegalArgumentException("Unexpected type for id: " + id.getClass().getName());
-            }
+            String id = jwtService.extractId(token).toString();
+            Long idLong = Long.parseLong(id);
 
             Map<String, Long> response = new HashMap<>();
             response.put("id", idLong);

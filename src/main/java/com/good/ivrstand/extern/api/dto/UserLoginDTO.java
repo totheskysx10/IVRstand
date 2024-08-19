@@ -13,6 +13,6 @@ public class UserLoginDTO {
     private String username;
 
     @NotBlank
-    @Size(min = 5, message = "Не меньше 5 знаков")
+    @Size(min = 8, message = "Не меньше 8 знаков")
     private String password;
 }

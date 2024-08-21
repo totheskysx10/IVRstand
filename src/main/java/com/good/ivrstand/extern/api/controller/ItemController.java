@@ -118,7 +118,7 @@ public class ItemController {
     })
     @GetMapping("/search")
     public ResponseEntity<Page<ItemDTO>> findItemsByTitle(@RequestParam String title, Pageable pageable) {
-        Page<ItemDTO> items = itemService.findItemsByTitle(title, pageable).map(itemAssembler::toModel);
+        Page<ItemDTO> items = itemService.findItemsByTitle(title, pageable, 0).map(itemAssembler::toModel);
 
         if (items.isEmpty()) {
             return ResponseEntity.noContent().build();

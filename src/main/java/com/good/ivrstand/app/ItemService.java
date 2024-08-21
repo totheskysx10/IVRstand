@@ -1,10 +1,12 @@
 package com.good.ivrstand.app;
 
 import com.good.ivrstand.domain.*;
+import com.good.ivrstand.exception.ItemsFindException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
@@ -22,13 +24,15 @@ public class ItemService {
     private final CategoryService categoryService;
     private final FlaskApiVectorSearchService flaskApiVectorSearchService;
     private final AdditionService additionService;
+    private final QdrantService qdrantService;
 
     @Autowired
-    public ItemService(ItemRepository itemRepository, CategoryService categoryService, FlaskApiVectorSearchService flaskApiVectorSearchService, AdditionService additionService) {
+    public ItemService(ItemRepository itemRepository, CategoryService categoryService, FlaskApiVectorSearchService flaskApiVectorSearchService, AdditionService additionService, QdrantService qdrantService) {
         this.itemRepository = itemRepository;
         this.categoryService = categoryService;
         this.flaskApiVectorSearchService = flaskApiVectorSearchService;
         this.additionService = additionService;
+        this.qdrantService = qdrantService;
     }
 
     /**
@@ -170,12 +174,17 @@ public class ItemService {
 
     /**
      * Ищет услуги по заголовку, с поддержкой пагинации.
+     * Сравнивает количество услуг в базе и количество найденных.
+     * Если в базе больше или равно 4, то должен возвращать 4.
+     * Если меньше 4, то кол-во услуг в базе равно кол-ву найденных.
+     * Если условия не выполнены, идёт запрос на синхронизацию БД
      *
      * @param title    Часть заголовка для поиска.
      * @param pageable Настройки пагинации.
-     * @return Страница найденных услуг.
+     * @param attempts попытки синхронизации БД
+     * @return страница найденных услуг
      */
-    public Page<Item> findItemsByTitle(String title, Pageable pageable) {
+    public Page<Item> findItemsByTitle(String title, Pageable pageable, int attempts) {
         List<String> request = new ArrayList<>();
         request.add(title);
         List<Long> result = flaskApiVectorSearchService.getEmbeddings(request);
@@ -191,7 +200,26 @@ public class ItemService {
         int start = (int) pageable.getOffset();
         int end = Math.min((start + pageable.getPageSize()), items.size());
         Page<Item> page = new PageImpl<>(items.subList(start, end), pageable, items.size());
-        return page;
+
+        Pageable pageableCheckQuantity = PageRequest.of(0, 7);
+        Page<Item> itemsPage = getAllItemsInBase(pageableCheckQuantity);
+        int itemsInBaseQuantity = itemsPage.getContent().size();
+        int itemsFoundQuantity = page.getContent().size();
+
+       boolean shouldSync = itemsInBaseQuantity < 4
+               ? itemsInBaseQuantity != itemsFoundQuantity
+               : itemsFoundQuantity != 4;
+
+        if (shouldSync) {
+            qdrantService.syncDatabase();
+            attempts += 1;
+            if (attempts < 3) {
+                return findItemsByTitle(title, pageable, attempts);
+            } else
+                throw new ItemsFindException("Проблема не в синхронизации БД!");
+        } else {
+            return page;
+        }
     }
 
     /**

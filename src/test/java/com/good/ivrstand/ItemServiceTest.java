@@ -91,7 +91,7 @@ public class ItemServiceTest {
     public void testFindItemsByTitle() {
         Pageable pageable = PageRequest.of(0, 10);
         String request = "testItem";
-        Page<Item> itemsPage = itemService.findItemsByTitle(request, pageable);
+        Page<Item> itemsPage = itemService.findItemsByTitle(request, pageable, 0);
         List<Item> items = itemsPage.getContent();
 
         assertEquals(3, items.size());

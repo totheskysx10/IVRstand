@@ -91,4 +91,13 @@ public class Item {
     @Getter
     @Setter
     private String mainIconLink;
+
+    /**
+     * Ключевые слова к услуге.
+     */
+    @Getter
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "item_keywords", joinColumns = @JoinColumn(name = "item_id"))
+    @Column(name = "keyword")
+    private List<String> keywords;
 }

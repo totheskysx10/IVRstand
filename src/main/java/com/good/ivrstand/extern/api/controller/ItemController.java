@@ -44,6 +44,7 @@ public class ItemController {
                     .gifLink(itemDTO.getGifLink())
                     .additions(new ArrayList<>())
                     .iconLinks(new ArrayList<>())
+                    .keywords(new ArrayList<>())
                     .mainIconLink(itemDTO.getMainIconLink())
                     .build();
 
@@ -212,6 +213,30 @@ public class ItemController {
     @PutMapping("/{id}/clear-icons")
     public ResponseEntity<Void> clearIcons(@PathVariable long id) {
         itemService.clearIcons(id);
+        return ResponseEntity.ok().build();
+    }
+
+    @Operation(summary = "Добавить ключевое слово услуги", description = "Добавляет ключевое слово для услуги по ее идентификатору.")
+    @ApiResponse(responseCode = "200", description = "Ключевое слово для услуги успешно добавлено")
+    @PutMapping("/{id}/keyword/add")
+    public ResponseEntity<Void> addKeyword(@PathVariable long id, @RequestBody String word) {
+        itemService.addKeyword(id, word);
+        return ResponseEntity.ok().build();
+    }
+
+    @Operation(summary = "Удалить ключевое слово услуги", description = "Удаляет ключевое слово для услуги по ее идентификатору.")
+    @ApiResponse(responseCode = "200", description = "Ключевое слово для услуги успешно удалено")
+    @PutMapping("/{id}/keyword/remove")
+    public ResponseEntity<Void> removeKeyword(@PathVariable long id, @RequestBody String word) {
+        itemService.removeKeyword(id, word);
+        return ResponseEntity.ok().build();
+    }
+
+    @Operation(summary = "Очистить ключевые слова услуги", description = "Очищает ключевые слова услуги по её идентификатору.")
+    @ApiResponse(responseCode = "200", description = "Ключевые слова услуги очищены")
+    @PutMapping("/{id}/clear-keywords")
+    public ResponseEntity<Void> clearKeywords(@PathVariable long id) {
+        itemService.clearKeywords(id);
         return ResponseEntity.ok().build();
     }
 }

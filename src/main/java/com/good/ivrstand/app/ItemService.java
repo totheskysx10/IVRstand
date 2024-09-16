@@ -55,7 +55,7 @@ public class ItemService {
 
         try {
             Item savedItem = itemRepository.save(item);
-            AddTitleRequest addTitleRequest = new AddTitleRequest(savedItem.getTitle() + " " + savedItem.getDescription(), savedItem.getId());
+            AddTitleRequest addTitleRequest = new AddTitleRequest(formatTitle(savedItem), savedItem.getId());
             flaskApiVectorSearchService.addTitle(addTitleRequest);
             log.info("Создана услуга с id {}", savedItem.getId());
             return savedItem;
@@ -98,13 +98,7 @@ public class ItemService {
                         .map(Addition::getId)
                         .forEach(additionService::deleteAddition);
             itemRepository.deleteById(itemId);
-            TitleRequest titleRequest;
-            if (foundItem.getCategory() != null) {
-                titleRequest = new TitleRequest(foundItem.getTitle() + " " + foundItem.getCategory().getTitle() + " " + foundItem.getDescription());
-            } else {
-                titleRequest = new TitleRequest(foundItem.getTitle() + " " + foundItem.getDescription());
-            }
-            flaskApiVectorSearchService.deleteTitle(titleRequest);
+            deleteQdrantTitle(foundItem);
             log.info("Удалена услуга с id {}", itemId);
         }
     }
@@ -123,14 +117,12 @@ public class ItemService {
         if (category.getChildrenCategories().isEmpty()) {
             if (item == null)
                 throw new IllegalArgumentException("Услуга с id " + itemId + " отсутствует");
-            else if (category == null)
-                throw new IllegalArgumentException("Категория с id " + categoryId + " отсутствует");
             else if (item.getCategory() == null) {
                 item.setCategory(category);
                 itemRepository.save(item);
-                TitleRequest titleRequest = new TitleRequest(item.getTitle() + " " + item.getDescription());
+                TitleRequest titleRequest = new TitleRequest(formatTitle(item));
                 flaskApiVectorSearchService.deleteTitle(titleRequest);
-                AddTitleRequest addTitleRequest = new AddTitleRequest(item.getTitle() + " " + category.getTitle() + " " + item.getDescription(), item.getId());
+                AddTitleRequest addTitleRequest = new AddTitleRequest(formatTitle(item), item.getId());
                 flaskApiVectorSearchService.addTitle(addTitleRequest);
                 log.info("Услуга с id {} добавлена в категорию с id {}", itemId, categoryId);
             } else
@@ -151,11 +143,11 @@ public class ItemService {
         if (item == null)
             throw new IllegalArgumentException("Услуга с id " + itemId + " отсутствует");
         else if (item.getCategory() != null) {
-            TitleRequest titleRequest = new TitleRequest(item.getTitle() + " " + item.getCategory().getTitle() + " " + item.getDescription());
+            TitleRequest titleRequest = new TitleRequest(formatTitle(item));
             flaskApiVectorSearchService.deleteTitle(titleRequest);
             item.setCategory(null);
             itemRepository.save(item);
-            AddTitleRequest addTitleRequest = new AddTitleRequest(item.getTitle() + " " + item.getDescription(), item.getId());
+            AddTitleRequest addTitleRequest = new AddTitleRequest(formatTitle(item), item.getId());
             flaskApiVectorSearchService.addTitle(addTitleRequest);
             log.info("Услуга с id {} удалена из категории", itemId);
         } else
@@ -252,20 +244,10 @@ public class ItemService {
     public void updateDescriptionToItem(long itemId, String desc) {
         Item item = getItemById(itemId);
         if (item != null) {
-            TitleRequest titleRequest;
-            if (item.getCategory() != null)
-                titleRequest = new TitleRequest(item.getTitle() + " " + item.getCategory().getTitle() + " " + item.getDescription());
-            else
-                titleRequest = new TitleRequest(item.getTitle() + " " + item.getDescription());
-            flaskApiVectorSearchService.deleteTitle(titleRequest);
+            deleteQdrantTitle(item);
             item.setDescription(desc);
             itemRepository.save(item);
-            AddTitleRequest addTitleRequest;
-            if (item.getCategory() != null)
-                addTitleRequest = new AddTitleRequest(item.getTitle() + " " + item.getCategory().getTitle() + " " + item.getDescription(), item.getId());
-            else
-                addTitleRequest = new AddTitleRequest(item.getTitle() + " " + item.getDescription(), item.getId());
-            flaskApiVectorSearchService.addTitle(addTitleRequest);
+            addQdrantTitle(item);
             log.info("Описание обновлено для услуги с id {}", itemId);
         }
     }
@@ -362,6 +344,113 @@ public class ItemService {
             item.getIconLinks().clear();
             itemRepository.save(item);
             log.info("Очищены иконки у услуги {}", itemId);
+        }
+    }
+
+    /**
+     * Добавляет ключевое слово для услуги.
+     *
+     * @param itemId  Идентификатор услуги.
+     * @param keyword Слово.
+     */
+    public void addKeyword(long itemId, String keyword) {
+        Item item = getItemById(itemId);
+        if (item != null) {
+            if (!item.getKeywords().contains(keyword)) {
+                deleteQdrantTitle(item);
+                item.getKeywords().add(keyword);
+                itemRepository.save(item);
+                addQdrantTitle(item);
+                log.info("Добавлено ключевое слово для услуги с id {}", itemId);
+            }
+            else
+                log.warn("Ключевое слово для услуги с id {} уже было добавлено раннее!", itemId);
+        }
+    }
+
+    /**
+     * Удаляет ключевое слово у услуги.
+     *
+     * @param itemId  Идентификатор услуги.
+     * @param keyword Слово.
+     */
+    public void removeKeyword (long itemId, String keyword) {
+        Item item = getItemById(itemId);
+        if (item != null) {
+            if (item.getKeywords().contains(keyword)) {
+                deleteQdrantTitle(item);
+                item.getKeywords().remove(keyword);
+                itemRepository.save(item);
+                addQdrantTitle(item);
+                log.info("Удалено ключевое слово для услуги с id {}", itemId);
+            }
+        }
+    }
+
+    /**
+     * Чистит ключевые слова у услуги.
+     *
+     * @param itemId  Идентификатор услуги.
+     */
+    public void clearKeywords(long itemId) {
+        Item item = getItemById(itemId);
+        if (item != null) {
+            deleteQdrantTitle(item);
+            item.getKeywords().clear();
+            itemRepository.save(item);
+            addQdrantTitle(item);
+            log.info("Очищены ключевые слова у услуги {}", itemId);
+        }
+    }
+
+    /**
+     * Удаляет услугу из базы Qdrant.
+     *
+     * @param item  Услуга.
+     */
+    private void deleteQdrantTitle(Item item) {
+        TitleRequest titleRequest;
+        if (item.getCategory() != null)
+            titleRequest = new TitleRequest(formatTitle(item));
+        else
+            titleRequest = new TitleRequest(formatTitle(item));
+        flaskApiVectorSearchService.deleteTitle(titleRequest);
+    }
+
+    /**
+     * Добавляет услугу в базу Qdrant.
+     *
+     * @param item  Услуга.
+     */
+    private void addQdrantTitle(Item item) {
+        AddTitleRequest addTitleRequest;
+        if (item.getCategory() != null)
+            addTitleRequest = new AddTitleRequest(formatTitle(item), item.getId());
+        else
+            addTitleRequest = new AddTitleRequest(formatTitle(item), item.getId());
+        flaskApiVectorSearchService.addTitle(addTitleRequest);
+    }
+
+    /**
+     * Формирует строку для вектора услуги в нужном формате.
+     *
+     * @param item  Услуга.
+     * @return Отформатированная строка.
+     */
+    private String formatTitle(Item item) {
+        String keywords;
+        if (item.getKeywords().isEmpty())
+            keywords = "";
+        else
+            keywords  = String.join(" ", item.getKeywords());
+
+        String category = item.getCategory() != null ? item.getCategory().getTitle() : "";
+        String description = item.getDescription();
+
+        if (!category.isEmpty()) {
+            return item.getTitle() + " " + keywords + " " + category + " " + description;
+        } else {
+            return item.getTitle() + " " + keywords + " " + description;
         }
     }
 }

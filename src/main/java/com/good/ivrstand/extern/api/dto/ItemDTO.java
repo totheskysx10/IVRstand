@@ -29,4 +29,6 @@ public class ItemDTO extends RepresentationModel<ItemDTO> {
     private List<String> iconLinks;
 
     private String mainIconLink;
+
+    private List<String> keywords;
 }

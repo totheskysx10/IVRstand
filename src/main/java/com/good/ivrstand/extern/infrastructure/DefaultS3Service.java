@@ -59,6 +59,7 @@ public class DefaultS3Service implements S3Service {
         int lastDot = fileName.lastIndexOf('.');
         String name = fileName.substring(0, lastDot);
         String extension = fileName.substring(lastDot);
+        String mimeType = multipartFile.getContentType();
 
         String key = folderName + "/" + name + "_" + generateUUID() + extension;
 
@@ -66,6 +67,7 @@ public class DefaultS3Service implements S3Service {
             PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                     .bucket(bucketName)
                     .key(key)
+                    .contentType(mimeType)
                     .build();
 
             s3Client.putObject(putObjectRequest, RequestBody.fromInputStream(multipartFile.getInputStream(), multipartFile.getSize()));

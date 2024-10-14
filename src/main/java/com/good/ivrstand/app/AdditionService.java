@@ -2,22 +2,33 @@ package com.good.ivrstand.app;
 
 
 import com.good.ivrstand.domain.Addition;
-import com.good.ivrstand.domain.Category;
+import com.good.ivrstand.domain.Item;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 @Component
 @Slf4j
 public class AdditionService {
 
     private final AdditionRepository additionRepository;
+    private final DescriptionService descriptionService;
+    private final SpeechService speechService;
+    private final EncodeService encodeService;
 
     @Autowired
-    public AdditionService(AdditionRepository additionRepository) {
+    public AdditionService(AdditionRepository additionRepository, DescriptionService descriptionService, SpeechService speechService, EncodeService encodeService) {
         this.additionRepository = additionRepository;
+        this.descriptionService = descriptionService;
+        this.speechService = speechService;
+        this.encodeService = encodeService;
     }
 
     /**
@@ -28,11 +39,16 @@ public class AdditionService {
      * @throws IllegalArgumentException Если переданное дополнение равна null.
      * @throws RuntimeException         Если возникла ошибка при создании дополнения.
      */
-    public Addition createAddition(Addition addition) {
+    public Addition createAddition(Addition addition, boolean enableAudio) {
         if (addition == null)
             throw new IllegalArgumentException("Дополнение не может быть null");
 
         try {
+            if (enableAudio) {
+                generateDescriptionAudio(addition);
+                String titleAudio = speechService.generateAudio(addition.getTitle());
+                addition.setTitleAudio(titleAudio);
+            }
             Addition savedAddition = additionRepository.save(addition);
             log.info("Создано дополнение с id {}", savedAddition.getId());
             return savedAddition;
@@ -92,10 +108,15 @@ public class AdditionService {
      * @param additionId Идентификатор дополнения.
      * @param desc   Новое описание дополнения.
      */
-    public void updateDescriptionToAddition(long additionId, String desc) {
+    public void updateDescriptionToAddition(long additionId, String desc, boolean enableAudio) throws IOException {
         Addition addition = getAdditionById(additionId);
         if (addition != null) {
             addition.setDescription(desc);
+            addition.setDescriptionHash(encodeService.generateHashForAudio(desc));
+            addition.getAudio().clear();
+            if (enableAudio) {
+                generateDescriptionAudio(addition);
+            }
             additionRepository.save(addition);
             log.info("Описание обновлено для дополнения с id {}", additionId);
         }
@@ -204,6 +225,85 @@ public class AdditionService {
             addition.getIconLinks().clear();
             additionRepository.save(addition);
             log.info("Очищены иконки у дополнения {}", additionId);
+        }
+    }
+
+    /**
+     * Генерирует аудио заголовка дополнения.
+     *
+     * @param additionId  Идентификатор дополнения.
+     */
+    public void generateTitleAudio(long additionId) throws IOException {
+        Addition addition = getAdditionById(additionId);
+        if (addition != null) {
+            if (addition.getTitleAudio() == null) {
+                String titleAudio = speechService.generateAudio(addition.getTitle());
+                addition.setTitleAudio(titleAudio);
+                additionRepository.save(addition);
+                log.info("Сгенерировано аудио заголовка для дополнения с id {}", additionId);
+            }
+            else
+                log.warn("У дополнения {} уже есть аудио заголовка!", additionId);
+        }
+    }
+
+    /**
+     * Удаляет аудио заголовка дополнения.
+     *
+     * @param additionId  Идентификатор дополнения.
+     */
+    public void removeTitleAudio(long additionId) {
+        Addition addition = getAdditionById(additionId);
+        if (addition != null) {
+            if (addition.getTitleAudio() == null) {
+                log.warn("У дополнения {} нет аудио заголовка!", additionId);
+            }
+            else {
+                addition.setTitleAudio(null);
+                additionRepository.save(addition);
+                log.info("У дополнения {} удалено аудио заголовка", additionId);
+            }
+        }
+    }
+
+    /**
+     * Генерирует аудио для описания дополнения.
+     * По хэш-функции проверяет, не было ли раннее сгенерировано такое аудио.
+     *
+     * @param addition дополнение
+     * @throws IOException исключение
+     */
+    private void generateDescriptionAudio(Addition addition) throws IOException {
+        Page<Addition> additionsWithSameDescriptionRequest = additionRepository.findByHashAndAudioExistence(addition.getDescriptionHash(), PageRequest.of(0, 1));
+        if (additionsWithSameDescriptionRequest.hasContent()) {
+            Addition additionWithSameDescription = additionsWithSameDescriptionRequest.getContent().get(0);
+            List<String> sameAudio = additionWithSameDescription.getAudio();
+            for (String audioLink : sameAudio) {
+                addition.getAudio().add(audioLink);
+            }
+        } else {
+            String[] descriptionBlocks = descriptionService.splitDescription(addition.getDescription());
+            for (String block : descriptionBlocks) {
+                String audioLink = speechService.generateAudio(block);
+                addition.getAudio().add(audioLink);
+            }
+        }
+    }
+
+    // TODO remove after DB adaptation
+
+    public Page<Addition> getAllItemsInBase(Pageable pageable) {
+        return additionRepository.findAll(pageable);
+    }
+
+    public void setAudioAndHash() {
+        Pageable pageableCheckQuantity = PageRequest.of(0, 999);
+        Page<Addition> additionsPage = getAllItemsInBase(pageableCheckQuantity);
+        List<Addition> additions = additionsPage.getContent();
+        for (Addition i: additions) {
+            i.setAudio(new ArrayList<>());
+            i.setDescriptionHash(encodeService.generateHashForAudio(i.getDescription()));
+            additionRepository.save(i);
         }
     }
 }

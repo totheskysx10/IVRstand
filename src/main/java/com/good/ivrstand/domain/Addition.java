@@ -87,4 +87,30 @@ public class Addition {
     @Getter
     @Setter
     private String mainIconLink;
+
+    /**
+     * Аудио описания дополнения.
+     */
+    @Getter
+    @Setter // TODO remove after DB adaptation
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "addition_audio", joinColumns = @JoinColumn(name = "addition_id"))
+    @Column(name = "audio")
+    private List<String> audio;
+
+    /**
+     * Аудио заголовка дополнения.
+     */
+    @Column(name = "addition_titleaudio")
+    @Getter
+    @Setter
+    private String titleAudio;
+
+    /**
+     * Хэш описания.
+     */
+    @Column(name = "addition_deschash")
+    @Getter
+    @Setter
+    private String descriptionHash;
 }

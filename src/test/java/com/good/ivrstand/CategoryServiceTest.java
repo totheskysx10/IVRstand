@@ -30,7 +30,7 @@ public class CategoryServiceTest {
     public void testCreateCategory() {
         Category category = new Category();
         category.setTitle("TestTitle");
-        Category savedCategory = categoryService.createCategory(category);
+        Category savedCategory = categoryService.createCategory(category, false);
         assertNotNull(savedCategory.getId());
     }
 

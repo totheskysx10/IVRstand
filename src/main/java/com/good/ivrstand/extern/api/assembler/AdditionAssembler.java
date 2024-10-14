@@ -28,6 +28,8 @@ public class AdditionAssembler extends RepresentationModelAssemblerSupport<Addit
         additionDTO.setItemId(addition.getItem().getId());
         additionDTO.setIconLinks(addition.getIconLinks());
         additionDTO.setMainIconLink(addition.getMainIconLink());
+        additionDTO.setAudio(addition.getAudio());
+        additionDTO.setTitleAudio(addition.getTitleAudio());
 
         additionDTO.add(linkTo(methodOn(AdditionController.class).getAdditionById(addition.getId())).withSelfRel());
 

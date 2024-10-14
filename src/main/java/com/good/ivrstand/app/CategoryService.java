@@ -1,14 +1,16 @@
 package com.good.ivrstand.app;
 
-import com.good.ivrstand.domain.AddTitleRequest;
+import com.good.ivrstand.extern.api.requests.AddTitleRequest;
 import com.good.ivrstand.domain.Category;
 import com.good.ivrstand.domain.Item;
-import com.good.ivrstand.domain.TitleRequest;
+import com.good.ivrstand.extern.api.requests.TitleRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
+
+import java.io.IOException;
 
 /**
  * Сервисный класс для работы с категориями (Categories).
@@ -20,11 +22,13 @@ import org.springframework.stereotype.Component;
 public class CategoryService {
     private final CategoryRepository categoryRepository;
     private final FlaskApiVectorSearchService flaskApiVectorSearchService;
+    private final SpeechService speechService;
 
     @Autowired
-    public CategoryService(CategoryRepository categoryRepository, FlaskApiVectorSearchService flaskApiVectorSearchService) {
+    public CategoryService(CategoryRepository categoryRepository, FlaskApiVectorSearchService flaskApiVectorSearchService, SpeechService speechService) {
         this.categoryRepository = categoryRepository;
         this.flaskApiVectorSearchService = flaskApiVectorSearchService;
+        this.speechService = speechService;
     }
 
     /**
@@ -35,7 +39,7 @@ public class CategoryService {
      * @throws IllegalArgumentException Если переданная категория равна null.
      * @throws RuntimeException         Если возникла ошибка при создании категории.
      */
-    public Category createCategory(Category category) {
+    public Category createCategory(Category category, boolean enableAudio) {
         if (category == null) {
             throw new IllegalArgumentException("Категория не может быть null");
         }
@@ -46,6 +50,10 @@ public class CategoryService {
 //        }
 
         try {
+            if (enableAudio) {
+                String titleAudio = speechService.generateAudio(category.getTitle());
+                category.setTitleAudio(titleAudio);
+            }
             Category savedCategory = categoryRepository.save(category);
             log.info("Создана категория с id {}", savedCategory.getId());
             return savedCategory;
@@ -223,6 +231,44 @@ public class CategoryService {
             category.setMainIconLink(icon);
             categoryRepository.save(category);
             log.info("Ссылка на главную иконку обновлена для категории с id {}", categoryId);
+        }
+    }
+
+    /**
+     * Генерирует аудио заголовка категории.
+     *
+     * @param categoryId  Идентификатор категории.
+     */
+    public void generateTitleAudio(long categoryId) throws IOException {
+        Category category = getCategoryById(categoryId);
+        if (category != null) {
+            if (category.getTitleAudio() == null) {
+                String titleAudio = speechService.generateAudio(category.getTitle());
+                category.setTitleAudio(titleAudio);
+                categoryRepository.save(category);
+                log.info("Сгенерировано аудио заголовка для категории с id {}", categoryId);
+            }
+            else
+                log.warn("У категории {} уже есть аудио заголовка!", categoryId);
+        }
+    }
+
+    /**
+     * Удаляет аудио заголовка категории.
+     *
+     * @param categoryId  Идентификатор категории.
+     */
+    public void removeTitleAudio(long categoryId) {
+        Category category = getCategoryById(categoryId);
+        if (category != null) {
+            if (category.getTitleAudio() == null) {
+                log.warn("У категории {} нет аудио заголовка!", categoryId);
+            }
+            else {
+                category.setTitleAudio(null);
+                categoryRepository.save(category);
+                log.info("У категории {} удалено аудио заголовка", categoryId);
+            }
         }
     }
 }

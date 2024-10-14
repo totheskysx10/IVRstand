@@ -1,13 +1,16 @@
 package com.good.ivrstand.extern.api.controller;
 
+import com.good.ivrstand.app.EncodeService;
 import com.good.ivrstand.app.ItemService;
 import com.good.ivrstand.domain.Item;
 import com.good.ivrstand.extern.api.assembler.ItemAssembler;
+import com.good.ivrstand.extern.api.dto.DescriptionUpdateDTO;
 import com.good.ivrstand.extern.api.dto.ItemDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -15,6 +18,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 @RestController
@@ -24,18 +28,20 @@ public class ItemController {
 
     private final ItemService itemService;
     private final ItemAssembler itemAssembler;
+    private final EncodeService encodeService;
 
     @Autowired
-    public ItemController(ItemService itemService, ItemAssembler itemAssembler) {
+    public ItemController(ItemService itemService, ItemAssembler itemAssembler, EncodeService encodeService) {
         this.itemService = itemService;
         this.itemAssembler = itemAssembler;
+        this.encodeService = encodeService;
     }
 
-    @Operation(summary = "Создать услугу", description = "Создает новую услугу.")
+    @Operation(summary = "Создать услугу", description = "Создает новую услугу. Если включить флаг enableAudio, сгенерируется речь для для заголовка и описания.")
     @ApiResponse(responseCode = "201", description = "Услуга успешно создана")
     @ApiResponse(responseCode = "409", description = "Ошибка валидации")
     @PostMapping
-    public ResponseEntity<ItemDTO> createItem(@RequestBody ItemDTO itemDTO) {
+    public ResponseEntity<ItemDTO> createItem(@RequestBody @Valid ItemDTO itemDTO) {
         try {
             Item newItem = Item.builder()
                     .title(itemDTO.getTitle())
@@ -46,9 +52,11 @@ public class ItemController {
                     .iconLinks(new ArrayList<>())
                     .keywords(new ArrayList<>())
                     .mainIconLink(itemDTO.getMainIconLink())
+                    .audio(new ArrayList<>())
+                    .descriptionHash(encodeService.generateHashForAudio(itemDTO.getDescription()))
                     .build();
 
-            itemService.createItem(newItem);
+            itemService.createItem(newItem, itemDTO.isEnableAudio());
 
             return new ResponseEntity<>(itemAssembler.toModel(newItem), HttpStatus.CREATED);
         } catch (IllegalArgumentException ex) {
@@ -160,11 +168,17 @@ public class ItemController {
         return ResponseEntity.ok(items);
     }
 
-    @Operation(summary = "Обновить описание услуги", description = "Обновляет описание услуги по ее идентификатору.")
+    @Operation(summary = "Обновить описание услуги", description = "Обновляет описание услуги по ее идентификатору. Если включить флаг enableAudio, сгенерируется речь описания, иначе - удалится (если есть) или не будет сгененрирована.")
     @ApiResponse(responseCode = "200", description = "Описание услуги успешно обновлено")
     @PutMapping("/{id}/description")
-    public ResponseEntity<Void> updateDescriptionToItem(@PathVariable long id, @RequestBody String description) {
-        itemService.updateDescriptionToItem(id, description);
+    public ResponseEntity<Void> updateDescriptionToItem(
+            @PathVariable long id,
+            @RequestBody DescriptionUpdateDTO descriptionUpdateDTO) throws IOException {
+
+        String description = descriptionUpdateDTO.getDescription();
+        boolean enableAudio = descriptionUpdateDTO.isEnableAudio();
+
+        itemService.updateDescriptionToItem(id, description, enableAudio);
         return ResponseEntity.ok().build();
     }
 
@@ -237,6 +251,29 @@ public class ItemController {
     @PutMapping("/{id}/clear-keywords")
     public ResponseEntity<Void> clearKeywords(@PathVariable long id) {
         itemService.clearKeywords(id);
+        return ResponseEntity.ok().build();
+    }
+
+    @Operation(summary = "Сгенерировать аудио заголовка услуги", description = "Генерирует аудио заголовка услуги по её идентификатору.")
+    @ApiResponse(responseCode = "200", description = "Аудио заголовка услуги готово")
+    @PutMapping("/{id}/title-audio/generate")
+    public ResponseEntity<Void> generateTitleAudio(@PathVariable long id) throws IOException {
+        itemService.generateTitleAudio(id);
+        return ResponseEntity.ok().build();
+    }
+
+    @Operation(summary = "Удалить аудио заголовка услуги", description = "Удаляет аудио заголовка услуги по её идентификатору.")
+    @ApiResponse(responseCode = "200", description = "Аудио заголовка услуги удалено")
+    @PutMapping("/{id}/title-audio/remove")
+    public ResponseEntity<Void> removeTitleAudio(@PathVariable long id) {
+        itemService.removeTitleAudio(id);
+        return ResponseEntity.ok().build();
+    }
+
+    // TODO remove after DB adaptation
+    @PostMapping("/fix-db")
+    public ResponseEntity<Void> removeTitleAudio() {
+        itemService.setAudioAndHash();
         return ResponseEntity.ok().build();
     }
 }

@@ -2,6 +2,8 @@ package com.good.ivrstand.app;
 
 import com.good.ivrstand.domain.*;
 import com.good.ivrstand.exception.ItemsFindException;
+import com.good.ivrstand.extern.api.requests.AddTitleRequest;
+import com.good.ivrstand.extern.api.requests.TitleRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -10,6 +12,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
+import java.io.IOException;
 import java.util.*;
 
 /**
@@ -25,14 +28,20 @@ public class ItemService {
     private final FlaskApiVectorSearchService flaskApiVectorSearchService;
     private final AdditionService additionService;
     private final QdrantService qdrantService;
+    private final DescriptionService descriptionService;
+    private final SpeechService speechService;
+    private final EncodeService encodeService;
 
     @Autowired
-    public ItemService(ItemRepository itemRepository, CategoryService categoryService, FlaskApiVectorSearchService flaskApiVectorSearchService, AdditionService additionService, QdrantService qdrantService) {
+    public ItemService(ItemRepository itemRepository, CategoryService categoryService, FlaskApiVectorSearchService flaskApiVectorSearchService, AdditionService additionService, QdrantService qdrantService, DescriptionService descriptionService, SpeechService speechService, EncodeService encodeService) {
         this.itemRepository = itemRepository;
         this.categoryService = categoryService;
         this.flaskApiVectorSearchService = flaskApiVectorSearchService;
         this.additionService = additionService;
         this.qdrantService = qdrantService;
+        this.descriptionService = descriptionService;
+        this.speechService = speechService;
+        this.encodeService = encodeService;
     }
 
     /**
@@ -43,7 +52,7 @@ public class ItemService {
      * @throws IllegalArgumentException Если переданная услуга равна null.
      * @throws RuntimeException         Если возникла ошибка при создании услуги.
      */
-    public Item createItem(Item item) {
+    public Item createItem(Item item, boolean enableAudio) {
         if (item == null) {
             throw new IllegalArgumentException("Услуга не может быть null");
         }
@@ -54,6 +63,11 @@ public class ItemService {
 //        }
 
         try {
+            if (enableAudio) {
+                generateDescriptionAudio(item);
+                String titleAudio = speechService.generateAudio(item.getTitle());
+                item.setTitleAudio(titleAudio);
+            }
             Item savedItem = itemRepository.save(item);
             AddTitleRequest addTitleRequest = new AddTitleRequest(formatTitle(savedItem), savedItem.getId());
             flaskApiVectorSearchService.addTitle(addTitleRequest);
@@ -241,11 +255,16 @@ public class ItemService {
      * @param itemId Идентификатор услуги.
      * @param desc   Новое описание услуги.
      */
-    public void updateDescriptionToItem(long itemId, String desc) {
+    public void updateDescriptionToItem(long itemId, String desc, boolean enableAudio) throws IOException {
         Item item = getItemById(itemId);
         if (item != null) {
             deleteQdrantTitle(item);
             item.setDescription(desc);
+            item.setDescriptionHash(encodeService.generateHashForAudio(desc));
+            item.getAudio().clear();
+            if (enableAudio) {
+                generateDescriptionAudio(item);
+            }
             itemRepository.save(item);
             addQdrantTitle(item);
             log.info("Описание обновлено для услуги с id {}", itemId);
@@ -451,6 +470,80 @@ public class ItemService {
             return item.getTitle() + " " + keywords + " " + category + " " + description;
         } else {
             return item.getTitle() + " " + keywords + " " + description;
+        }
+    }
+
+    /**
+     * Генерирует аудио заголовка услуги.
+     *
+     * @param itemId  Идентификатор услуги.
+     */
+    public void generateTitleAudio(long itemId) throws IOException {
+        Item item = getItemById(itemId);
+        if (item != null) {
+            if (item.getTitleAudio() == null) {
+                String titleAudio = speechService.generateAudio(item.getTitle());
+                item.setTitleAudio(titleAudio);
+                itemRepository.save(item);
+                log.info("Сгенерировано аудио заголовка для услуги с id {}", itemId);
+            }
+            else
+                log.warn("У услуги {} уже есть аудио заголовка!", itemId);
+        }
+    }
+
+    /**
+     * Удаляет аудио заголовка услуги.
+     *
+     * @param itemId  Идентификатор услуги.
+     */
+    public void removeTitleAudio(long itemId) {
+        Item item = getItemById(itemId);
+        if (item != null) {
+            if (item.getTitleAudio() == null) {
+                log.warn("У услуги {} нет аудио заголовка!", itemId);
+            }
+            else {
+                item.setTitleAudio(null);
+                itemRepository.save(item);
+                log.info("У услуги {} удалено аудио заголовка", itemId);
+            }
+        }
+    }
+
+    /**
+     * Генерирует аудио для описания услуги.
+     * По хэш-функции проверяет, не было ли раннее сгенерировано такое аудио.
+     *
+     * @param item услуга
+     * @throws IOException исключение
+     */
+    private void generateDescriptionAudio(Item item) throws IOException {
+        Page<Item> itemsWithSameDescriptionRequest = itemRepository.findByHashAndAudioExistence(item.getDescriptionHash(), PageRequest.of(0, 1));
+        if (itemsWithSameDescriptionRequest.hasContent()) {
+            Item itemWithSameDescription = itemsWithSameDescriptionRequest.getContent().get(0);
+            List<String> sameAudio = itemWithSameDescription.getAudio();
+            for (String audioLink : sameAudio) {
+                item.getAudio().add(audioLink);
+            }
+        } else {
+            String[] descriptionBlocks = descriptionService.splitDescription(item.getDescription());
+            for (String block : descriptionBlocks) {
+                String audioLink = speechService.generateAudio(block);
+                item.getAudio().add(audioLink);
+            }
+        }
+    }
+
+    // TODO remove after DB adaptation
+    public void setAudioAndHash() {
+        Pageable pageableCheckQuantity = PageRequest.of(0, 999);
+        Page<Item> itemsPage = getAllItemsInBase(pageableCheckQuantity);
+        List<Item> items = itemsPage.getContent();
+        for (Item i: items) {
+            i.setAudio(new ArrayList<>());
+            i.setDescriptionHash(encodeService.generateHashForAudio(i.getDescription()));
+            itemRepository.save(i);
         }
     }
 }

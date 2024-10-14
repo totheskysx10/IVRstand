@@ -1,8 +1,8 @@
 package com.good.ivrstand.extern.infrastructure;
 
 import com.good.ivrstand.app.FlaskApiVectorSearchService;
-import com.good.ivrstand.domain.AddTitleRequest;
-import com.good.ivrstand.domain.TitleRequest;
+import com.good.ivrstand.extern.api.requests.AddTitleRequest;
+import com.good.ivrstand.extern.api.requests.TitleRequest;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;

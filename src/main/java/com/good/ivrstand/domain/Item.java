@@ -100,4 +100,30 @@ public class Item {
     @CollectionTable(name = "item_keywords", joinColumns = @JoinColumn(name = "item_id"))
     @Column(name = "keyword")
     private List<String> keywords;
+
+    /**
+     * Аудио описания услуги.
+     */
+    @Getter
+    @Setter // TODO remove after DB adaptation
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "item_audio", joinColumns = @JoinColumn(name = "item_id"))
+    @Column(name = "audio")
+    private List<String> audio;
+
+    /**
+     * Аудио заголовка услуги.
+     */
+    @Column(name = "item_titleaudio")
+    @Getter
+    @Setter
+    private String titleAudio;
+
+    /**
+     * Хэш описания.
+     */
+    @Column(name = "item_deschash")
+    @Getter
+    @Setter
+    private String descriptionHash;
 }

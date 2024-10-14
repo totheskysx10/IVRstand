@@ -4,7 +4,11 @@ import org.springframework.stereotype.Component;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
+import java.util.HexFormat;
 
 /**
  * Сервис шифрования
@@ -14,6 +18,12 @@ public class EncodeService {
     private static final String ALGORITHM = "AES";
     private static final String SECRET_KEY = "50B43E83D3BDEB279CB0AD14055EE20B";
 
+    /**
+     * Шифрует текст алгоритмом AES по заданному ключу
+     *
+     * @param plainText текст
+     * @return зашифрованный текст
+     */
     public String encrypt(String plainText) {
         try {
             SecretKeySpec secretKey = new SecretKeySpec(SECRET_KEY.getBytes(), ALGORITHM);
@@ -27,6 +37,12 @@ public class EncodeService {
         return null;
     }
 
+    /**
+     * Расшифровывает текст алгоритмом AES по заданному ключу
+     *
+     * @param encryptedText шифрованный текст
+     * @return расшифрованный текст
+     */
     public String decrypt(String encryptedText) {
         try {
             encryptedText = encryptedText.replaceAll("\\s", "+");
@@ -40,5 +56,22 @@ public class EncodeService {
             e.printStackTrace();
         }
         return null;
+    }
+
+    /**
+     * Генерирует хэш описания
+     *
+     * @param description описание
+     * @return хэш
+     */
+    public String generateHashForAudio(String description) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hash = digest.digest(description.getBytes(StandardCharsets.UTF_8));
+            return HexFormat.of().formatHex(hash);
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException("Error: algo not found", e);
+        }
+
     }
 }

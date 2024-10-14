@@ -13,6 +13,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.jdbc.Sql;
 
+import java.io.IOException;
 import java.util.List;
 
 import static org.junit.Assert.*;
@@ -36,7 +37,7 @@ public class AdditionServiceTest {
                 .gifLink("link")
                 .item(itemService.getItemById(1))
                 .build();
-        Addition savedAddition = additionService.createAddition(addition);
+        Addition savedAddition = additionService.createAddition(addition, false);
         assertNotNull(savedAddition.getId());
         assertEquals(1, itemService.getItemById(1).getAdditions().size());
     }
@@ -50,7 +51,7 @@ public class AdditionServiceTest {
                 .gifLink("link")
                 .item(itemService.getItemById(1))
                 .build();
-        additionService.createAddition(addition);
+        additionService.createAddition(addition, false);
 
         Addition retrievedAddition = additionService.getAdditionById(1);
         assertNotNull(retrievedAddition);
@@ -74,7 +75,7 @@ public class AdditionServiceTest {
                 .gifLink("link")
                 .item(itemService.getItemById(1))
                 .build();
-        additionService.createAddition(addition);
+        additionService.createAddition(addition, false);
 
         additionService.deleteAddition(1);
         assertThrows(IllegalArgumentException.class, () -> {
@@ -91,7 +92,7 @@ public class AdditionServiceTest {
                 .gifLink("link")
                 .item(itemService.getItemById(1))
                 .build();
-        additionService.createAddition(addition);
+        additionService.createAddition(addition, false);
 
         additionService.updateTitleToAddition(1, "NT");
 
@@ -102,16 +103,16 @@ public class AdditionServiceTest {
 
     @Sql("/testsss.sql")
     @Test
-    public void testUpdateDescriptionToAddition() {
+    public void testUpdateDescriptionToAddition() throws IOException {
         Addition addition = Addition.builder()
                 .title("title")
                 .description("test")
                 .gifLink("link")
                 .item(itemService.getItemById(1))
                 .build();
-        additionService.createAddition(addition);
+        additionService.createAddition(addition, false);
 
-        additionService.updateDescriptionToAddition(1, "DEEEESC");
+        additionService.updateDescriptionToAddition(1, "DEEEESC", false);
 
         Addition updatedAddition = additionService.getAdditionById(1);
 
@@ -128,7 +129,7 @@ public class AdditionServiceTest {
                 .gifPreview("lnk")
                 .item(itemService.getItemById(1))
                 .build();
-        additionService.createAddition(addition);
+        additionService.createAddition(addition, false);
 
         additionService.updateGifPreviewToAddition(1, "pLINK_");
 
@@ -147,7 +148,7 @@ public class AdditionServiceTest {
                 .gifPreview("lnk")
                 .item(itemService.getItemById(1))
                 .build();
-        additionService.createAddition(addition);
+        additionService.createAddition(addition, false);
 
         additionService.updateGifLinkToAddition(1, "LINK_");
 
@@ -165,7 +166,7 @@ public class AdditionServiceTest {
                 .gifLink("link")
                 .item(itemService.getItemById(1))
                 .build();
-        additionService.createAddition(addition);
+        additionService.createAddition(addition, false);
 
         Pageable pageable = PageRequest.of(0, 10);
         long id = 1;

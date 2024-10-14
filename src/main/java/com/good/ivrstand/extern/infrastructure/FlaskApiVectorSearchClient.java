@@ -1,8 +1,8 @@
 package com.good.ivrstand.extern.infrastructure;
 
 
-import com.good.ivrstand.domain.AddTitleRequest;
-import com.good.ivrstand.domain.TitleRequest;
+import com.good.ivrstand.extern.api.requests.AddTitleRequest;
+import com.good.ivrstand.extern.api.requests.TitleRequest;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import java.util.List;
 import java.util.Map;
 
-@FeignClient(name = "flaskApiClient", url = "${flask-api.url}")
+@FeignClient(name = "flaskApiClient", url = "${flask-api.vector}")
 public interface FlaskApiVectorSearchClient {
     @PostMapping("/get_emb")
     List<Long> getEmbeddings(@RequestBody Map<String, Object> requestData);

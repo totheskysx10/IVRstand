@@ -68,4 +68,5 @@ auth:
   refresh-key: I992T8DZ6WBSOALB977S06WFZO3XEQ6HWOK2PUP4PUYUCC9MNYWEDJSXAX9WDTUI
 
 flask-api:
-  url: http://ivrgoodvector:5004
+  vector: http://ivrgoodvector:5004
+  tts: http://ivrgoodtts:5005

@@ -1,14 +1,17 @@
 package com.good.ivrstand.extern.api.controller;
 
 import com.good.ivrstand.app.AdditionService;
+import com.good.ivrstand.app.EncodeService;
 import com.good.ivrstand.app.ItemService;
 import com.good.ivrstand.domain.Addition;
 import com.good.ivrstand.extern.api.assembler.AdditionAssembler;
 import com.good.ivrstand.extern.api.dto.AdditionDTO;
+import com.good.ivrstand.extern.api.dto.DescriptionUpdateDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -16,6 +19,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 @RestController
@@ -26,22 +30,24 @@ public class AdditionController {
     private final AdditionService additionService;
     private final AdditionAssembler additionAssembler;
     private final ItemService itemService;
+    private final EncodeService encodeService;
 
     @Autowired
-    public AdditionController(AdditionService additionService, AdditionAssembler additionAssembler, ItemService itemService) {
+    public AdditionController(AdditionService additionService, AdditionAssembler additionAssembler, ItemService itemService, EncodeService encodeService) {
         this.additionService = additionService;
         this.additionAssembler = additionAssembler;
         this.itemService = itemService;
+        this.encodeService = encodeService;
     }
 
-    @Operation(summary = "Создать дополнение", description = "Создает новое дополнение для указанной услуги.")
+    @Operation(summary = "Создать дополнение", description = "Создает новое дополнение для указанной услуги. Если включить флаг enableAudio, сгенерируется речь для для заголовка и описания.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Дополнение успешно создан"),
             @ApiResponse(responseCode = "400", description = "Некорректный запрос"),
             @ApiResponse(responseCode = "204", description = "Нет такой услуги")
     })
     @PostMapping
-    public ResponseEntity<AdditionDTO> createAddition(@RequestBody AdditionDTO additionDTO) {
+    public ResponseEntity<AdditionDTO> createAddition(@RequestBody @Valid AdditionDTO additionDTO) {
         try {
             if (additionDTO.getItemId() == 0) {
                 return ResponseEntity.badRequest().build();
@@ -55,9 +61,11 @@ public class AdditionController {
                     .item(itemService.getItemById(additionDTO.getItemId()))
                     .iconLinks(new ArrayList<>())
                     .mainIconLink(additionDTO.getMainIconLink())
+                    .audio(new ArrayList<>())
+                    .descriptionHash(encodeService.generateHashForAudio(additionDTO.getDescription()))
                     .build();
 
-            additionService.createAddition(newAddition);
+            additionService.createAddition(newAddition, additionDTO.isEnableAudio());
 
             return new ResponseEntity<>(additionAssembler.toModel(newAddition), HttpStatus.CREATED);
         } catch (Exception e) {
@@ -96,11 +104,17 @@ public class AdditionController {
         return ResponseEntity.ok().build();
     }
 
-    @Operation(summary = "Обновить описание дополнения", description = "Обновляет описание дополнения по его идентификатору.")
+    @Operation(summary = "Обновить описание дополнения", description = "Обновляет описание дополнения по его идентификатору. Если включить флаг enableAudio, сгенерируется речь описания, иначе - удалится (если есть) или не будет сгененрирована.")
     @ApiResponse(responseCode = "200", description = "Описание дополнения успешно обновлено")
     @PutMapping("/{id}/description")
-    public ResponseEntity<Void> updateDescriptionToAddition(@PathVariable long id, @RequestBody String description) {
-        additionService.updateDescriptionToAddition(id, description);
+    public ResponseEntity<Void> updateDescriptionToAddition(
+            @PathVariable long id,
+            @RequestBody DescriptionUpdateDTO descriptionUpdateDTO) throws IOException {
+
+        String description = descriptionUpdateDTO.getDescription();
+        boolean enableAudio = descriptionUpdateDTO.isEnableAudio();
+
+        additionService.updateDescriptionToAddition(id, description, enableAudio);
         return ResponseEntity.ok().build();
     }
 
@@ -165,6 +179,29 @@ public class AdditionController {
     @PutMapping("/{id}/clear-icons")
     public ResponseEntity<Void> clearIcons(@PathVariable long id) {
         additionService.clearIcons(id);
+        return ResponseEntity.ok().build();
+    }
+
+    @Operation(summary = "Сгенерировать аудио заголовка дополнения", description = "Генерирует аудио заголовка дополнения по его идентификатору.")
+    @ApiResponse(responseCode = "200", description = "Аудио заголовка дополнения готово")
+    @PutMapping("/{id}/title-audio/generate")
+    public ResponseEntity<Void> generateTitleAudio(@PathVariable long id) throws IOException {
+        additionService.generateTitleAudio(id);
+        return ResponseEntity.ok().build();
+    }
+
+    @Operation(summary = "Удалить аудио заголовка дополнения", description = "Удаляет аудио заголовка дополнения по его идентификатору.")
+    @ApiResponse(responseCode = "200", description = "Аудио заголовка дополнения удалено")
+    @PutMapping("/{id}/title-audio/remove")
+    public ResponseEntity<Void> removeTitleAudio(@PathVariable long id) {
+        additionService.removeTitleAudio(id);
+        return ResponseEntity.ok().build();
+    }
+
+    // TODO remove after DB adaptation
+    @PostMapping("/fix-db")
+    public ResponseEntity<Void> removeTitleAudio() {
+        additionService.setAudioAndHash();
         return ResponseEntity.ok().build();
     }
 }

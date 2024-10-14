@@ -11,6 +11,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.jdbc.Sql;
 
+import java.io.IOException;
 import java.util.List;
 
 import static org.junit.Assert.*;
@@ -30,7 +31,7 @@ public class ItemServiceTest {
         item.setTitle("TestTitle");
         item.setDescription("TestDesc");
         item.setGifLink("TestLink");
-        Item savedItem = itemService.createItem(item);
+        Item savedItem = itemService.createItem(item, false);
         assertNotNull(savedItem.getId());
     }
 
@@ -110,8 +111,8 @@ public class ItemServiceTest {
 
     @Sql("/testsss.sql")
     @Test
-    public void testUpdateDescriptionToItem() {
-        itemService.updateDescriptionToItem(1, "DEEEESC");
+    public void testUpdateDescriptionToItem() throws IOException {
+        itemService.updateDescriptionToItem(1, "DEEEESC", false);
 
         Item updatedItem = itemService.getItemById(1);
 

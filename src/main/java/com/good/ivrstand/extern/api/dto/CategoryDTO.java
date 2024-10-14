@@ -1,5 +1,6 @@
 package com.good.ivrstand.extern.api.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 import org.springframework.hateoas.RepresentationModel;
 
@@ -26,4 +27,9 @@ public class CategoryDTO extends RepresentationModel<CategoryDTO> {
     private String gifLink;
 
     private String mainIconLink;
+
+    private String titleAudio;
+
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    private boolean enableAudio = false;
 }

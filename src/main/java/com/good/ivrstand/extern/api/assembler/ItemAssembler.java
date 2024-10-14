@@ -37,6 +37,8 @@ public class ItemAssembler extends RepresentationModelAssemblerSupport<Item, Ite
         itemDTO.setIconLinks(item.getIconLinks());
         itemDTO.setMainIconLink(item.getMainIconLink());
         itemDTO.setKeywords(item.getKeywords());
+        itemDTO.setAudio(item.getAudio());
+        itemDTO.setTitleAudio(item.getTitleAudio());
 
         itemDTO.add(linkTo(methodOn(ItemController.class).getItemById(item.getId())).withSelfRel());
 

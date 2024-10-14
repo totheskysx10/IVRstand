@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -15,6 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 @RestController
@@ -31,10 +33,10 @@ public class CategoryController {
         this.categoryAssembler = categoryAssembler;
     }
 
-    @Operation(summary = "Создать категорию", description = "Создает новую категорию.")
+    @Operation(summary = "Создать категорию", description = "Создает новую категорию. Если включить флаг enableAudio, сгенерируется речь для для заголовка.")
     @ApiResponse(responseCode = "201", description = "Категория успешно создана")
     @PostMapping
-    public ResponseEntity<CategoryDTO> createCategory(@RequestBody CategoryDTO categoryDTO) {
+    public ResponseEntity<CategoryDTO> createCategory(@RequestBody @Valid CategoryDTO categoryDTO) {
         Category newCategory = Category.builder()
                 .title(categoryDTO.getTitle())
                 .itemsInCategory(new ArrayList<>())
@@ -44,7 +46,7 @@ public class CategoryController {
                 .mainIconLink(categoryDTO.getMainIconLink())
                 .build();
 
-        categoryService.createCategory(newCategory);
+        categoryService.createCategory(newCategory, categoryDTO.isEnableAudio());
 
         return new ResponseEntity<>(categoryAssembler.toModel(newCategory), HttpStatus.CREATED);
     }
@@ -150,6 +152,22 @@ public class CategoryController {
     @PutMapping("/{id}/main-icon")
     public ResponseEntity<Void> updateCategoryMainIcon(@PathVariable long id, @RequestBody String link) {
         categoryService.updateMainIconToCategory(id, link);
+        return ResponseEntity.ok().build();
+    }
+
+    @Operation(summary = "Сгенерировать аудио заголовка категории", description = "Генерирует аудио заголовка категории по её идентификатору.")
+    @ApiResponse(responseCode = "200", description = "Аудио заголовка категории готово")
+    @PutMapping("/{id}/title-audio/generate")
+    public ResponseEntity<Void> generateTitleAudio(@PathVariable long id) throws IOException {
+        categoryService.generateTitleAudio(id);
+        return ResponseEntity.ok().build();
+    }
+
+    @Operation(summary = "Удалить аудио заголовка категории", description = "Удаляет аудио заголовка категории по её идентификатору.")
+    @ApiResponse(responseCode = "200", description = "Аудио заголовка категории удалено")
+    @PutMapping("/{id}/title-audio/remove")
+    public ResponseEntity<Void> removeTitleAudio(@PathVariable long id) {
+        categoryService.removeTitleAudio(id);
         return ResponseEntity.ok().build();
     }
 }

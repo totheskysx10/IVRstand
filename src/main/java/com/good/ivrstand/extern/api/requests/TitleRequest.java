@@ -1,4 +1,4 @@
-package com.good.ivrstand.domain;
+package com.good.ivrstand.extern.api.requests;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;

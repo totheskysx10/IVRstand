@@ -82,4 +82,12 @@ public class Category {
     @Getter
     @Setter
     private String mainIconLink;
+
+    /**
+     * Аудио заголовка категории.
+     */
+    @Column(name = "cat_titleaudio")
+    @Getter
+    @Setter
+    private String titleAudio;
 }

@@ -56,6 +56,17 @@ services:
       QDRANT_HOST: ivrgoodqdrant
       QDRANT_PORT: 6333
 
+  ivrgoodtts:
+    build:
+      context: ./tts
+      dockerfile: Dockerfile
+    container_name: ivrgoodtts
+    restart: always
+    ports:
+      - "5005:5005"
+    networks:
+      - net2
+
   ivrgoodqdrant:
     image: qdrant/qdrant
     container_name: ivrgoodqdrant

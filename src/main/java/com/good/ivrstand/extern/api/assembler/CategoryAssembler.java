@@ -38,6 +38,7 @@ public class CategoryAssembler extends RepresentationModelAssemblerSupport<Categ
         categoryDTO.setGifPreview(category.getGifPreview());
         categoryDTO.setGifLink(category.getGifLink());
         categoryDTO.setMainIconLink(category.getMainIconLink());
+        categoryDTO.setTitleAudio(category.getTitleAudio());
 
         categoryDTO.add(WebMvcLinkBuilder.linkTo(methodOn(CategoryController.class).getCategoryById(category.getId())).withSelfRel());
 

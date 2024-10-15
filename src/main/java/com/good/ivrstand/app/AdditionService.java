@@ -278,7 +278,7 @@ public class AdditionService {
         Page<Addition> additionsWithSameDescriptionRequest = additionRepository.findByHashAndAudioExistence(addition.getDescriptionHash(), PageRequest.of(0, 1));
         if (additionsWithSameDescriptionRequest.hasContent()) {
             Addition additionWithSameDescription = additionsWithSameDescriptionRequest.getContent().get(0);
-            List<String> sameAudio = additionWithSameDescription.getAudio();
+            List<String> sameAudio = new ArrayList<>(additionWithSameDescription.getAudio());
             addition.getAudio().clear();
             for (String audioLink : sameAudio) {
                 addition.getAudio().add(audioLink);

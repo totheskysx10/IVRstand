@@ -523,7 +523,7 @@ public class ItemService {
         Page<Item> itemsWithSameDescriptionRequest = itemRepository.findByHashAndAudioExistence(item.getDescriptionHash(), PageRequest.of(0, 1));
         if (itemsWithSameDescriptionRequest.hasContent()) {
             Item itemWithSameDescription = itemsWithSameDescriptionRequest.getContent().get(0);
-            List<String> sameAudio = itemWithSameDescription.getAudio();
+            List<String> sameAudio = new ArrayList<>(itemWithSameDescription.getAudio());
             item.getAudio().clear();
             for (String audioLink : sameAudio) {
                 item.getAudio().add(audioLink);

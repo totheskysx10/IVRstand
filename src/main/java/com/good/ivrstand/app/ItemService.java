@@ -261,9 +261,10 @@ public class ItemService {
             deleteQdrantTitle(item);
             item.setDescription(desc);
             item.setDescriptionHash(encodeService.generateHashForAudio(desc));
-            item.getAudio().clear();
             if (enableAudio) {
                 generateDescriptionAudio(item);
+            } else {
+                item.getAudio().clear();
             }
             itemRepository.save(item);
             addQdrantTitle(item);
@@ -523,6 +524,7 @@ public class ItemService {
         if (itemsWithSameDescriptionRequest.hasContent()) {
             Item itemWithSameDescription = itemsWithSameDescriptionRequest.getContent().get(0);
             List<String> sameAudio = itemWithSameDescription.getAudio();
+            item.getAudio().clear();
             for (String audioLink : sameAudio) {
                 item.getAudio().add(audioLink);
             }

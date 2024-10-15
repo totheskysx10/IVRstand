@@ -12,6 +12,7 @@ def synthesize():
     text = data.get('text', '')
     text = text.replace("\\n", "")
     text = text.replace("МФЦ", "эм фэ цэ")
+    text = text.replace("*", "")
     print(text)
 
     if not os.path.exists('tmp'):

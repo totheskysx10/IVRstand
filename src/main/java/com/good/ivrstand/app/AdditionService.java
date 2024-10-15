@@ -113,9 +113,10 @@ public class AdditionService {
         if (addition != null) {
             addition.setDescription(desc);
             addition.setDescriptionHash(encodeService.generateHashForAudio(desc));
-            addition.getAudio().clear();
             if (enableAudio) {
                 generateDescriptionAudio(addition);
+            } else {
+                addition.getAudio().clear();
             }
             additionRepository.save(addition);
             log.info("Описание обновлено для дополнения с id {}", additionId);
@@ -278,6 +279,7 @@ public class AdditionService {
         if (additionsWithSameDescriptionRequest.hasContent()) {
             Addition additionWithSameDescription = additionsWithSameDescriptionRequest.getContent().get(0);
             List<String> sameAudio = additionWithSameDescription.getAudio();
+            addition.getAudio().clear();
             for (String audioLink : sameAudio) {
                 addition.getAudio().add(audioLink);
             }

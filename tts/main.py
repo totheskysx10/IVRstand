@@ -1,3 +1,5 @@
+import os
+
 from flask import Flask, request, send_file
 from gtts import gTTS
 
@@ -12,8 +14,16 @@ def synthesize():
     text = text.replace("МФЦ", "эм фэ цэ")
     print(text)
 
-    tts = gTTS(text=text, lang='ru')
+    if not os.path.exists('tmp'):
+        os.makedirs('tmp')
+
     audio_file = 'tmp/output.wav'
+
+    if not os.path.exists(audio_file):
+        with open(audio_file, 'w') as f:
+            pass
+
+    tts = gTTS(text=text, lang='ru')
     tts.save(audio_file)
 
     response = send_file(audio_file, as_attachment=True)

@@ -7,16 +7,16 @@ server:
 spring:
   datasource:
     url: jdbc:postgresql://dbivr:5432/postgres
-    username: postgres
-    password: 1
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
   jpa:
     hibernate:
       ddl-auto: update
   mail:
     host: smtp.mail.ru
     port: 587
-    username: min095@list.ru
-    password: f4pBAwL8BEm7BWs1x1B1
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
     properties:
       mail:
         transport:
@@ -48,24 +48,24 @@ openapi-requests:
 
 yandex:
   cloud:
-    access:
-    secret:
-    bucket: akhidov-ivr
+    access: ${S3_ACCESS}
+    secret: ${S3_SECRET}
+    bucket: ${S3_BUCKET_NAME}
 
 telegram:
   bot:
-    help_password: helpme
-    search_password: searcherror
-    username: ivr_stand_bot
-    token:
+    help_password: ${TG_BOT_HELP_PASS}
+    search_password: ${TG_BOT_SEARCH_PASS}
+    username: ${TG_BOT_NAME}
+    token: ${TG_BOT_TOKEN}
 
 auth:
   reset-password:
     link: http://localhost:5003/users/update-password?userId=
   confirm-email:
     link: http://localhost:5003/users/confirm-email?userId=
-  key: 0U79LNR5Y34DGENK5J52CAQDKKXU3457KT91AA0ZOZKJS99V72SE7U1H40SY944S
-  refresh-key: I992T8DZ6WBSOALB977S06WFZO3XEQ6HWOK2PUP4PUYUCC9MNYWEDJSXAX9WDTUI
+  key: ${AUTH_KEY}
+  refresh-key: ${AUTH_REFRESH_KEY}
 
 flask-api:
   vector: http://ivrgoodvector:5004

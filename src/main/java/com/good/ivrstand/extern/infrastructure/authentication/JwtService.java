@@ -1,6 +1,5 @@
 package com.good.ivrstand.extern.infrastructure.authentication;
 
-import com.good.ivrstand.app.EncodeService;
 import com.good.ivrstand.domain.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -57,27 +56,36 @@ public class JwtService {
     }
 
     /**
-     * Проверка токена на просроченность
+     * Проверка токена на просроченность,
+     * проверка его соответствия пользователю
      *
      * @param token токен
      * @param userDetails детали пользователя
-     * @return true, если токен просрочен
+     * @return true, если токен годен
      */
-    public boolean validateToken(String token, UserDetails userDetails) {
+    public boolean validateAndCompareToken(String token, UserDetails userDetails) {
         String username = extractUsername(token);
         return (username.equals(userDetails.getUsername()) && !isTokenExpired(token, signKey));
     }
 
     /**
-     * Проверка токена обновления на просроченность
+     * Проверка токена на просроченность
      *
      * @param token токен
-     * @param userDetails детали пользователя
-     * @return true, если токен просрочен
+     * @return true, если токен годен
      */
-    public boolean validateRefreshToken(String token, String refreshToken, UserDetails userDetails) {
-        String username = extractUsername(token);
-        return (username.equals(userDetails.getUsername()) && !isTokenExpired(refreshToken, refreshKey));
+    public boolean validateToken(String token) {
+        return (!isTokenExpired(token, signKey));
+    }
+
+    /**
+     * Проверка токена обновления на просроченность
+     *
+     * @param refreshToken токен
+     * @return true, если токен годен
+     */
+    public boolean validateRefreshToken(String refreshToken) {
+        return (!isTokenExpired(refreshToken, refreshKey));
     }
 
     /**

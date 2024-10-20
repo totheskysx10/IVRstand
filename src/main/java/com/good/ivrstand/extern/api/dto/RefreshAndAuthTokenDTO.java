@@ -5,13 +5,12 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 
 @Getter
-public class RefreshTokenDTO {
-
-    @JsonProperty("refreshToken")
+public class RefreshAndAuthTokenDTO extends TokenDTO {
     private final String refreshToken;
 
     @JsonCreator
-    public RefreshTokenDTO(@JsonProperty("refreshToken") String refreshToken) {
+    public RefreshAndAuthTokenDTO(@JsonProperty("token") String token, @JsonProperty("refreshToken") String refreshToken) {
+        super(token);
         this.refreshToken = refreshToken;
     }
 }

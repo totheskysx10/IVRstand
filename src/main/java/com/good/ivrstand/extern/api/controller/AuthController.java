@@ -131,26 +131,76 @@ public class AuthController {
     @Operation(summary = "Обновить токен доступа", description = "Обновляет токен доступа.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Успешное обновление"),
-            @ApiResponse(responseCode = "401", description = "Ошибка обновления"),
-            @ApiResponse(responseCode = "403", description = "Ошибка валидации токена")
+            @ApiResponse(responseCode = "401", description = "Ошибка валидации токена сброса"),
+            @ApiResponse(responseCode = "403", description = "Ошибка валидации токенов")
     })
     @PostMapping("/refresh-token")
-    public ResponseEntity<JwtDTO> refreshToken(@RequestBody RefreshTokenDTO refreshTokenDTO) {
+    public ResponseEntity<JwtDTO> refreshToken(@RequestBody RefreshAndAuthTokenDTO refreshAndAuthTokenDTO) {
         try {
-            String token = refreshTokenDTO.getToken();
-            String refreshToken = refreshTokenDTO.getRefreshToken();
+            String token = refreshAndAuthTokenDTO.getToken();
+            String refreshToken = refreshAndAuthTokenDTO.getRefreshToken();
             String username = jwtService.extractUsername(token);
             String encodedPassword = jwtService.extractPassword(refreshToken).toString();
             String password = encodeService.decrypt(encodedPassword);
 
             UserLoginDTO userLoginDTO = new UserLoginDTO(username, password);
-            UserDetails user = userService.userDetailsService().loadUserByUsername(userLoginDTO.getUsername());
-            if (jwtService.validateRefreshToken(token, refreshToken, user)) {
+            boolean validationResult = jwtService.validateRefreshToken(refreshToken);
+
+            if (validationResult)
                 return loginUser(userLoginDTO);
-            } else
-                return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-        } catch (Exception ex) {
+            else
+                return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+
+        } catch (ExpiredJwtException e) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        } catch (Exception ex) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+    }
+
+    @Operation(summary = "Проверить токен доступа", description = "Проверяет токен доступа.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Проверка произведена")
+    })
+    @PostMapping("/validate-token")
+    public ResponseEntity<Map<String, Boolean>> validateToken(@RequestBody TokenDTO tokenDTO) {
+        String token = tokenDTO.getToken();
+        Map<String, Boolean> response = new HashMap<>();
+        try {
+            boolean validationResult = jwtService.validateToken(token);
+
+            if (validationResult)
+                response.put("valid", true);
+            else
+                response.put("valid", false);
+
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (ExpiredJwtException | SignatureException e) {
+            response.put("valid", false);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        }
+    }
+
+    @Operation(summary = "Проверить токен сброса", description = "Проверяет токен сброса.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Проверка произведена")
+    })
+    @PostMapping("/validate-refresh-token")
+    public ResponseEntity<Map<String, Boolean>> validateRefreshToken(@RequestBody RefreshTokenDTO refreshTokenDTO) {
+        String token = refreshTokenDTO.getRefreshToken();
+        Map<String, Boolean> response = new HashMap<>();
+        try {
+            boolean validationResult = jwtService.validateRefreshToken(token);
+
+            if (validationResult)
+                response.put("valid", true);
+            else
+                response.put("valid", false);
+
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (ExpiredJwtException | SignatureException e) {
+            response.put("valid", false);
+            return new ResponseEntity<>(response, HttpStatus.OK);
         }
     }
 }

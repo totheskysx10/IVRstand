@@ -1,5 +1,6 @@
 package com.good.ivrstand.app;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.Cipher;
@@ -16,7 +17,9 @@ import java.util.HexFormat;
 @Component
 public class EncodeService {
     private static final String ALGORITHM = "AES";
-    private static final String SECRET_KEY = "50B43E83D3BDEB279CB0AD14055EE20B";
+
+    @Value("${auth.password-encrypt-key}")
+    private String secretKey;
 
     /**
      * Шифрует текст алгоритмом AES по заданному ключу
@@ -26,7 +29,7 @@ public class EncodeService {
      */
     public String encrypt(String plainText) {
         try {
-            SecretKeySpec secretKey = new SecretKeySpec(SECRET_KEY.getBytes(), ALGORITHM);
+            SecretKeySpec secretKey = new SecretKeySpec(this.secretKey.getBytes(), ALGORITHM);
             Cipher cipher = Cipher.getInstance(ALGORITHM);
             cipher.init(Cipher.ENCRYPT_MODE, secretKey);
             byte[] encryptedBytes = cipher.doFinal(plainText.getBytes());
@@ -46,7 +49,7 @@ public class EncodeService {
     public String decrypt(String encryptedText) {
         try {
             encryptedText = encryptedText.replaceAll("\\s", "+");
-            SecretKeySpec secretKey = new SecretKeySpec(SECRET_KEY.getBytes(), ALGORITHM);
+            SecretKeySpec secretKey = new SecretKeySpec(this.secretKey.getBytes(), ALGORITHM);
             Cipher cipher = Cipher.getInstance(ALGORITHM);
             cipher.init(Cipher.DECRYPT_MODE, secretKey);
             byte[] encryptedBytes = Base64.getDecoder().decode(encryptedText);

@@ -66,6 +66,7 @@ auth:
     link: http://localhost:5003/users/confirm-email?userId=
   key: ${AUTH_KEY}
   refresh-key: ${AUTH_REFRESH_KEY}
+  password-encrypt-key: ${AUTH_PASSWORD_ENCRYPT_KEY}
 
 flask-api:
   vector: http://ivrgoodvector:5004

@@ -1,21 +1,23 @@
 package com.good.ivrstand.app;
 
-import com.good.ivrstand.domain.BotProperties;
 import com.good.ivrstand.domain.NotificationCategory;
 import com.good.ivrstand.domain.NotificationChat;
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.bots.TelegramLongPollingBot;
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.objects.Update;
-import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
-import java.util.ArrayList;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Map;
+import java.util.Set;
 
+/**
+ * Сервисный класс для выполнения команд бота
+ */
 @Component
-public class NotificationService extends TelegramLongPollingBot {
+public class NotificationService {
 
     @Value("${telegram.bot.help_password}")
     private String helpPassword;
@@ -23,143 +25,132 @@ public class NotificationService extends TelegramLongPollingBot {
     @Value("${telegram.bot.search_password}")
     private String searchPassword;
 
-    private final BotProperties botProperties;
+    private Set<String> commands;
+
+    private final Map<NotificationCategory, String> associations = Map.of(
+            NotificationCategory.HELP, "Вызов помощи",
+            NotificationCategory.SEARCH_ERROR, "Ошибки поиска"
+    );
 
     private final NotificationChatRepository notificationChatRepository;
 
-    public NotificationService(@Value("${telegram.bot.token}") String botToken, BotProperties botProperties, NotificationChatRepository notificationChatRepository) {
-        super(botToken);
-        this.botProperties = botProperties;
+    public NotificationService(NotificationChatRepository notificationChatRepository) {
         this.notificationChatRepository = notificationChatRepository;
     }
 
-    @Override
-    public void onUpdateReceived(Update update) {
-        if (update.hasMessage() && update.getMessage().hasText()) {
-            String messageText = update.getMessage().getText();
-            String chatId = String.valueOf(update.getMessage().getChatId());
-            List<NotificationChat> chats = notificationChatRepository.findByChatId(chatId);
+    @PostConstruct
+    private void initCommands() {
+        this.commands = Set.of(
+                helpPassword, searchPassword, "/start", "/add", "/removehelp", "/removesearch"
+        );
+    }
 
-            List<String> categories = new ArrayList<>();
+    /**
+     * Выполняет команду в боте
+     * @param messageText текст сообщения
+     * @param chatId Id чата
+     * @param chats список чатов по chatId
+     * @return сообщение с ответом
+     */
+    public String performCommand(String messageText, String chatId, List<NotificationChat> chats) {
+        String response = "Ошибка распознавания команды";
+
+        if (!validateCommand(messageText))
+            return response;
+
+        if (messageText.equals("/start"))
+            response = performStartCommand(chats);
+        else if (messageText.equals("/add"))
+            response = "Введите пароль нужной вам категории";
+        else if (messageText.equals(helpPassword))
+            response = subscribeToCategory(NotificationCategory.HELP, chats, chatId);
+        else if (messageText.equals(searchPassword))
+            response = subscribeToCategory(NotificationCategory.SEARCH_ERROR, chats, chatId);
+        else if (messageText.equals("/removehelp"))
+            response = removeCategory(NotificationCategory.HELP, chats);
+        else if (messageText.equals("/removesearch"))
+            response = removeCategory(NotificationCategory.SEARCH_ERROR, chats);
+
+        return response;
+    }
+
+    /**
+     * Валидирует команды, отправленные боту
+     * @param command команда
+     * @return true, если команда валидна
+     */
+    private boolean validateCommand(String command) {
+        return commands.contains(command);
+    }
+
+    /**
+     * Выполняет команду "/start"
+     * @param chats список чатов по chatId
+     */
+    private String performStartCommand(List<NotificationChat> chats) {
+        if (chats.isEmpty()) {
+            return "Чтобы подписаться на уведомления, введите пароль";
+        } else {
+            StringBuilder sb = new StringBuilder();
+            sb.append("Ваши категории уведомлений: ");
             for (NotificationChat chat: chats) {
-                switch (chat.getNotificationCategory()) {
-                    case HELP:
-                        categories.add("Вызов помощи");
-                        break;
-                    case SEARCH_ERROR:
-                        categories.add("Сообщения об ошибках поиска");
-                        break;
-                }
+                sb.append("\n- ").append(associations.get(chat.getNotificationCategory()));
             }
-
-            if (messageText.equals("/start")) {
-                if (chats.isEmpty()) {
-                    sendMessageToChat("Чтобы подписаться на уведомления, введите пароль", chatId);
-                } else {
-                    String categoriesMessage = categories.stream().collect(Collectors.joining(", "));
-                    sendMessageToChat("Ваши категории уведомлений: " + categoriesMessage, chatId);
-                }
-            } else if (messageText.equals("/add")) {
-                sendMessageToChat("Введите пароль нужной вам категории", chatId);
-            } else if (messageText.equals(helpPassword)) {
-                boolean helpChatFound = false;
-
-                for (NotificationChat chat : chats) {
-                    if (chat.getNotificationCategory() == NotificationCategory.HELP) {
-                        sendMessageToChat("Вы уже подписаны на уведомления о вызове помощи", chatId);
-                        helpChatFound = true;
-                        break;
-                    }
-                }
-
-                if (!helpChatFound) {
-                    NotificationChat notificationChat = NotificationChat.builder()
-                            .chatId(chatId)
-                            .notificationCategory(NotificationCategory.HELP)
-                            .build();
-                    notificationChatRepository.save(notificationChat);
-                    sendMessageToChat("Вы подписались на уведомления о вызове помощи", chatId);
-                }
-            } else if (messageText.equals(searchPassword)) {
-                boolean searchChatFound = false;
-
-                for (NotificationChat chat : chats) {
-                    if (chat.getNotificationCategory() == NotificationCategory.SEARCH_ERROR) {
-                        sendMessageToChat("Вы уже подписаны на уведомления об ошибках поиска", chatId);
-                        searchChatFound = true;
-                        break;
-                    }
-                }
-
-                if (!searchChatFound) {
-                    NotificationChat notificationChat = NotificationChat.builder()
-                            .chatId(chatId)
-                            .notificationCategory(NotificationCategory.SEARCH_ERROR)
-                            .build();
-                    notificationChatRepository.save(notificationChat);
-                    sendMessageToChat("Вы подписались на уведомления об ошибках поиска", chatId);
-                }
-            } else if (messageText.equals("/removehelp")) {
-
-                if (chats.isEmpty())
-                    sendMessageToChat("Вы не были подписаны на уведомления о вызове помощи", chatId);
-
-                for (NotificationChat chat : chats) {
-                    if (chat.getNotificationCategory() == NotificationCategory.HELP) {
-                        notificationChatRepository.deleteById(chat.getId());
-                        sendMessageToChat("Подписка на уведомления о вызове помощи отменена", chatId);
-                        break;
-                    }
-                    else {
-                        sendMessageToChat("Вы не были подписаны на уведомления о вызове помощи", chatId);
-                    }
-                }
-            } else if (messageText.equals("/removesearch")) {
-
-                if (chats.isEmpty())
-                    sendMessageToChat("Вы не были подписаны на уведомления об ошибках поиска", chatId);
-
-                for (NotificationChat chat : chats) {
-                    if (chat.getNotificationCategory() == NotificationCategory.SEARCH_ERROR) {
-                        notificationChatRepository.deleteById(chat.getId());
-                        sendMessageToChat("Подписка на уведомления об ошибках поиска отменена", chatId);
-                        break;
-                    }
-                    else {
-                        sendMessageToChat("Вы не были подписаны на уведомления об ошибках поиска", chatId);
-                    }
-                }
-            } else
-                sendMessageToChat("Ошибка распознавания команды", chatId);
+            return sb.toString();
         }
     }
 
-    @Override
-    public String getBotUsername() {
-        return botProperties.getUsername();
-    }
-
-    public void sendMessageToChat(String message, String id) {
-        SendMessage tgMessage = new SendMessage();
-        tgMessage.setText(message);
-        tgMessage.setChatId(id);
-        try {
-            execute(tgMessage);
-        } catch (TelegramApiException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void sendMessageToChats(String message, List<String> ids) {
-        SendMessage tgMessage = new SendMessage();
-        tgMessage.setText(message);
-        for (String id: ids) {
-            tgMessage.setChatId(id);
-            try {
-                execute(tgMessage);
-            } catch (TelegramApiException e) {
-                e.printStackTrace();
+    /**
+     * Подписаться на категорию уведомлений
+     * @param category категория
+     * @param chats список чатов по chatId
+     * @param chatId Id чата, который нужно подписать
+     */
+    private String subscribeToCategory(NotificationCategory category, List<NotificationChat> chats, String chatId) {
+        for (NotificationChat chat : chats) {
+            if (chat.getNotificationCategory() == category) {
+                return String.format("Вы уже подписаны на категорию уведомлений: %s", associations.get(category));
             }
         }
+
+        NotificationChat notificationChat = NotificationChat.builder()
+                .chatId(chatId)
+                .notificationCategory(category)
+                .build();
+        notificationChatRepository.save(notificationChat);
+        return String.format("Вы подписались на категорию уведомлений: %s", associations.get(category));
+    }
+
+    /**
+     * Отписаться от категории уведомлений
+     * @param category категория
+     * @param chats список чатов по chatId
+     */
+    private String removeCategory(NotificationCategory category, List<NotificationChat> chats) {
+        String response = "Ошибка отмены подписки на уведомления";
+        if (chats.isEmpty())
+            response = String.format("Вы не были подписаны на уведомления категории: %s", associations.get(category));
+
+        for (NotificationChat chat : chats) {
+            if (chat.getNotificationCategory() == category) {
+                notificationChatRepository.deleteById(chat.getId());
+                return String.format("Отменена подписка на категорию уведомлений: %s", associations.get(category));
+            }
+            else {
+                response = String.format("Вы не были подписаны на уведомления категории: %s", associations.get(category));
+            }
+        }
+
+        return response;
+    }
+
+    /**
+     * Создаёт сообщение о вызове помощи на IVR-стендне
+     */
+    public String createHelpMessage() {
+        LocalTime currentTime = LocalTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
+        String formattedTime = currentTime.format(formatter);
+        return String.format("%s, %s: требуется помощь на IVR-стенде", LocalDate.now(), formattedTime);
     }
 }

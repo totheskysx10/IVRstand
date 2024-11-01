@@ -1,6 +1,5 @@
-package com.good.ivrstand.extern.infrastructure;
+package com.good.ivrstand.extern.infrastructure.bot;
 
-import com.good.ivrstand.app.NotificationService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.EventListener;
@@ -13,9 +12,9 @@ import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 @Component
 public class BotInitializer {
 
-    private final NotificationService bot;
+    private final BotService bot;
 
-    public BotInitializer(NotificationService bot) {
+    public BotInitializer(BotService bot) {
         this.bot = bot;
     }
 

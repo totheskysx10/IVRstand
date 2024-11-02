@@ -45,8 +45,7 @@ public class TokenServiceTest {
     public void testScheduleTokenInvalidation() {
         User user = User.builder()
                 .id(23L)
-                .email("min@list.ru")
-                .username("test")
+                .username("min@list.ru")
                 .password("test")
                 .resetToken("token")
                 .build();
@@ -64,8 +63,7 @@ public class TokenServiceTest {
     public void testInvalidateToken() {
         User user = User.builder()
                 .id(23L)
-                .email("min@list.ru")
-                .username("test")
+                .username("min@list.ru")
                 .password("test")
                 .resetToken("token")
                 .build();

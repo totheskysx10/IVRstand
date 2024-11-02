@@ -13,9 +13,7 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 
 /**
- * Сервисный класс для работы с категориями (Categories).
- * Обеспечивает операции создания, получения, обновления и удаления категорий,
- * а также поиск категорий по различным критериям.
+ * Сервис для работы с категориями
  */
 @Component
 @Slf4j
@@ -43,11 +41,6 @@ public class CategoryService {
         if (category == null) {
             throw new IllegalArgumentException("Категория не может быть null");
         }
-
-//        Category existing = categoryRepository.findByTitleIgnoreCase(category.getTitle());
-//        if (existing != null) {
-//            throw new IllegalArgumentException("Такая категория уже есть в базе!");
-//        }
 
         try {
             if (enableAudio) {

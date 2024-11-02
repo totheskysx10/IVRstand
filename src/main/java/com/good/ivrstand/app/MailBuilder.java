@@ -3,7 +3,7 @@ package com.good.ivrstand.app;
 import com.good.ivrstand.domain.EmailData;
 
 /**
- * Интерфейс для создания электронных сообщений
+ * Создаёт объекты писем для отправки на эл. почту
  */
 public interface MailBuilder {
 

@@ -11,17 +11,36 @@ import org.springframework.web.bind.annotation.RequestBody;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Feign-клиент векторного поиска
+ */
 @FeignClient(name = "flaskApiClient", url = "${flask-api.vector}")
 public interface FlaskApiVectorSearchClient {
-    @PostMapping("/get_emb")
-    List<Long> getEmbeddings(@RequestBody Map<String, Object> requestData);
 
+    /**
+     * Запрос получения списка с Id найденных услуг.
+     * @param requestData запрос
+     */
+    @PostMapping("/get_emb")
+    List<Long> getItemIds(@RequestBody Map<String, String> requestData);
+
+    /**
+     * Запрос добавления услуги в базу Qdrant.
+     * @param request запрос
+     */
     @PostMapping(value = "/add_title", consumes = MediaType.APPLICATION_JSON_VALUE)
     void addTitle(@RequestBody AddTitleRequest request);
 
+    /**
+     * Запрос удаления услуги из базы Qdrant.
+     * @param request запрос
+     */
     @PostMapping(value = "/delete_title", consumes = MediaType.APPLICATION_JSON_VALUE)
     void deleteTitle(@RequestBody TitleRequest request);
 
+    /**
+     * Запрос синхронизации базы Qdrant с базой PostreSQL.
+     */
     @PostMapping(value = "/sync_database", consumes = MediaType.APPLICATION_JSON_VALUE)
     void syncDatabase();
 }

@@ -6,7 +6,7 @@ import lombok.*;
 import java.util.List;
 
 /**
- * Класс, представляющий сущность дополнения к услуге.
+ * Сущность дополнения к услуге.
  */
 @Entity
 @Table(name = "additions")

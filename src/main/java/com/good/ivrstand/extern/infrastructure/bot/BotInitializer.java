@@ -8,6 +8,9 @@ import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 
+/**
+ * Инициализатор Telegram-бота
+ */
 @Slf4j
 @Component
 public class BotInitializer {
@@ -18,6 +21,9 @@ public class BotInitializer {
         this.bot = bot;
     }
 
+    /**
+     * Настраивает и регистрирует бота для работы с Telegram API.
+     */
     @EventListener({ContextRefreshedEvent.class})
     public void init() {
         try {

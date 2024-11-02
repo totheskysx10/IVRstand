@@ -11,6 +11,9 @@ import software.amazon.awssdk.services.s3.S3Client;
 
 import java.net.URI;
 
+/**
+ * Конфигурация S3.
+ */
 @Slf4j
 @Configuration
 public class S3Config {
@@ -21,6 +24,9 @@ public class S3Config {
     @Value("${yandex.cloud.secret}")
     private String secretKey;
 
+    /**
+     * Конфигурирует клиент S3.
+     */
     @Bean
     public S3Client s3Client() {
         log.info("Building S3 client");

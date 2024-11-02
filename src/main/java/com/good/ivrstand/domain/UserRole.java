@@ -1,7 +1,7 @@
 package com.good.ivrstand.domain;
 
 /**
- * Перечисление ролей пользователей в системе.
+ * Роли пользователей в системе.
  */
 public enum UserRole {
     /**

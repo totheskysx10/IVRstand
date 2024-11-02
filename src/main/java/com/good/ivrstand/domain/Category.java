@@ -6,7 +6,7 @@ import lombok.*;
 import java.util.List;
 
 /**
- * Класс, представляющий сущность категории услуг.
+ * Сущность категории услуг.
  */
 @Entity
 @Table(name = "categories")

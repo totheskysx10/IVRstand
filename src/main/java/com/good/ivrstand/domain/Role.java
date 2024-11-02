@@ -8,7 +8,7 @@ import org.springframework.security.core.GrantedAuthority;
 import java.util.List;
 
 /**
- * Класс, представляющий роль в системе.
+ * Роль в системе.
  */
 @Entity
 @Table(name = "roles")

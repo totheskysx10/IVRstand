@@ -3,12 +3,12 @@ package com.good.ivrstand.app;
 import com.good.ivrstand.domain.EmailData;
 
 /**
- * Интерфейс для отправки электронной почты.
+ * Сервис отправки электронной почты.
  */
 public interface EmailService {
 
     /**
-     * Отправляет электронное письмо на указанный адрес с заданной темой и сообщением.
+     * Отправляет электронное письмо.
      *
      * @param emailData данные для отправки сообщения
      */

@@ -14,7 +14,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Сервисный класс для выполнения команд бота
+ * Сервис для выполнения команд бота
  */
 @Component
 public class NotificationService {
@@ -27,6 +27,9 @@ public class NotificationService {
 
     private Set<String> commands;
 
+    /**
+     * Сопоставление категорий уведомлений с их названиями на русском языке.
+     */
     private final Map<NotificationCategory, String> associations = Map.of(
             NotificationCategory.HELP, "Вызов помощи",
             NotificationCategory.SEARCH_ERROR, "Ошибки поиска"
@@ -38,6 +41,9 @@ public class NotificationService {
         this.notificationChatRepository = notificationChatRepository;
     }
 
+    /**
+     * Задаёт множество возможных команд для бота.
+     */
     @PostConstruct
     private void initCommands() {
         this.commands = Set.of(

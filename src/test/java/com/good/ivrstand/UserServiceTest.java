@@ -50,12 +50,14 @@ public class UserServiceTest {
     @Mock
     private MailBuilder mailBuilder;
 
+    @Mock
+    private EncodeService encodeService;
+
 
     @Test
     public void loadUserByUsernameTest() {
         User user = User.builder()
-                .username("User")
-                .email("test@example.com")
+                .username("test@example.com")
                 .password("test")
                 .emailConfirmed(true)
                 .build();
@@ -63,14 +65,14 @@ public class UserServiceTest {
         when(userRepository.findByUsername("test@example.com")).thenReturn(user);
         UserDetails userDetails = userService.loadUserByUsername("test@example.com");
 
-        assertEquals("User", userDetails.getUsername());
+        assertEquals("test@example.com", userDetails.getUsername());
     }
 
     @Test
     public void getUserByIdTest() {
         User user = User.builder()
                 .id(1L)
-                .email("test@example.com")
+                .username("test@example.com")
                 .password("test")
                 .emailConfirmed(true)
                 .build();
@@ -78,15 +80,14 @@ public class UserServiceTest {
         when(userRepository.findById(1)).thenReturn(user);
         User userFound = userService.getUserById(1);
 
-        assertEquals("test@example.com", userFound.getEmail());
+        assertEquals("test@example.com", userFound.getUsername());
     }
 
     @Test
     public void createUserTest() {
         User user1 = User.builder()
                 .id(1L)
-                .username("User")
-                .email("test@example.com")
+                .username("test@example.com")
                 .password("test")
                 .emailConfirmed(true)
                 .roles(new ArrayList<>())
@@ -94,17 +95,7 @@ public class UserServiceTest {
 
         User user2 = User.builder()
                 .id(2L)
-                .username("User1")
-                .email("test@example.com")
-                .password("test")
-                .emailConfirmed(true)
-                .roles(new ArrayList<>())
-                .build();
-
-        User user3 = User.builder()
-                .id(3L)
-                .email("test2@example.com")
-                .username("User")
+                .username("test@example.com")
                 .password("test")
                 .emailConfirmed(true)
                 .roles(new ArrayList<>())
@@ -116,44 +107,33 @@ public class UserServiceTest {
 
         user1.getRoles().add(roleUser);
         user2.getRoles().add(roleUser);
-        user3.getRoles().add(roleUser);
 
         when(roleService.findRoleByName(UserRole.ROLE_USER)).thenReturn(roleUser);
         when(bCryptPasswordEncoder.encode(anyString())).thenReturn("encodedPassword");
-
-        when(userRepository.findByEmailIgnoreCase(user1.getEmail())).thenReturn(null);
         when(userRepository.findByUsernameIgnoreCase(user1.getUsername())).thenReturn(null);
         when(userRepository.save(user1)).thenReturn(user1);
-
         User createdUser1 = userService.createUser(user1);
 
-        assertNotNull(createdUser1);
-        assertEquals("test@example.com", createdUser1.getEmail());
+        when(userRepository.findByUsernameIgnoreCase(user1.getUsername())).thenReturn(user2);
+        when(userRepository.save(user1)).thenReturn(user1);
 
-        when(userRepository.findByEmailIgnoreCase(user2.getEmail())).thenReturn(user1);
-        when(userRepository.findByUsernameIgnoreCase(user2.getUsername())).thenReturn(null);
+        assertNotNull(createdUser1);
+        assertEquals("test@example.com", createdUser1.getUsername());
+
+        when(userRepository.findByUsernameIgnoreCase(user2.getUsername())).thenReturn(user2);
 
         UserDuplicateException exceptionEmail = assertThrows(UserDuplicateException.class, () -> {
             userService.createUser(user2);
         });
 
-        assertEquals("Пользователь с email test@example.com уже есть в базе!", exceptionEmail.getMessage());
-
-        when(userRepository.findByEmailIgnoreCase(user3.getEmail())).thenReturn(null);
-        when(userRepository.findByUsernameIgnoreCase(user3.getUsername())).thenReturn(user1);
-
-        UserDuplicateException exceptionUsername = assertThrows(UserDuplicateException.class, () -> {
-            userService.createUser(user3);
-        });
-
-        assertEquals("Пользователь с логином User уже есть в базе!", exceptionUsername.getMessage());
+        assertEquals("Пользователь с логином test@example.com уже есть в базе!", exceptionEmail.getMessage());
     }
 
     @Test
     public void deleteUserTest() {
         User user = User.builder()
                 .id(1L)
-                .email("min@list.ru")
+                .username("min@list.ru")
                 .username("test")
                 .build();
 
@@ -168,16 +148,14 @@ public class UserServiceTest {
     public void updatePasswordTest() {
         User user1 = User.builder()
                 .id(23L)
-                .email("min@list.ru")
-                .username("test")
+                .username("min@list.ru")
                 .password("test")
                 .resetToken("token")
                 .build();
 
         User user2 = User.builder()
                 .id(20L)
-                .email("min@list.ru")
-                .username("test")
+                .username("min@list.ru")
                 .password("test")
                 .resetToken("no-token")
                 .build();
@@ -185,6 +163,8 @@ public class UserServiceTest {
         when(userRepository.findById(23)).thenReturn(user1);
         when(userRepository.findById(20)).thenReturn(user2);
         when(bCryptPasswordEncoder.encode(anyString())).thenReturn("encodedPassword");
+        when(encodeService.decrypt("mCUMoT5ilyKYdeOa8iFI+w==")).thenReturn("23");
+        when(encodeService.decrypt("ykcfU3ayqLU9YpCFhDtu+A==")).thenReturn("20");
 
         userService.updatePassword("mCUMoT5ilyKYdeOa8iFI+w==", "encodedPassword", "token");
 
@@ -200,53 +180,57 @@ public class UserServiceTest {
     public void sendPasswordResetMessageTest() {
         User user1 = User.builder()
                 .id(23L)
-                .email("min@list.ru")
-                .username("test")
+                .username("min@list.ru")
                 .password("test")
                 .resetToken("token")
                 .build();
 
-        when(userRepository.findByEmailIgnoreCase("min@list.ru")).thenReturn(user1);
+        EmailData emailData = new EmailData("min@list.ru", "Subject", "Message");
+
+        when(userRepository.findByUsernameIgnoreCase("min@list.ru")).thenReturn(user1);
         when(tokenService.generateResetPasswordToken()).thenReturn("token1");
+        when(encodeService.encrypt("23")).thenReturn("mCUMoT5ilyKYdeOa8iFI+w==");
         when(mailBuilder.buildResetPasswordMessage(anyString(), anyString(), eq("token1")))
-                .thenReturn(new EmailData("min@list.ru", "Subject", "Message"));
+                .thenReturn(emailData);
 
-        userService.sendPasswordResetMessage(user1.getEmail());
+        userService.sendPasswordResetMessage(user1.getUsername());
 
-        verify(emailService, times(1)).sendEmail(any(EmailData.class));
+        verify(emailService, times(1)).sendEmail(emailData);
     }
 
     @Test
     public void sendConfirmEmailMessageTest() {
         User user1 = User.builder()
                 .id(23L)
-                .email("min@list.ru")
-                .username("test")
+                .username("min@list.ru")
                 .password("test")
                 .resetToken("token")
                 .build();
 
-        when(userRepository.findByEmailIgnoreCase("min@list.ru")).thenReturn(user1);
+        EmailData emailData = new EmailData("min@list.ru", "Subject", "Message");
+
+        when(userRepository.findByUsernameIgnoreCase("min@list.ru")).thenReturn(user1);
+        when(encodeService.encrypt("23")).thenReturn("mCUMoT5ilyKYdeOa8iFI+w==");
         when(mailBuilder.buildConfirmEmailMessage(anyString(), anyString()))
-                .thenReturn(new EmailData("min@list.ru", "Subject", "Message"));
+                .thenReturn(emailData);
 
-        userService.sendConfirmEmailMessage(user1.getEmail());
+        userService.sendConfirmEmailMessage(user1.getUsername());
 
-        verify(emailService, times(1)).sendEmail(any(EmailData.class));
+        verify(emailService, times(1)).sendEmail(emailData);
     }
 
     @Test
     public void confirmEmailTest() {
         User user1 = User.builder()
                 .id(23L)
-                .email("min@list.ru")
-                .username("test")
+                .username("min@list.ru")
                 .password("test")
                 .resetToken("no-token")
                 .emailConfirmed(false)
                 .build();
 
         when(userRepository.findById(23)).thenReturn(user1);
+        when(encodeService.decrypt("mCUMoT5ilyKYdeOa8iFI+w==")).thenReturn("23");
 
         userService.confirmEmail("mCUMoT5ilyKYdeOa8iFI+w==");
 
@@ -257,8 +241,7 @@ public class UserServiceTest {
     public void giveAdminRulesToUserTest() {
         User user1 = User.builder()
                 .id(23L)
-                .email("min@list.ru")
-                .username("test")
+                .username("min@list.ru")
                 .password("test")
                 .resetToken("no-token")
                 .emailConfirmed(false)
@@ -267,8 +250,7 @@ public class UserServiceTest {
 
         User user2 = User.builder()
                 .id(24L)
-                .email("min@list.ru")
-                .username("test")
+                .username("min@list.ru")
                 .password("test")
                 .resetToken("no-token")
                 .emailConfirmed(true)
@@ -304,8 +286,7 @@ public class UserServiceTest {
     public void removeAdminRulesFromUserTest() {
         User user1 = User.builder()
                 .id(23L)
-                .email("min@list.ru")
-                .username("test")
+                .username("min@list.ru")
                 .password("test")
                 .resetToken("no-token")
                 .emailConfirmed(true)
@@ -335,8 +316,7 @@ public class UserServiceTest {
     public void updateFirstNameTest() {
         User user1 = User.builder()
                 .id(23L)
-                .email("min@list.ru")
-                .username("test")
+                .username("min@list.ru")
                 .password("test")
                 .firstName("name")
                 .lastName("surname")
@@ -355,8 +335,7 @@ public class UserServiceTest {
     public void updateLastNameTest() {
         User user1 = User.builder()
                 .id(23L)
-                .email("min@list.ru")
-                .username("test")
+                .username("min@list.ru")
                 .password("test")
                 .firstName("name")
                 .lastName("surname")

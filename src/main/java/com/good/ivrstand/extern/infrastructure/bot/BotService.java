@@ -15,6 +15,9 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Сервис Telegram-бота
+ */
 @Component
 public class BotService extends TelegramLongPollingBot {
 
@@ -31,6 +34,10 @@ public class BotService extends TelegramLongPollingBot {
         this.notificationService = notificationService;
     }
 
+    /**
+     * Обрабатывает полученное в Telegram-бот сообщение.
+     * @param update полученное через бот сообщение
+     */
     @Override
     public void onUpdateReceived(Update update) {
         if (update.hasMessage() && update.getMessage().hasText()) {
@@ -43,11 +50,19 @@ public class BotService extends TelegramLongPollingBot {
         }
     }
 
+    /**
+     * @return имя пользователя в Telegram
+     */
     @Override
     public String getBotUsername() {
         return username;
     }
 
+    /**
+     * Отправляет сообщение в указанный чат.
+     * @param message сообщение
+     * @param id id чата
+     */
     public void sendMessageToChat(String message, String id) {
         SendMessage tgMessage = new SendMessage();
         tgMessage.setText(message);

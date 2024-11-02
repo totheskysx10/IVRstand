@@ -9,6 +9,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Сервис векторного поиска
+ */
 @Component
 public class DefaultFlaskApiVectorSearchService implements FlaskApiVectorSearchService {
 
@@ -18,21 +21,36 @@ public class DefaultFlaskApiVectorSearchService implements FlaskApiVectorSearchS
         this.flaskApiVectorSearchClient = flaskApiVectorSearchClient;
     }
 
-    public List<Long> getEmbeddings(List<String> dialog) {
-        Map<String, Object> requestData = new HashMap<>();
-        requestData.put("dialog", dialog);
+    /**
+     * Вызывает в Feign-клиенте метод получения списка с Id найденных услуг.
+     * @param request запрос
+     */
+    public List<Long> getItemIds(String request) {
+        Map<String, String> requestData = new HashMap<>();
+        requestData.put("request", request);
 
-        return flaskApiVectorSearchClient.getEmbeddings(requestData);
+        return flaskApiVectorSearchClient.getItemIds(requestData);
     }
 
+    /**
+     * Вызывает в Feign-клиенте метод добавления услуги в базу Qdrant.
+     * @param addTitleRequest запрос
+     */
     public void addTitle(AddTitleRequest addTitleRequest) {
         flaskApiVectorSearchClient.addTitle(addTitleRequest);
     }
 
-    public void deleteTitle(TitleRequest title) {
-        flaskApiVectorSearchClient.deleteTitle(title);
+    /**
+     * Вызывает в Feign-клиенте метод удаления услуги из базы Qdrant.
+     * @param request запрос
+     */
+    public void deleteTitle(TitleRequest request) {
+        flaskApiVectorSearchClient.deleteTitle(request);
     }
 
+    /**
+     * Вызывает в Feign-клиенте метод синхронизации базы Qdrant с базой PostreSQL.
+     */
     public void syncDatabase() {
         flaskApiVectorSearchClient.syncDatabase();
     }

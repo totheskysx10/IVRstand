@@ -58,7 +58,6 @@ public class AuthController {
             User user = User.builder()
                     .username(userRegisterDTO.getUsername())
                     .password(userRegisterDTO.getPassword())
-                    .email(userRegisterDTO.getUsername())
                     .firstName(userRegisterDTO.getFirstName())
                     .lastName(userRegisterDTO.getLastName())
                     .roles(new ArrayList<>())

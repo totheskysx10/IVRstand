@@ -11,12 +11,23 @@ import java.time.Instant;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledFuture;
 
+/**
+ * Сервис для работы с токенам сброса пароля
+ */
 @Component
 @Slf4j
 public class TokenService {
     private static final String CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     private static final int LENGTH = 32;
 
+    /**
+     * Значение токена сброса пароля, когда он не задан
+     */
+    private static final String NO_TOKEN = "no-token";
+
+    /**
+     * Запланированные задачи на истечение токенов сброса пароля.
+     */
     private ConcurrentHashMap<Long, ScheduledFuture<?>> scheduledTasks = new ConcurrentHashMap<>();
 
     private final TaskScheduler taskScheduler;
@@ -27,6 +38,9 @@ public class TokenService {
         this.userRepository = userRepository;
     }
 
+    /**
+     * Генерирует токен сброса пароля
+     */
     public String generateResetPasswordToken() {
         SecureRandom random = new SecureRandom();
         StringBuilder sb = new StringBuilder(LENGTH);
@@ -40,6 +54,11 @@ public class TokenService {
         return randomString;
     }
 
+    /**
+     * Задаёт пользователю токен сброса пароля, создаёт задачу на его истечение.
+     * @param userId id пользователя
+     * @param delayInMilliseconds время действия токена
+     */
     @Async
     public void scheduleTokenInvalidation(long userId, long delayInMilliseconds) {
         Instant startTime = Instant.now().plusMillis(delayInMilliseconds);
@@ -60,13 +79,18 @@ public class TokenService {
 
     }
 
+    /**
+     * Делает токен сброса пароля недействительным.
+     * Удаляет действующий токен из базы и заменяет на "no-token"
+     * @param userId id пользователя
+     */
     public void invalidateToken(long userId) {
         User user = userRepository.findById(userId);
 
         if (user == null)
             throw new IllegalArgumentException("Пользователь не может быть null");
 
-        user.setResetToken("no-token");
+        user.setResetToken(NO_TOKEN);
         ScheduledFuture<?> existingTask = scheduledTasks.get(userId);
         if (existingTask != null && !existingTask.isDone()) {
             existingTask.cancel(true);

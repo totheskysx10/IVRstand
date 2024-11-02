@@ -16,9 +16,7 @@ import java.io.IOException;
 import java.util.*;
 
 /**
- * Сервисный класс для работы с услугами (Items).
- * Обеспечивает операции создания, получения, обновления и удаления услуг,
- * а также поиск услуг по различным критериям.
+ * Сервис для работы с услугами
  */
 @Component
 @Slf4j
@@ -28,18 +26,16 @@ public class ItemService {
     private final FlaskApiVectorSearchService flaskApiVectorSearchService;
     private final AdditionService additionService;
     private final QdrantService qdrantService;
-    private final DescriptionService descriptionService;
     private final SpeechService speechService;
     private final EncodeService encodeService;
 
     @Autowired
-    public ItemService(ItemRepository itemRepository, CategoryService categoryService, FlaskApiVectorSearchService flaskApiVectorSearchService, AdditionService additionService, QdrantService qdrantService, DescriptionService descriptionService, SpeechService speechService, EncodeService encodeService) {
+    public ItemService(ItemRepository itemRepository, CategoryService categoryService, FlaskApiVectorSearchService flaskApiVectorSearchService, AdditionService additionService, QdrantService qdrantService, SpeechService speechService, EncodeService encodeService) {
         this.itemRepository = itemRepository;
         this.categoryService = categoryService;
         this.flaskApiVectorSearchService = flaskApiVectorSearchService;
         this.additionService = additionService;
         this.qdrantService = qdrantService;
-        this.descriptionService = descriptionService;
         this.speechService = speechService;
         this.encodeService = encodeService;
     }
@@ -56,11 +52,6 @@ public class ItemService {
         if (item == null) {
             throw new IllegalArgumentException("Услуга не может быть null");
         }
-
-//        Item existing = itemRepository.findByTitleIgnoreCase(item.getTitle());
-//        if (existing != null) {
-//            throw new IllegalArgumentException("Такая услуга уже есть в базе!");
-//        }
 
         try {
             if (enableAudio) {
@@ -97,7 +88,7 @@ public class ItemService {
 
     /**
      * Удаляет услугу по ее идентификатору.
-     * Если к услуге привязано дополнение, удаляет и его.
+     * Если к услуге привязаны дополнения, удаляет и их.
      *
      * @param itemId Идентификатор услуги.
      * @throws IllegalArgumentException Если услуга с указанным идентификатором не найдена.
@@ -191,9 +182,7 @@ public class ItemService {
      * @return страница найденных услуг
      */
     public Page<Item> findItemsByTitle(String title, Pageable pageable, int attempts) {
-        List<String> request = new ArrayList<>();
-        request.add(title);
-        List<Long> result = flaskApiVectorSearchService.getEmbeddings(request);
+        List<Long> result = flaskApiVectorSearchService.getItemIds(title);
 
         List<Item> items = new ArrayList<>();
         for (Long element: result) {
@@ -429,11 +418,7 @@ public class ItemService {
      * @param item  Услуга.
      */
     private void deleteQdrantTitle(Item item) {
-        TitleRequest titleRequest;
-        if (item.getCategory() != null)
-            titleRequest = new TitleRequest(formatTitle(item));
-        else
-            titleRequest = new TitleRequest(formatTitle(item));
+        TitleRequest titleRequest = new TitleRequest(formatTitle(item));
         flaskApiVectorSearchService.deleteTitle(titleRequest);
     }
 
@@ -443,16 +428,14 @@ public class ItemService {
      * @param item  Услуга.
      */
     private void addQdrantTitle(Item item) {
-        AddTitleRequest addTitleRequest;
-        if (item.getCategory() != null)
-            addTitleRequest = new AddTitleRequest(formatTitle(item), item.getId());
-        else
-            addTitleRequest = new AddTitleRequest(formatTitle(item), item.getId());
+        AddTitleRequest addTitleRequest = new AddTitleRequest(formatTitle(item), item.getId());
         flaskApiVectorSearchService.addTitle(addTitleRequest);
     }
 
     /**
-     * Формирует строку для вектора услуги в нужном формате.
+     * Формирует строку для вектора услуги в формате
+     * "заголовок ключевые_слова категория описание"
+     * или "заголовок ключевые_слова описание", если нет категории.
      *
      * @param item  Услуга.
      * @return Отформатированная строка.
@@ -529,7 +512,7 @@ public class ItemService {
                 item.getAudio().add(audioLink);
             }
         } else {
-            String[] descriptionBlocks = descriptionService.splitDescription(item.getDescription());
+            String[] descriptionBlocks = speechService.splitDescription(item.getDescription());
             for (String block : descriptionBlocks) {
                 String audioLink = speechService.generateAudio(block);
                 item.getAudio().add(audioLink);

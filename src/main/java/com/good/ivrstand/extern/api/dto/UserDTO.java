@@ -11,7 +11,6 @@ import java.util.List;
 public class UserDTO extends RepresentationModel<UserDTO>  {
     private Long id;
     private String username;
-    private String email;
     private List<UserRole> roles;
     private boolean emailConfirmed;
 

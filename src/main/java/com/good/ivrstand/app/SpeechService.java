@@ -11,7 +11,7 @@ import java.io.InputStream;
 import java.util.Objects;
 
 /**
- * Сервисный класс для работы с озвучкой
+ * Сервис для работы с озвучкой
  */
 @Component
 @Slf4j
@@ -25,7 +25,24 @@ public class SpeechService {
     }
 
     /**
-     * Генерирует аудио, отправляя запрос на интерфейс взаимодействия с Flask.
+     * Форматирует описание для передачи в озвучку.
+     *
+     * @param text текст описания
+     * @return массив с блоками форматированного текста
+     */
+    public String[] splitDescription(String text) {
+        String result = text.replaceAll("\"description\":", "")
+                .replaceAll("\\\\\\\\icon\\d+", "")
+                .replaceAll("\\\\icon\\d+", "")
+                .replace("{\"", "")
+                .replace("\"}", "");
+        String[] resultArray = result.split("\\\\n\\\\n|\\\\n");
+
+        return resultArray;
+    }
+
+    /**
+     * Отправляет запрос на генерацию аудио по тексту.
      * Загружает файл на S3.
      *
      * @param text текст для озвучки

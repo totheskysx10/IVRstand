@@ -4,7 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 /**
- * Сервисный класс для раобты с базой Qdrant
+ * Сервис для раобты с базой Qdrant
  */
 @Component
 @Slf4j

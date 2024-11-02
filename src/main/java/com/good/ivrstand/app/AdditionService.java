@@ -14,19 +14,20 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Сервис для работы с дополнениями
+ */
 @Component
 @Slf4j
 public class AdditionService {
 
     private final AdditionRepository additionRepository;
-    private final DescriptionService descriptionService;
     private final SpeechService speechService;
     private final EncodeService encodeService;
 
     @Autowired
-    public AdditionService(AdditionRepository additionRepository, DescriptionService descriptionService, SpeechService speechService, EncodeService encodeService) {
+    public AdditionService(AdditionRepository additionRepository, SpeechService speechService, EncodeService encodeService) {
         this.additionRepository = additionRepository;
-        this.descriptionService = descriptionService;
         this.speechService = speechService;
         this.encodeService = encodeService;
     }
@@ -284,7 +285,7 @@ public class AdditionService {
                 addition.getAudio().add(audioLink);
             }
         } else {
-            String[] descriptionBlocks = descriptionService.splitDescription(addition.getDescription());
+            String[] descriptionBlocks = speechService.splitDescription(addition.getDescription());
             for (String block : descriptionBlocks) {
                 String audioLink = speechService.generateAudio(block);
                 addition.getAudio().add(audioLink);

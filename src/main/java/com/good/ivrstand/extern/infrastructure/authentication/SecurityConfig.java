@@ -15,6 +15,9 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
 
+/**
+ * Конфигурация безопасности
+ */
 @Configuration
 @EnableWebSecurity
 @Slf4j
@@ -28,12 +31,19 @@ public class SecurityConfig {
         this.securityContextService = securityContextService;
     }
 
+    /**
+     * Возвращает объект менеджера аутентификации.
+     * @param config конфигурация
+     */
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config)
             throws Exception {
         return config.getAuthenticationManager();
     }
 
+    /**
+     * Конфигурирует параметры доступа к эндпойнтам.
+     */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http

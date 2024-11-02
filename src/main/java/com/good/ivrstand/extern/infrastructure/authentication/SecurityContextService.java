@@ -7,6 +7,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
+/**
+ * Сервис контекста безопасности
+ */
 @Component
 public class SecurityContextService {
 
@@ -16,15 +19,20 @@ public class SecurityContextService {
         this.userRepository = userRepository;
     }
 
+    /**
+     * Проверяет, авторизован ли в данный момент пользователь с переданным id.
+     * @param userId id пользователя
+     * @return true, если пользователь с userId в данный момент авторизован
+     */
     public boolean isCurrentAuthId(long userId) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null) {
             Object context = authentication.getPrincipal();
             if (context instanceof User) {
                 User contextUser = (User)context;
-                String username = contextUser.getEmail();
+                String username = contextUser.getUsername();
 
-                User user = userRepository.findByEmailIgnoreCase(username);
+                User user = userRepository.findByUsernameIgnoreCase(username);
 
                 if (user != null) {
                     return user.getId() == userId;

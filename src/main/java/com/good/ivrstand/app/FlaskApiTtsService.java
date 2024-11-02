@@ -1,12 +1,12 @@
 package com.good.ivrstand.app;
 
 /**
- * Интерфейс для сервиса Flask API озвучки текста.
+ * Сервис озвучки текста.
  */
 public interface FlaskApiTtsService {
 
     /**
-     * Генерирует голос из текста.
+     * Генерирует голос по тексту.
      *
      * @param text текст
      * @return массив байт файла озвучки

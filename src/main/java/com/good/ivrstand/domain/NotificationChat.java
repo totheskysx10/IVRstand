@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 /**
- * Класс, хранящий Id чата для уведомлений.
+ * Сущность чата для уведомлений.
  */
 @Entity
 @Table(name = "notification_chats")
@@ -15,7 +15,7 @@ import lombok.*;
 public class NotificationChat {
 
     /**
-     * Id сущности.
+     * Идентификатор сущности.
      */
     @Id
     @Column(name = "id")

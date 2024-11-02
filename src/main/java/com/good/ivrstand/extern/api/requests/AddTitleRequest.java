@@ -2,6 +2,9 @@ package com.good.ivrstand.extern.api.requests;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+/**
+ * Запрос на добавление услуги в базу Qdrant
+ */
 public class AddTitleRequest extends TitleRequest {
     @JsonProperty("id")
     private long id;

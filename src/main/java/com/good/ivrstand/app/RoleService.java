@@ -5,7 +5,7 @@ import com.good.ivrstand.domain.UserRole;
 import org.springframework.stereotype.Component;
 
 /**
- * Сервисный класс для работы с ролями
+ * Сервис для работы с ролями
  */
 @Component
 public class RoleService {

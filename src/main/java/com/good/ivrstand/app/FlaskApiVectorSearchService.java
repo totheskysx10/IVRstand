@@ -6,31 +6,31 @@ import com.good.ivrstand.extern.api.requests.TitleRequest;
 import java.util.List;
 
 /**
- * Интерфейс для сервиса Flask API векторного поиска.
+ * Сервис векторного поиска.
  */
 public interface FlaskApiVectorSearchService {
 
     /**
-     * Получает найденные Id услуг для заданного списка запросов.
+     * Получает найденные Id услуг по запросу.
      *
-     * @param dialog список строковых запросов
+     * @param request запрос
      * @return список идентификаторов услуг
      */
-    List<Long> getEmbeddings(List<String> dialog);
+    List<Long> getItemIds(String request);
 
     /**
-     * Добавляет заголовок услуги в Flask-сервис.
+     * Добавляет услугу в базу Qdrant
      *
-     * @param request объект запроса с данными
+     * @param request запрос
      */
     void addTitle(AddTitleRequest request);
 
     /**
-     * Удаляет заголовок услуги из Flask-сервиса.
+     * Удаляет услугу из базы Qdrant
      *
-     * @param title объект со строкой заголовка, который необходимо удалить
+     * @param request запрос
      */
-    void deleteTitle(TitleRequest title);
+    void deleteTitle(TitleRequest request);
 
     /**
      * Синхронизирует базу данных Qdrant с данными в PostgreSQL

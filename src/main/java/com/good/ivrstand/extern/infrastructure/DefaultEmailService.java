@@ -9,6 +9,9 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
+/**
+ * Сервис отправки Email
+ */
 @Component
 public class DefaultEmailService implements EmailService {
 
@@ -20,6 +23,10 @@ public class DefaultEmailService implements EmailService {
         this.javaMailSender = javaMailSender;
     }
 
+    /**
+     * Отправляет сообщение на эл. почту
+     * @param emailData данные для отправки сообщения
+     */
     @Async
     public void sendEmail(EmailData emailData) {
         try {

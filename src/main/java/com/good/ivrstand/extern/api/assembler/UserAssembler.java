@@ -23,7 +23,6 @@ public class UserAssembler extends RepresentationModelAssemblerSupport<User, Use
         UserDTO userDTO = instantiateModel(user);
 
         userDTO.setId(user.getId());
-        userDTO.setEmail(user.getEmail());
         userDTO.setUsername(user.getUsername());
         userDTO.setRoles(user.getRoles().stream()
                 .map(Role::getName)

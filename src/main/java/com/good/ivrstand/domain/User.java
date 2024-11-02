@@ -11,7 +11,7 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Класс, представляющий пользователя в системе.
+ * Пользователь в системе.
  */
 @Entity
 @Table(name = "users")
@@ -30,29 +30,21 @@ public class User implements UserDetails {
     private Long id;
 
     /**
-     * Имя пользователя. Минимальная длина - 5 символов.
+     * Имя пользователя.
+     * Обязательно должно быть эл. почтой.
      */
-    @Size(min=5, message = "Не меньше 5 знаков")
     @Column(name = "user_name")
     private String username;
 
     /**
-     * Почта пользователя.
+     * Пароль пользователя.
      */
-    @Getter
-    @Column(name = "user_email")
-    private String email;
-
-    /**
-     * Пароль пользователя. Минимальная длина - 5 символов.
-     */
-    @Size(min=5, message = "Не меньше 5 знаков")
     @Setter
     @Column(name = "user_pass")
     private String password;
 
     /**
-     * Роли, назначенные пользователю. Связь с таблицей ролей.
+     * Роли, назначенные пользователю.
      */
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
@@ -73,7 +65,7 @@ public class User implements UserDetails {
     private boolean emailConfirmed;
 
     /**
-     * Токен сброса пользователя.
+     * Токен сброса пароля пользователя.
      */
     @Getter
     @Setter
@@ -107,7 +99,6 @@ public class User implements UserDetails {
 
     /**
      * Возвращает пароль пользователя.
-     * @return Пароль пользователя.
      */
     @Override
     public String getPassword() {
@@ -116,7 +107,6 @@ public class User implements UserDetails {
 
     /**
      * Возвращает имя пользователя.
-     * @return Имя пользователя.
      */
     @Override
     public String getUsername() {
@@ -125,7 +115,7 @@ public class User implements UserDetails {
 
     /**
      * Проверяет, не истек ли срок действия учетной записи пользователя.
-     * @return {@code false}, если срок действия учетной записи истек.
+     * @return false, если срок действия учетной записи истек.
      */
     @Override
     public boolean isAccountNonExpired() {
@@ -134,7 +124,7 @@ public class User implements UserDetails {
 
     /**
      * Проверяет, не заблокирована ли учетная запись пользователя.
-     * @return {@code false}, если учетная запись заблокирована.
+     * @return false, если учетная запись заблокирована.
      */
     @Override
     public boolean isAccountNonLocked() {
@@ -143,7 +133,7 @@ public class User implements UserDetails {
 
     /**
      * Проверяет, не истек ли срок действия учетных данных (пароля) пользователя.
-     * @return {@code false}, если срок действия учетных данных истек.
+     * @return false, если срок действия учетных данных истек.
      */
     @Override
     public boolean isCredentialsNonExpired() {
@@ -152,7 +142,7 @@ public class User implements UserDetails {
 
     /**
      * Проверяет, включена ли учетная запись пользователя.
-     * @return {@code false}, если учетная запись отключена.
+     * @return false, если учетная запись отключена.
      */
     @Override
     public boolean isEnabled() {

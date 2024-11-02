@@ -14,7 +14,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
 /**
- * Сервисный класс для работы с пользователями
+ * Сервис для работы с пользователями
  */
 @Component
 @Slf4j
@@ -97,15 +97,10 @@ public class UserService implements UserDetailsService {
             throw new IllegalArgumentException("Пользователь не может быть null");
         }
 
-        User userFromDbEmail = userRepository.findByEmailIgnoreCase(user.getEmail());
+        User userFromDb = userRepository.findByUsernameIgnoreCase(user.getUsername());
 
-        if (userFromDbEmail != null)
-            throw new UserDuplicateException("Пользователь с email " + userFromDbEmail.getEmail() + " уже есть в базе!");
-
-        User userFromDbName = userRepository.findByUsernameIgnoreCase(user.getUsername());
-
-        if (userFromDbName != null)
-            throw new UserDuplicateException("Пользователь с логином " + userFromDbName.getUsername() + " уже есть в базе!");
+        if (userFromDb != null)
+            throw new UserDuplicateException("Пользователь с логином " + userFromDb.getUsername() + " уже есть в базе!");
 
         user.getRoles().add(roleService.findRoleByName(UserRole.ROLE_USER));
         user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
@@ -147,13 +142,14 @@ public class UserService implements UserDetailsService {
     }
 
     /**
+     * Создаёт токен сброса пароля.
      * Отправляет сообщение для сброса пароля на email.
      *
      * @param email email пользователя
      * @throws IllegalArgumentException если пользователь с данным email не найден
      */
     public void sendPasswordResetMessage(String email) {
-        User user = userRepository.findByEmailIgnoreCase(email);
+        User user = userRepository.findByUsernameIgnoreCase(email);
 
         if (user == null)
             throw new IllegalArgumentException("Пользователь не может быть null");
@@ -161,7 +157,7 @@ public class UserService implements UserDetailsService {
         String id = encodeService.encrypt(user.getId().toString());
         String token = tokenService.generateResetPasswordToken();
 
-        EmailData emailData = mailBuilder.buildResetPasswordMessage(user.getEmail(), id, token);
+        EmailData emailData = mailBuilder.buildResetPasswordMessage(user.getUsername(), id, token);
         emailService.sendEmail(emailData);
         tokenService.scheduleTokenInvalidation(user.getId(), 20 * 60 * 1000);
         user.setResetToken(token);
@@ -189,14 +185,14 @@ public class UserService implements UserDetailsService {
      * @throws IllegalArgumentException если пользователь с данным email не найден
      */
     public void sendConfirmEmailMessage(String email) {
-        User user = userRepository.findByEmailIgnoreCase(email);
+        User user = userRepository.findByUsernameIgnoreCase(email);
 
         if (user == null)
             throw new IllegalArgumentException("Пользователь не может быть null");
 
         String id = encodeService.encrypt(user.getId().toString());
 
-        EmailData emailData = mailBuilder.buildConfirmEmailMessage(user.getEmail(), id);
+        EmailData emailData = mailBuilder.buildConfirmEmailMessage(user.getUsername(), id);
         emailService.sendEmail(emailData);
         log.info("Отправлено письмо о подтверждении email");
     }

@@ -15,6 +15,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
+/**
+ * Сервис для работы с JWT
+ */
 @Component
 public class JwtService {
 
@@ -25,7 +28,12 @@ public class JwtService {
     private String refreshKey;
 
     /**
-     * Генерация токена обновления
+     * Время, которое токен действителен (в часах)
+     */
+    private static final int HOURS_TO_EXPIRE = 12;
+
+    /**
+     * Генерирует токен обновления сессии.
      *
      * @param userDetails данные пользователя
      * @param password пароль
@@ -33,14 +41,14 @@ public class JwtService {
      */
     public String generateRefreshToken(UserDetails userDetails, String password) {
         Map<String, Object> claims = new HashMap<>();
-        if (userDetails instanceof User customUserDetails) {
+        if (userDetails instanceof User) {
             claims.put("password", password);
         }
         return generateToken(claims, userDetails, refreshKey);
     }
 
     /**
-     * Генерация токена
+     * Генерирует токен доступа.
      *
      * @param userDetails данные пользователя
      * @return токен
@@ -56,8 +64,8 @@ public class JwtService {
     }
 
     /**
-     * Проверка токена на просроченность,
-     * проверка его соответствия пользователю
+     * Проверяет токен на просроченность,
+     * проверяет его соответствие пользователю.
      *
      * @param token токен
      * @param userDetails детали пользователя
@@ -69,7 +77,7 @@ public class JwtService {
     }
 
     /**
-     * Проверка токена на просроченность
+     * Проверяет токен доступа на просроченность.
      *
      * @param token токен
      * @return true, если токен годен
@@ -79,7 +87,7 @@ public class JwtService {
     }
 
     /**
-     * Проверка токена обновления на просроченность
+     * Проверяет токен обновления на просроченность.
      *
      * @param refreshToken токен
      * @return true, если токен годен
@@ -89,7 +97,7 @@ public class JwtService {
     }
 
     /**
-     * Проверка токена на просроченность
+     * Проверяет токен на просроченность (общий метод).
      *
      * @param token токен
      * @return true, если токен просрочен
@@ -99,7 +107,7 @@ public class JwtService {
     }
 
     /**
-     * Извлечение имени из токена
+     * Извлекает имя пользователя из токена.
      *
      * @param token токен
      * @return имя юзера
@@ -109,7 +117,7 @@ public class JwtService {
     }
 
     /**
-     * Извлечение ID из токена
+     * Извлекает ID пользователя из токена доступа.
      *
      * @param token токен
      * @return ID пользователя
@@ -119,7 +127,7 @@ public class JwtService {
     }
 
     /**
-     * Извлечение пароля из токена
+     * Извлекает пароль из токена обновления.
      *
      * @param token токен
      * @return пароль пользователя, шифрованный
@@ -129,24 +137,25 @@ public class JwtService {
     }
 
     /**
-     * Алгоритм генерации токена
+     * Генерирует JWT-токен.
      *
      * @param extraClaims дополнительные данные
      * @param userDetails данные пользователя
      * @return токен
      */
     private String generateToken(Map<String, Object> extraClaims, UserDetails userDetails, String key) {
+        long millisToExpire = HOURS_TO_EXPIRE * 60 * 60 * 1000;
         return Jwts.builder()
                 .claims(extraClaims)
                 .subject(userDetails.getUsername())
                 .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + 12 * 60 * 60 * 1000))
+                .expiration(new Date(System.currentTimeMillis() + millisToExpire))
                 .signWith(getSignInKey(key), Jwts.SIG.HS256)
                 .compact();
     }
 
     /**
-     * Извлечение всех данных из токена
+     * Извлекает все данные из токена.
      *
      * @param token токен
      * @return данные
@@ -160,7 +169,7 @@ public class JwtService {
     }
 
     /**
-     * Извлечение данных из токена
+     * Извлекает данные из токена (общий метод).
      *
      * @param token           токен
      * @param claimsResolvers функция извлечения данных
@@ -173,7 +182,7 @@ public class JwtService {
     }
 
     /**
-     * Извлечение даты истечения токена
+     * Извлекает дату истечения токена
      *
      * @param token токен
      * @return дата истечения
@@ -183,9 +192,7 @@ public class JwtService {
     }
 
     /**
-     * Получение ключа для подписи токена
-     *
-     * @return ключ
+     * Получает ключ для подписи токена
      */
     private SecretKey getSignInKey(String key) {
         byte[] keyBytes = Decoders.BASE64.decode(key);

@@ -11,12 +11,18 @@ import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.servers.Server;
 
+/**
+ * Конфигурация Swagger.
+ */
 @Configuration
 public class OpenAPIConfig {
 
     @Value("${openapi-requests.url}")
     private String url;
 
+    /**
+     * Конфигурирует настройки Swagger.
+     */
     @Bean
     public OpenAPI myOpenAPI() {
         Server server = new Server();

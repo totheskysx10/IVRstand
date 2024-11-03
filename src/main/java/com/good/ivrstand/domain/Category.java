@@ -31,7 +31,7 @@ public class Category {
      */
     @Getter
     @Setter
-    @Column(name = "category_title")
+    @Column(name = "category_title", columnDefinition = "TEXT")
     @NonNull
     @EqualsAndHashCode.Include
     private String title;

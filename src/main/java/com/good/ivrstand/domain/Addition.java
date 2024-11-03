@@ -29,7 +29,7 @@ public class Addition {
     /**
      * Заголовок дополнения.
      */
-    @Column(name = "addition_title")
+    @Column(name = "addition_title", columnDefinition = "TEXT")
     @Getter
     @Setter
     @NonNull
@@ -39,7 +39,7 @@ public class Addition {
     /**
      * Текст дополнения.
      */
-    @Column(name = "addition_description")
+    @Column(name = "addition_description", columnDefinition = "TEXT")
     @Getter
     @Setter
     @NonNull

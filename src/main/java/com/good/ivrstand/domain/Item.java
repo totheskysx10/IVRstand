@@ -27,7 +27,7 @@ public class Item {
     /**
      * Заголовок услуги.
      */
-    @Column(name = "item_title")
+    @Column(name = "item_title", columnDefinition = "TEXT")
     @Getter
     @Setter
     @NonNull
@@ -36,7 +36,7 @@ public class Item {
     /**
      * Описание услуги.
      */
-    @Column(name = "item_description")
+    @Column(name = "item_description", columnDefinition = "TEXT")
     @Getter
     @Setter
     @NonNull

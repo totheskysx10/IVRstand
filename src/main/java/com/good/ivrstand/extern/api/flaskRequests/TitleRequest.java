@@ -1,13 +1,13 @@
-package com.good.ivrstand.extern.api.requests;
+package com.good.ivrstand.extern.api.flaskRequests;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 
 /**
- * Запрос на генерацию аудио по тексту
+ * Запрос на обработку/удаление услуги из базы Qdrant
  */
 @AllArgsConstructor
-public class SynthesizeRequest {
+public class TitleRequest {
     @JsonProperty("text")
     private String text;
 }

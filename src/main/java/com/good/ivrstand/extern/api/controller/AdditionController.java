@@ -88,6 +88,7 @@ public class AdditionController {
             return ResponseEntity.noContent().build();
         }
     }
+
     @Operation(summary = "Удалить дополнение", description = "Удаляет дополнение по его идентификатору.")
     @ApiResponse(responseCode = "204", description = "Дополнение успешно удалено")
     @DeleteMapping("/{id}")

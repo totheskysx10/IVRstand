@@ -24,14 +24,13 @@ public class TokenService {
      * Значение токена сброса пароля, когда он не задан
      */
     private static final String NO_TOKEN = "no-token";
+    private final TaskScheduler taskScheduler;
+    private final UserRepository userRepository;
 
     /**
      * Запланированные задачи на истечение токенов сброса пароля.
      */
     private ConcurrentHashMap<Long, ScheduledFuture<?>> scheduledTasks = new ConcurrentHashMap<>();
-
-    private final TaskScheduler taskScheduler;
-    private final UserRepository userRepository;
 
     public TokenService(TaskScheduler taskScheduler, UserRepository userRepository) {
         this.taskScheduler = taskScheduler;
@@ -56,7 +55,8 @@ public class TokenService {
 
     /**
      * Задаёт пользователю токен сброса пароля, создаёт задачу на его истечение.
-     * @param userId id пользователя
+     *
+     * @param userId              id пользователя
      * @param delayInMilliseconds время действия токена
      */
     @Async
@@ -82,6 +82,7 @@ public class TokenService {
     /**
      * Делает токен сброса пароля недействительным.
      * Удаляет действующий токен из базы и заменяет на "no-token"
+     *
      * @param userId id пользователя
      */
     public void invalidateToken(long userId) {

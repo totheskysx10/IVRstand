@@ -1,7 +1,7 @@
 package com.good.ivrstand.extern.infrastructure;
 
 import com.good.ivrstand.app.FlaskApiTtsService;
-import com.good.ivrstand.extern.api.requests.SynthesizeRequest;
+import com.good.ivrstand.extern.api.flaskRequests.SynthesizeRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 

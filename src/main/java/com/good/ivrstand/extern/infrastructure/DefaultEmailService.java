@@ -15,9 +15,9 @@ import org.springframework.stereotype.Component;
 @Component
 public class DefaultEmailService implements EmailService {
 
+    private final JavaMailSender javaMailSender;
     @Value("${spring.mail.username}")
     private String emailFrom;
-    private final JavaMailSender javaMailSender;
 
     public DefaultEmailService(JavaMailSender javaMailSender) {
         this.javaMailSender = javaMailSender;
@@ -25,6 +25,7 @@ public class DefaultEmailService implements EmailService {
 
     /**
      * Отправляет сообщение на эл. почту
+     *
      * @param emailData данные для отправки сообщения
      */
     @Async

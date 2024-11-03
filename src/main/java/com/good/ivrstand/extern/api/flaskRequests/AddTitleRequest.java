@@ -1,4 +1,4 @@
-package com.good.ivrstand.extern.api.requests;
+package com.good.ivrstand.extern.api.flaskRequests;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

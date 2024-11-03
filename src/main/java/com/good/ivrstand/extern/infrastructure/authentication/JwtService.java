@@ -21,22 +21,20 @@ import java.util.function.Function;
 @Component
 public class JwtService {
 
-    @Value("${auth.key}")
-    private String signKey;
-
-    @Value("${auth.refresh-key}")
-    private String refreshKey;
-
     /**
      * Время, которое токен действителен (в часах)
      */
     private static final int HOURS_TO_EXPIRE = 12;
+    @Value("${auth.key}")
+    private String signKey;
+    @Value("${auth.refresh-key}")
+    private String refreshKey;
 
     /**
      * Генерирует токен обновления сессии.
      *
      * @param userDetails данные пользователя
-     * @param password пароль
+     * @param password    пароль
      * @return токен
      */
     public String generateRefreshToken(UserDetails userDetails, String password) {
@@ -67,7 +65,7 @@ public class JwtService {
      * Проверяет токен на просроченность,
      * проверяет его соответствие пользователю.
      *
-     * @param token токен
+     * @param token       токен
      * @param userDetails детали пользователя
      * @return true, если токен годен
      */

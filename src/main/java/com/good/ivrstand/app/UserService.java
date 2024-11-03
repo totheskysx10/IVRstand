@@ -21,16 +21,14 @@ import org.springframework.stereotype.Component;
 public class UserService implements UserDetailsService {
 
     private final UserRepository userRepository;
-    private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final RoleService roleService;
     private final EmailService emailService;
     private final MailBuilder mailBuilder;
     private final TokenService tokenService;
     private final EncodeService encodeService;
 
-    public UserService(UserRepository userRepository, BCryptPasswordEncoder bCryptPasswordEncoder, RoleService roleService, EmailService emailService, MailBuilder mailBuilder, TokenService tokenService, EncodeService encodeService) {
+    public UserService(UserRepository userRepository, RoleService roleService, EmailService emailService, MailBuilder mailBuilder, TokenService tokenService, EncodeService encodeService) {
         this.userRepository = userRepository;
-        this.bCryptPasswordEncoder = bCryptPasswordEncoder;
         this.roleService = roleService;
         this.emailService = emailService;
         this.mailBuilder = mailBuilder;
@@ -90,7 +88,7 @@ public class UserService implements UserDetailsService {
      * @param user пользователь
      * @return созданный пользователь
      * @throws IllegalArgumentException если пользователь null
-     * @throws UserDuplicateException если пользователь с данным email уже существует
+     * @throws UserDuplicateException   если пользователь с данным email уже существует
      */
     public User createUser(User user) {
         if (user == null) {
@@ -103,7 +101,6 @@ public class UserService implements UserDetailsService {
             throw new UserDuplicateException("Пользователь с логином " + userFromDb.getUsername() + " уже есть в базе!");
 
         user.getRoles().add(roleService.findRoleByName(UserRole.ROLE_USER));
-        user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
         User createdUser = userRepository.save(user);
         log.info("Создан пользователь с id {}", createdUser.getId());
         return createdUser;
@@ -124,20 +121,19 @@ public class UserService implements UserDetailsService {
     /**
      * Обновляет пароль пользователя.
      *
-     * @param userId зашифрованный ID пользователя
-     * @param pass новый пароль
-     * @param token токен сброса
+     * @param userId      зашифрованный ID пользователя
+     * @param encodedPass новый пароль
+     * @param token       токен сброса
      */
-    public void updatePassword(String userId, String pass, String token) {
+    public void updatePassword(String userId, String encodedPass, String token) {
         long id = Long.parseLong(encodeService.decrypt(userId));
         User user = getUserById(id);
         if (user.getResetToken().equals(token)) {
-            user.setPassword(bCryptPasswordEncoder.encode(pass));
+            user.setPassword(encodedPass);
             tokenService.invalidateToken(id);
             userRepository.save(user);
             log.info("Обновлён пароль для пользователя с id {}", id);
-        }
-        else
+        } else
             throw new TokenException("Ошибка токена сброса!");
     }
 
@@ -236,8 +232,8 @@ public class UserService implements UserDetailsService {
     /**
      * Обновляет имя пользователя.
      *
-     * @param userId  Идентификатор пользователя.
-     * @param name Имя.
+     * @param userId Идентификатор пользователя.
+     * @param name   Имя.
      */
     public void updateFirstName(long userId, String name) {
         User user = getUserById(userId);

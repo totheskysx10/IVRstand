@@ -21,12 +21,10 @@ import java.util.List;
 @Component
 public class BotService extends TelegramLongPollingBot {
 
+    private final NotificationChatRepository notificationChatRepository;
+    private final NotificationService notificationService;
     @Value("${telegram.bot.username}")
     private String username;
-
-    private final NotificationChatRepository notificationChatRepository;
-
-    private final NotificationService notificationService;
 
     public BotService(@Value("${telegram.bot.token}") String botToken, NotificationChatRepository notificationChatRepository, NotificationService notificationService) {
         super(botToken);
@@ -36,6 +34,7 @@ public class BotService extends TelegramLongPollingBot {
 
     /**
      * Обрабатывает полученное в Telegram-бот сообщение.
+     *
      * @param update полученное через бот сообщение
      */
     @Override
@@ -60,8 +59,9 @@ public class BotService extends TelegramLongPollingBot {
 
     /**
      * Отправляет сообщение в указанный чат.
+     *
      * @param message сообщение
-     * @param id id чата
+     * @param id      id чата
      */
     public void sendMessageToChat(String message, String id) {
         SendMessage tgMessage = new SendMessage();
@@ -81,7 +81,7 @@ public class BotService extends TelegramLongPollingBot {
         List<NotificationChat> chats = notificationChatRepository.findAll();
 
         List<String> chatIds = new ArrayList<>();
-        for (NotificationChat chat: chats) {
+        for (NotificationChat chat : chats) {
             if (chat.getNotificationCategory() == NotificationCategory.HELP)
                 chatIds.add(chat.getChatId());
         }
@@ -91,7 +91,7 @@ public class BotService extends TelegramLongPollingBot {
         }
 
         String message = notificationService.createHelpMessage();
-        for (String chatId: chatIds)
+        for (String chatId : chatIds)
             sendMessageToChat(message, chatId);
     }
 }

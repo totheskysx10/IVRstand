@@ -1,8 +1,8 @@
 package com.good.ivrstand.extern.infrastructure;
 
 import com.good.ivrstand.app.FlaskApiVectorSearchService;
-import com.good.ivrstand.extern.api.requests.AddTitleRequest;
-import com.good.ivrstand.extern.api.requests.TitleRequest;
+import com.good.ivrstand.extern.api.flaskRequests.AddTitleRequest;
+import com.good.ivrstand.extern.api.flaskRequests.TitleRequest;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
@@ -23,6 +23,7 @@ public class DefaultFlaskApiVectorSearchService implements FlaskApiVectorSearchS
 
     /**
      * Вызывает в Feign-клиенте метод получения списка с Id найденных услуг.
+     *
      * @param request запрос
      */
     public List<Long> getItemIds(String request) {
@@ -34,6 +35,7 @@ public class DefaultFlaskApiVectorSearchService implements FlaskApiVectorSearchS
 
     /**
      * Вызывает в Feign-клиенте метод добавления услуги в базу Qdrant.
+     *
      * @param addTitleRequest запрос
      */
     public void addTitle(AddTitleRequest addTitleRequest) {
@@ -42,6 +44,7 @@ public class DefaultFlaskApiVectorSearchService implements FlaskApiVectorSearchS
 
     /**
      * Вызывает в Feign-клиенте метод удаления услуги из базы Qdrant.
+     *
      * @param request запрос
      */
     public void deleteTitle(TitleRequest request) {

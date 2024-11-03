@@ -18,6 +18,7 @@ public class UserAssembler extends RepresentationModelAssemblerSupport<User, Use
     public UserAssembler() {
         super(UserController.class, UserDTO.class);
     }
+
     @Override
     public UserDTO toModel(User user) {
         UserDTO userDTO = instantiateModel(user);

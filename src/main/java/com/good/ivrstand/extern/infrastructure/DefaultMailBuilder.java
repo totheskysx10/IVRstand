@@ -19,9 +19,10 @@ public class DefaultMailBuilder implements MailBuilder {
 
     /**
      * Создаёт письмо о сбросе пароля.
+     *
      * @param receiver получатель
-     * @param id индентификатор получателя
-     * @param token токен сброса пароля
+     * @param id       индентификатор получателя
+     * @param token    токен сброса пароля
      * @return объект с данными о письме
      */
     public EmailData buildResetPasswordMessage(String receiver, String id, String token) {
@@ -33,8 +34,9 @@ public class DefaultMailBuilder implements MailBuilder {
 
     /**
      * Создаёт письмо о подтверждении эл. почты.
+     *
      * @param receiver получатель
-     * @param id индентификатор получателя
+     * @param id       индентификатор получателя
      * @return объект с данными о письме
      */
     public EmailData buildConfirmEmailMessage(String receiver, String id) {

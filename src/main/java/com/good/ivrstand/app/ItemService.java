@@ -2,8 +2,8 @@ package com.good.ivrstand.app;
 
 import com.good.ivrstand.domain.*;
 import com.good.ivrstand.exception.ItemsFindException;
-import com.good.ivrstand.extern.api.requests.AddTitleRequest;
-import com.good.ivrstand.extern.api.requests.TitleRequest;
+import com.good.ivrstand.extern.api.flaskRequests.AddTitleRequest;
+import com.good.ivrstand.extern.api.flaskRequests.TitleRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -185,7 +185,7 @@ public class ItemService {
         List<Long> result = flaskApiVectorSearchService.getItemIds(title);
 
         List<Item> items = new ArrayList<>();
-        for (Long element: result) {
+        for (Long element : result) {
             Item item = getItemById(element);
             if (item != null) {
                 items.add(item);
@@ -201,9 +201,9 @@ public class ItemService {
         int itemsInBaseQuantity = itemsPage.getContent().size();
         int itemsFoundQuantity = page.getContent().size();
 
-       boolean shouldSync = itemsInBaseQuantity < 4
-               ? itemsInBaseQuantity != itemsFoundQuantity
-               : itemsFoundQuantity != 4;
+        boolean shouldSync = itemsInBaseQuantity < 4
+                ? itemsInBaseQuantity != itemsFoundQuantity
+                : itemsFoundQuantity != 4;
 
         if (shouldSync) {
             qdrantService.syncDatabase();
@@ -294,7 +294,7 @@ public class ItemService {
     /**
      * Обновляет ссылку на GIF-превью услуги.
      *
-     * @param itemId  Идентификатор услуги.
+     * @param itemId     Идентификатор услуги.
      * @param gifPreview Новая ссылка на GIF превью услуги.
      */
     public void updateGifPreviewToItem(long itemId, String gifPreview) {
@@ -309,7 +309,7 @@ public class ItemService {
     /**
      * Добавляет иконку для услуги.
      *
-     * @param itemId  Идентификатор услуги.
+     * @param itemId   Идентификатор услуги.
      * @param iconLink Иконка.
      */
     public void addIcon(long itemId, String iconLink) {
@@ -319,8 +319,7 @@ public class ItemService {
                 item.getIconLinks().add(iconLink);
                 itemRepository.save(item);
                 log.info("Добавлена иконка для услуги с id {}", itemId);
-            }
-            else
+            } else
                 log.warn("Иконка для услуги с id {} уже была добавлена раннее!", itemId);
         }
     }
@@ -328,7 +327,7 @@ public class ItemService {
     /**
      * Удаляет иконку у услуги.
      *
-     * @param itemId  Идентификатор услуги.
+     * @param itemId   Идентификатор услуги.
      * @param iconLink Иконка.
      */
     public void removeIcon(long itemId, String iconLink) {
@@ -345,7 +344,7 @@ public class ItemService {
     /**
      * Чистит иконки у услуги.
      *
-     * @param itemId  Идентификатор услуги.
+     * @param itemId Идентификатор услуги.
      */
     public void clearIcons(long itemId) {
         Item item = getItemById(itemId);
@@ -371,8 +370,7 @@ public class ItemService {
                 itemRepository.save(item);
                 addQdrantTitle(item);
                 log.info("Добавлено ключевое слово для услуги с id {}", itemId);
-            }
-            else
+            } else
                 log.warn("Ключевое слово для услуги с id {} уже было добавлено раннее!", itemId);
         }
     }
@@ -383,7 +381,7 @@ public class ItemService {
      * @param itemId  Идентификатор услуги.
      * @param keyword Слово.
      */
-    public void removeKeyword (long itemId, String keyword) {
+    public void removeKeyword(long itemId, String keyword) {
         Item item = getItemById(itemId);
         if (item != null) {
             if (item.getKeywords().contains(keyword)) {
@@ -399,7 +397,7 @@ public class ItemService {
     /**
      * Чистит ключевые слова у услуги.
      *
-     * @param itemId  Идентификатор услуги.
+     * @param itemId Идентификатор услуги.
      */
     public void clearKeywords(long itemId) {
         Item item = getItemById(itemId);
@@ -415,7 +413,7 @@ public class ItemService {
     /**
      * Удаляет услугу из базы Qdrant.
      *
-     * @param item  Услуга.
+     * @param item Услуга.
      */
     private void deleteQdrantTitle(Item item) {
         TitleRequest titleRequest = new TitleRequest(formatTitle(item));
@@ -425,7 +423,7 @@ public class ItemService {
     /**
      * Добавляет услугу в базу Qdrant.
      *
-     * @param item  Услуга.
+     * @param item Услуга.
      */
     private void addQdrantTitle(Item item) {
         AddTitleRequest addTitleRequest = new AddTitleRequest(formatTitle(item), item.getId());
@@ -437,7 +435,7 @@ public class ItemService {
      * "заголовок ключевые_слова категория описание"
      * или "заголовок ключевые_слова описание", если нет категории.
      *
-     * @param item  Услуга.
+     * @param item Услуга.
      * @return Отформатированная строка.
      */
     private String formatTitle(Item item) {
@@ -445,7 +443,7 @@ public class ItemService {
         if (item.getKeywords().isEmpty())
             keywords = "";
         else
-            keywords  = String.join(" ", item.getKeywords());
+            keywords = String.join(" ", item.getKeywords());
 
         String category = item.getCategory() != null ? item.getCategory().getTitle() : "";
         String description = item.getDescription();
@@ -460,7 +458,7 @@ public class ItemService {
     /**
      * Генерирует аудио заголовка услуги.
      *
-     * @param itemId  Идентификатор услуги.
+     * @param itemId Идентификатор услуги.
      */
     public void generateTitleAudio(long itemId) throws IOException {
         Item item = getItemById(itemId);
@@ -470,8 +468,7 @@ public class ItemService {
                 item.setTitleAudio(titleAudio);
                 itemRepository.save(item);
                 log.info("Сгенерировано аудио заголовка для услуги с id {}", itemId);
-            }
-            else
+            } else
                 log.warn("У услуги {} уже есть аудио заголовка!", itemId);
         }
     }
@@ -479,15 +476,14 @@ public class ItemService {
     /**
      * Удаляет аудио заголовка услуги.
      *
-     * @param itemId  Идентификатор услуги.
+     * @param itemId Идентификатор услуги.
      */
     public void removeTitleAudio(long itemId) {
         Item item = getItemById(itemId);
         if (item != null) {
             if (item.getTitleAudio() == null) {
                 log.warn("У услуги {} нет аудио заголовка!", itemId);
-            }
-            else {
+            } else {
                 item.setTitleAudio(null);
                 itemRepository.save(item);
                 log.info("У услуги {} удалено аудио заголовка", itemId);
@@ -525,7 +521,7 @@ public class ItemService {
         Pageable pageableCheckQuantity = PageRequest.of(0, 999);
         Page<Item> itemsPage = getAllItemsInBase(pageableCheckQuantity);
         List<Item> items = itemsPage.getContent();
-        for (Item i: items) {
+        for (Item i : items) {
             i.setAudio(new ArrayList<>());
             i.setDescriptionHash(encodeService.generateHashForAudio(i.getDescription()));
             itemRepository.save(i);

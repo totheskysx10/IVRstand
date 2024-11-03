@@ -7,6 +7,5 @@ import java.util.List;
 
 public interface NotificationChatRepository extends JpaRepository<NotificationChat, Long> {
     void deleteById(long id);
-
     List<NotificationChat> findByChatId(String id);
 }

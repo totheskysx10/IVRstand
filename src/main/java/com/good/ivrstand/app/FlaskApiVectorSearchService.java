@@ -1,7 +1,7 @@
 package com.good.ivrstand.app;
 
-import com.good.ivrstand.extern.api.requests.AddTitleRequest;
-import com.good.ivrstand.extern.api.requests.TitleRequest;
+import com.good.ivrstand.extern.api.flaskRequests.AddTitleRequest;
+import com.good.ivrstand.extern.api.flaskRequests.TitleRequest;
 
 import java.util.List;
 

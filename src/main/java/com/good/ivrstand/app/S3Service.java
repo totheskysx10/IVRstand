@@ -17,7 +17,7 @@ public interface S3Service {
      * @param multipartFile файл для загрузки
      * @param folderName    имя папки, в которую будет загружен файл
      * @return ссылка на загруженный файл
-     * @throws IOException если происходит ошибка ввода/вывода
+     * @throws IOException            если происходит ошибка ввода/вывода
      * @throws FileDuplicateException если файл с таким именем уже существует
      */
     String uploadFile(MultipartFile multipartFile, String folderName) throws IOException;

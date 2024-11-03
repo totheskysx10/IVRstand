@@ -46,6 +46,7 @@ public class Role implements GrantedAuthority {
 
     /**
      * Возвращает название роли в качестве предоставляемого полномочия.
+     *
      * @return Название роли.
      */
     @Override

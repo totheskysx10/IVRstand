@@ -10,11 +10,8 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface AdditionRepository extends JpaRepository<Addition, Long> {
-
     Addition findById(long id);
-
     void deleteById(long id);
-
     Page<Addition> findByItemId(long itemId, Pageable pageable);
 
     @Query("SELECT a from Addition a WHERE a.descriptionHash = :descriptionHash AND SIZE(a.audio) > 0")

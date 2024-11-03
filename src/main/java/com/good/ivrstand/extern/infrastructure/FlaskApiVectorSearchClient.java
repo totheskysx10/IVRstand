@@ -1,8 +1,8 @@
 package com.good.ivrstand.extern.infrastructure;
 
 
-import com.good.ivrstand.extern.api.requests.AddTitleRequest;
-import com.good.ivrstand.extern.api.requests.TitleRequest;
+import com.good.ivrstand.extern.api.flaskRequests.AddTitleRequest;
+import com.good.ivrstand.extern.api.flaskRequests.TitleRequest;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,6 +19,7 @@ public interface FlaskApiVectorSearchClient {
 
     /**
      * Запрос получения списка с Id найденных услуг.
+     *
      * @param requestData запрос
      */
     @PostMapping("/get_emb")
@@ -26,6 +27,7 @@ public interface FlaskApiVectorSearchClient {
 
     /**
      * Запрос добавления услуги в базу Qdrant.
+     *
      * @param request запрос
      */
     @PostMapping(value = "/add_title", consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -33,6 +35,7 @@ public interface FlaskApiVectorSearchClient {
 
     /**
      * Запрос удаления услуги из базы Qdrant.
+     *
      * @param request запрос
      */
     @PostMapping(value = "/delete_title", consumes = MediaType.APPLICATION_JSON_VALUE)

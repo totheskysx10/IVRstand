@@ -53,8 +53,7 @@ public class AdditionService {
             Addition savedAddition = additionRepository.save(addition);
             log.info("Создано дополнение с id {}", savedAddition.getId());
             return savedAddition;
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new RuntimeException("Ошибка при создании дополнения", e);
         }
     }
@@ -70,8 +69,7 @@ public class AdditionService {
         Addition foundAddition = additionRepository.findById(additionId);
         if (foundAddition == null) {
             throw new IllegalArgumentException("Дополнение с id " + additionId + " не найдено");
-        }
-        else {
+        } else {
             log.debug("Найдено дополнение с id {}", additionId);
             return foundAddition;
         }
@@ -92,7 +90,7 @@ public class AdditionService {
      * Обновляет заголовок дополнения.
      *
      * @param additionId Идентификатор дополнения.
-     * @param title   Новый заголовок дополнения.
+     * @param title      Новый заголовок дополнения.
      */
     public void updateTitleToAddition(long additionId, String title) {
         Addition addition = getAdditionById(additionId);
@@ -107,7 +105,7 @@ public class AdditionService {
      * Обновляет описание дополнения.
      *
      * @param additionId Идентификатор дополнения.
-     * @param desc   Новое описание дополнения.
+     * @param desc       Новое описание дополнения.
      */
     public void updateDescriptionToAddition(long additionId, String desc, boolean enableAudio) throws IOException {
         Addition addition = getAdditionById(additionId);
@@ -128,7 +126,7 @@ public class AdditionService {
      * Обновляет ссылку на GIF-анимацию дополнения.
      *
      * @param additionId Идентификатор дополнения.
-     * @param gifLink   Новая ссылка на GIF дополнения.
+     * @param gifLink    Новая ссылка на GIF дополнения.
      */
     public void updateGifLinkToAddition(long additionId, String gifLink) {
         Addition addition = getAdditionById(additionId);
@@ -143,7 +141,7 @@ public class AdditionService {
      * Обновляет ссылку на GIF-превью дополнения.
      *
      * @param additionId Идентификатор дополнения.
-     * @param gifPreview   Новая ссылка на GIF превью.
+     * @param gifPreview Новая ссылка на GIF превью.
      */
     public void updateGifPreviewToAddition(long additionId, String gifPreview) {
         Addition addition = getAdditionById(additionId);
@@ -158,7 +156,7 @@ public class AdditionService {
      * Обновляет ссылку на главную иконку дополнения.
      *
      * @param additionId Идентификатор дополнения.
-     * @param icon   Новая ссылка на главную иконку.
+     * @param icon       Новая ссылка на главную иконку.
      */
     public void updateMainIconToAddition(long additionId, String icon) {
         Addition addition = getAdditionById(additionId);
@@ -172,7 +170,7 @@ public class AdditionService {
     /**
      * Ищет дополнения по идентификатору категории, с поддержкой пагинации.
      *
-     * @param itemId    Идентификатор услуги.
+     * @param itemId   Идентификатор услуги.
      * @param pageable Настройки пагинации.
      * @return Страница найденных дополнений.
      */
@@ -183,8 +181,8 @@ public class AdditionService {
     /**
      * Добавляет иконку для дополнения.
      *
-     * @param additionId  Идентификатор дополнения.
-     * @param iconLink Иконка.
+     * @param additionId Идентификатор дополнения.
+     * @param iconLink   Иконка.
      */
     public void addIcon(long additionId, String iconLink) {
         Addition addition = getAdditionById(additionId);
@@ -193,8 +191,7 @@ public class AdditionService {
                 addition.getIconLinks().add(iconLink);
                 additionRepository.save(addition);
                 log.info("Добавлена иконка для дополнения с id {}", additionId);
-            }
-            else
+            } else
                 log.warn("Иконка для дополнения с id {} уже была добавлена раннее!", additionId);
         }
     }
@@ -202,8 +199,8 @@ public class AdditionService {
     /**
      * Удаляет иконку у дополнения.
      *
-     * @param additionId  Идентификатор дополнения.
-     * @param iconLink Иконка.
+     * @param additionId Идентификатор дополнения.
+     * @param iconLink   Иконка.
      */
     public void removeIcon(long additionId, String iconLink) {
         Addition addition = getAdditionById(additionId);
@@ -219,7 +216,7 @@ public class AdditionService {
     /**
      * Чистит иконки у дополнения.
      *
-     * @param additionId  Идентификатор дополнения.
+     * @param additionId Идентификатор дополнения.
      */
     public void clearIcons(long additionId) {
         Addition addition = getAdditionById(additionId);
@@ -233,7 +230,7 @@ public class AdditionService {
     /**
      * Генерирует аудио заголовка дополнения.
      *
-     * @param additionId  Идентификатор дополнения.
+     * @param additionId Идентификатор дополнения.
      */
     public void generateTitleAudio(long additionId) throws IOException {
         Addition addition = getAdditionById(additionId);
@@ -243,8 +240,7 @@ public class AdditionService {
                 addition.setTitleAudio(titleAudio);
                 additionRepository.save(addition);
                 log.info("Сгенерировано аудио заголовка для дополнения с id {}", additionId);
-            }
-            else
+            } else
                 log.warn("У дополнения {} уже есть аудио заголовка!", additionId);
         }
     }
@@ -252,15 +248,14 @@ public class AdditionService {
     /**
      * Удаляет аудио заголовка дополнения.
      *
-     * @param additionId  Идентификатор дополнения.
+     * @param additionId Идентификатор дополнения.
      */
     public void removeTitleAudio(long additionId) {
         Addition addition = getAdditionById(additionId);
         if (addition != null) {
             if (addition.getTitleAudio() == null) {
                 log.warn("У дополнения {} нет аудио заголовка!", additionId);
-            }
-            else {
+            } else {
                 addition.setTitleAudio(null);
                 additionRepository.save(addition);
                 log.info("У дополнения {} удалено аудио заголовка", additionId);
@@ -303,7 +298,7 @@ public class AdditionService {
         Pageable pageableCheckQuantity = PageRequest.of(0, 999);
         Page<Addition> additionsPage = getAllItemsInBase(pageableCheckQuantity);
         List<Addition> additions = additionsPage.getContent();
-        for (Addition i: additions) {
+        for (Addition i : additions) {
             i.setAudio(new ArrayList<>());
             i.setDescriptionHash(encodeService.generateHashForAudio(i.getDescription()));
             additionRepository.save(i);

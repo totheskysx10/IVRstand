@@ -19,6 +19,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -35,12 +36,14 @@ public class AuthController {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
     private final EncodeService encodeService;
+    private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
-    public AuthController(UserService userService, JwtService jwtService, AuthenticationManager authenticationManager, EncodeService encodeService) {
+    public AuthController(UserService userService, JwtService jwtService, AuthenticationManager authenticationManager, EncodeService encodeService, BCryptPasswordEncoder bCryptPasswordEncoder) {
         this.userService = userService;
         this.jwtService = jwtService;
         this.authenticationManager = authenticationManager;
         this.encodeService = encodeService;
+        this.bCryptPasswordEncoder = bCryptPasswordEncoder;
     }
 
     @Operation(summary = "Создать пользователя", description = "Создает нового пользователя.")
@@ -55,9 +58,10 @@ public class AuthController {
             return ResponseEntity.badRequest().build();
         }
         try {
+            String encodedPass = bCryptPasswordEncoder.encode(userRegisterDTO.getPassword());
             User user = User.builder()
                     .username(userRegisterDTO.getUsername())
-                    .password(userRegisterDTO.getPassword())
+                    .password(encodedPass)
                     .firstName(userRegisterDTO.getFirstName())
                     .lastName(userRegisterDTO.getLastName())
                     .roles(new ArrayList<>())

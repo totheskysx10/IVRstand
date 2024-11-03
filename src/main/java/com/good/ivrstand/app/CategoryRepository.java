@@ -11,8 +11,10 @@ import org.springframework.stereotype.Repository;
 public interface CategoryRepository extends JpaRepository<Category, Long> {
     Category findById(long id);
     void deleteById(long id);
+
     @Query("SELECT c FROM Category c WHERE SIZE(c.childrenCategories) = 0 AND c.parentCategory IS NULL")
     Page<Category> findUnallocatedCategories(Pageable pageable);
+
     @Query("SELECT c FROM Category c WHERE c.parentCategory IS NULL")
     Page<Category> findMainCategories(Pageable pageable);
 }

@@ -21,6 +21,7 @@ public class SecurityContextService {
 
     /**
      * Проверяет, авторизован ли в данный момент пользователь с переданным id.
+     *
      * @param userId id пользователя
      * @return true, если пользователь с userId в данный момент авторизован
      */
@@ -29,7 +30,7 @@ public class SecurityContextService {
         if (authentication != null) {
             Object context = authentication.getPrincipal();
             if (context instanceof User) {
-                User contextUser = (User)context;
+                User contextUser = (User) context;
                 String username = contextUser.getUsername();
 
                 User user = userRepository.findByUsernameIgnoreCase(username);

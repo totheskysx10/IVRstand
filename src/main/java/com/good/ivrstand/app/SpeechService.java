@@ -5,6 +5,7 @@ import org.apache.commons.io.IOUtils;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -57,14 +58,14 @@ public class SpeechService {
             byte[] audioBytes = flaskApiTtsService.generateSpeech(text);
 
             try (InputStream audioInputStream = new ByteArrayInputStream(audioBytes)) {
-                 MultipartFile multipartFile = new MockMultipartFile(
-                         "file",
-                         "audio.wav",
-                         "audio/wav",
-                         IOUtils.toByteArray(audioInputStream)
-                 );
-                 log.info("Сгенерирован аудиофайл");
-                 return s3Service.uploadFile(multipartFile, "audio");
+                MultipartFile multipartFile = new MockMultipartFile(
+                        "file",
+                        "audio.wav",
+                        "audio/wav",
+                        IOUtils.toByteArray(audioInputStream)
+                );
+                log.info("Сгенерирован аудиофайл");
+                return s3Service.uploadFile(multipartFile, "audio");
             }
         } catch (IOException ex) {
             throw new IOException("Error generating or uploading file", ex);

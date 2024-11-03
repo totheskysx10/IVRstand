@@ -1,6 +1,6 @@
 package com.good.ivrstand.extern.infrastructure;
 
-import com.good.ivrstand.extern.api.requests.SynthesizeRequest;
+import com.good.ivrstand.extern.api.flaskRequests.SynthesizeRequest;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +15,7 @@ public interface FlaskApiTtsClient {
 
     /**
      * Запрос на генерацию аудио по тексту.
+     *
      * @param request запрос
      * @return сгенерированное аудио в виде массива байт
      */

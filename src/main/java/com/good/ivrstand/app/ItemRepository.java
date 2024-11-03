@@ -13,9 +13,9 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
     Item findById(long id);
     void deleteById(long id);
     Page<Item> findByCategoryId(long categoryId, Pageable pageable);
+
     @Query("SELECT i FROM Item i WHERE i.category IS NULL")
     Page<Item> findItemsWithNullCategory(Pageable pageable);
-    Item findByTitleIgnoreCase(String title);
 
     @Query("SELECT i from Item i WHERE i.descriptionHash = :descriptionHash AND SIZE(i.audio) > 0")
     Page<Item> findByHashAndAudioExistence(@Param("descriptionHash") String descriptionHash, Pageable pageable);

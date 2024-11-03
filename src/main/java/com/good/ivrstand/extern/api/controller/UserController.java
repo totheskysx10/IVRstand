@@ -14,6 +14,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -23,10 +24,12 @@ public class UserController {
 
     private final UserService userService;
     private final UserAssembler userAssembler;
+    private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
-    public UserController(UserService userService, UserAssembler userAssembler) {
+    public UserController(UserService userService, UserAssembler userAssembler, BCryptPasswordEncoder bCryptPasswordEncoder) {
         this.userService = userService;
         this.userAssembler = userAssembler;
+        this.bCryptPasswordEncoder = bCryptPasswordEncoder;
     }
 
     @Operation(summary = "Обновить пароль", description = "Обновляет пароль пользователя.")
@@ -41,7 +44,8 @@ public class UserController {
             return ResponseEntity.badRequest().build();
         }
         try {
-            userService.updatePassword(userId, userUpdatePasswordDTO.getPassword(), token);
+            String encodedPass = bCryptPasswordEncoder.encode(userUpdatePasswordDTO.getPassword());
+            userService.updatePassword(userId, encodedPass, token);
             return ResponseEntity.ok().build();
         } catch (IllegalArgumentException ex) {
             return ResponseEntity.badRequest().build();
@@ -132,6 +136,7 @@ public class UserController {
             return new ResponseEntity<>("Почта не подтверждена", HttpStatus.FORBIDDEN);
         }
     }
+
     @Operation(summary = "Снять права администратора", description = "Снимает с пользователя права администратора.")
     @ApiResponse(responseCode = "200", description = "Права администратора успешно сняты")
     @PutMapping("/no-admin/{userId}")

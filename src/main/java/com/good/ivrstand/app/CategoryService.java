@@ -1,9 +1,9 @@
 package com.good.ivrstand.app;
 
-import com.good.ivrstand.extern.api.requests.AddTitleRequest;
+import com.good.ivrstand.extern.api.flaskRequests.AddTitleRequest;
 import com.good.ivrstand.domain.Category;
 import com.good.ivrstand.domain.Item;
-import com.good.ivrstand.extern.api.requests.TitleRequest;
+import com.good.ivrstand.extern.api.flaskRequests.TitleRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -66,8 +66,7 @@ public class CategoryService {
         Category foundCategory = categoryRepository.findById(categoryId);
         if (foundCategory == null) {
             throw new IllegalArgumentException("Категория с id " + categoryId + " не найдена");
-        }
-        else {
+        } else {
             log.debug("Найдена категория с id {}", categoryId);
             return foundCategory;
         }
@@ -86,14 +85,14 @@ public class CategoryService {
         if (foundCategory == null) {
             throw new IllegalArgumentException("Категория с id " + categoryId + " не найдена");
         } else {
-            for (Item i: foundCategory.getItemsInCategory()) {
+            for (Item i : foundCategory.getItemsInCategory()) {
                 TitleRequest titleRequest = new TitleRequest(i.getTitle() + " " + i.getCategory().getTitle() + " " + i.getDescription());
                 flaskApiVectorSearchService.deleteTitle(titleRequest);
                 i.setCategory(null);
                 AddTitleRequest addTitleRequest = new AddTitleRequest(i.getTitle() + " " + i.getDescription(), i.getId());
                 flaskApiVectorSearchService.addTitle(addTitleRequest);
             }
-            for (Category c: foundCategory.getChildrenCategories()) {
+            for (Category c : foundCategory.getChildrenCategories()) {
                 c.setParentCategory(c.getParentCategory().getParentCategory());
             }
             categoryRepository.save(foundCategory);
@@ -135,8 +134,8 @@ public class CategoryService {
     /**
      * Добавляет подкатегорию в категорию.
      *
-     * @param categoryId     Идентификатор подкатегории.
-     * @param parentId Идентификатор категорию.
+     * @param categoryId Идентификатор подкатегории.
+     * @param parentId   Идентификатор категорию.
      * @throws IllegalArgumentException Если подкатегория или категория с указанным идентификатором не найдены.
      */
     public void addToCategory(long categoryId, long parentId) {
@@ -166,7 +165,7 @@ public class CategoryService {
     /**
      * Удаляет подкатегорию из категории.
      *
-     * @param categoryId     Идентификатор подкатегории.
+     * @param categoryId Идентификатор подкатегории.
      * @throws IllegalArgumentException Если подкатегория с указанным идентификатором не найдена.
      */
     public void removeFromCategory(long categoryId) {
@@ -186,7 +185,7 @@ public class CategoryService {
      * Обновляет ссылку на GIF-анимацию категории.
      *
      * @param categoryId Идентификатор категории.
-     * @param gifLink   Новая ссылка на GIF.
+     * @param gifLink    Новая ссылка на GIF.
      */
     public void updateGifLinkToCategory(long categoryId, String gifLink) {
         Category category = getCategoryById(categoryId);
@@ -201,7 +200,7 @@ public class CategoryService {
      * Обновляет ссылку на GIF-превью категории.
      *
      * @param categoryId Идентификатор категории.
-     * @param gifPreview   Новая ссылка на GIF превью.
+     * @param gifPreview Новая ссылка на GIF превью.
      */
     public void updateGifPreviewToCategory(long categoryId, String gifPreview) {
         Category category = getCategoryById(categoryId);
@@ -216,7 +215,7 @@ public class CategoryService {
      * Обновляет ссылку на главную иконку категории.
      *
      * @param categoryId Идентификатор категории.
-     * @param icon   Новая ссылка на главную иконку.
+     * @param icon       Новая ссылка на главную иконку.
      */
     public void updateMainIconToCategory(long categoryId, String icon) {
         Category category = getCategoryById(categoryId);
@@ -230,7 +229,7 @@ public class CategoryService {
     /**
      * Генерирует аудио заголовка категории.
      *
-     * @param categoryId  Идентификатор категории.
+     * @param categoryId Идентификатор категории.
      */
     public void generateTitleAudio(long categoryId) throws IOException {
         Category category = getCategoryById(categoryId);
@@ -240,8 +239,7 @@ public class CategoryService {
                 category.setTitleAudio(titleAudio);
                 categoryRepository.save(category);
                 log.info("Сгенерировано аудио заголовка для категории с id {}", categoryId);
-            }
-            else
+            } else
                 log.warn("У категории {} уже есть аудио заголовка!", categoryId);
         }
     }
@@ -249,15 +247,14 @@ public class CategoryService {
     /**
      * Удаляет аудио заголовка категории.
      *
-     * @param categoryId  Идентификатор категории.
+     * @param categoryId Идентификатор категории.
      */
     public void removeTitleAudio(long categoryId) {
         Category category = getCategoryById(categoryId);
         if (category != null) {
             if (category.getTitleAudio() == null) {
                 log.warn("У категории {} нет аудио заголовка!", categoryId);
-            }
-            else {
+            } else {
                 category.setTitleAudio(null);
                 categoryRepository.save(category);
                 log.info("У категории {} удалено аудио заголовка", categoryId);

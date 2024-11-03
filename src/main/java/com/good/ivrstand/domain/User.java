@@ -90,6 +90,7 @@ public class User implements UserDetails {
 
     /**
      * Возвращает коллекцию полномочий, предоставленных пользователю.
+     *
      * @return Коллекция объектов {@link GrantedAuthority}.
      */
     @Override
@@ -115,6 +116,7 @@ public class User implements UserDetails {
 
     /**
      * Проверяет, не истек ли срок действия учетной записи пользователя.
+     *
      * @return false, если срок действия учетной записи истек.
      */
     @Override
@@ -124,6 +126,7 @@ public class User implements UserDetails {
 
     /**
      * Проверяет, не заблокирована ли учетная запись пользователя.
+     *
      * @return false, если учетная запись заблокирована.
      */
     @Override
@@ -133,6 +136,7 @@ public class User implements UserDetails {
 
     /**
      * Проверяет, не истек ли срок действия учетных данных (пароля) пользователя.
+     *
      * @return false, если срок действия учетных данных истек.
      */
     @Override
@@ -142,6 +146,7 @@ public class User implements UserDetails {
 
     /**
      * Проверяет, включена ли учетная запись пользователя.
+     *
      * @return false, если учетная запись отключена.
      */
     @Override

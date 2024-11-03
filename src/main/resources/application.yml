@@ -12,9 +12,6 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
   mail:
     host: smtp.mail.ru
     port: 587

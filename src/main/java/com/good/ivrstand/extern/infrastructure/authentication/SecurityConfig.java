@@ -33,6 +33,7 @@ public class SecurityConfig {
 
     /**
      * Возвращает объект менеджера аутентификации.
+     *
      * @param config конфигурация
      */
     @Bean

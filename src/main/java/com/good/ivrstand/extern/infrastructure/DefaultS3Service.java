@@ -50,7 +50,7 @@ public class DefaultS3Service implements S3Service {
      * @param multipartFile файл для загрузки
      * @param folderName    имя папки, в которую будет загружен файл
      * @return ссылка на загруженный файл
-     * @throws IOException если происходит ошибка ввода/вывода
+     * @throws IOException            если происходит ошибка ввода/вывода
      * @throws FileDuplicateException если файл с таким именем уже существует
      */
     public String uploadFile(MultipartFile multipartFile, String folderName) throws IOException {
@@ -73,8 +73,7 @@ public class DefaultS3Service implements S3Service {
             log.info("Файл добавлен в S3.");
 
             return String.format("https://storage.yandexcloud.net/%s/%s", bucketName, key);
-        }
-        else {
+        } else {
             throw new FileDuplicateException("Файл с таким именем уже был добавлен!");
         }
     }
@@ -118,8 +117,7 @@ public class DefaultS3Service implements S3Service {
             s3Client.headObject(headObjectRequest);
 
             return true;
-        }
-        catch (S3Exception e) {
+        } catch (S3Exception e) {
             if (e.statusCode() == 404) {
                 return false;
             } else {

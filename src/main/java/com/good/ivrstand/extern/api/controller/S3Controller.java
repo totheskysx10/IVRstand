@@ -48,8 +48,7 @@ public class S3Controller {
             response.put("link", link);
             response.put("message", "File duplicate.");
             return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             response.put("message", "Failed to upload file.");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
@@ -69,8 +68,7 @@ public class S3Controller {
             return ResponseEntity.ok().build();
         } catch (NoSuchFileException ex) {
             return ResponseEntity.noContent().build();
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.internalServerError().build();
         }

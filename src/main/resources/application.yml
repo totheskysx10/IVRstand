@@ -36,10 +36,10 @@ springdoc:
   swagger-ui:
     disable-swagger-default-url: true
     path: /swagger-ui.html
-    configUrl: /backend/v3/api-docs/swagger-config
+    configUrl: /v3/api-docs/swagger-config
     urls:
       - name: Default API
-        url: /backend/v3/api-docs
+        url: /v3/api-docs
   api-docs:
     path: /v3/api-docs
 

@@ -1,8 +1,9 @@
 import os
 import psycopg2
 import torch
+import torch.nn.functional as F
 from flask import Flask, request, jsonify
-from qdrant_client.http.models import VectorParams, Distance
+from qdrant_client.http.models import VectorParams, Distance, PointStruct
 from transformers import AutoTokenizer, AutoModel
 from qdrant_client import QdrantClient, models
 from qdrant_client.http import models as rest
@@ -81,19 +82,38 @@ def fetch_texts_from_db(batch_size=10):
         if connection is not None:
             connection.close()
 
+
 def embed_documents(documents_dict, model, tokenizer):
     documents = list(documents_dict.keys())
+    # Токенизируем документы
     inputs = tokenizer(documents, return_tensors='pt', padding=True, truncation=True)
+
     with torch.no_grad():
-        embeddings = model(**inputs).last_hidden_state.mean(dim=1)
+        # Получаем скрытые состояния модели
+        model_output = model(**inputs).last_hidden_state
+        # Получаем маску внимания
+        attention_mask = inputs['attention_mask']
+        # Используем взвешенное усреднение
+        embeddings = F.normalize(get_weighted_embeddings(model_output, attention_mask))
+
     return embeddings, documents
+
+def get_weighted_embeddings(model_output, attention_mask):
+    # Вычисляем веса внимания, нормализуя attention_mask
+    attention_weights = attention_mask / attention_mask.sum(dim=1, keepdim=True)
+    # Умножаем скрытые состояния на веса и суммируем по первому измерению
+    weighted_embeddings = (model_output * attention_weights.unsqueeze(-1)).sum(dim=1)
+    return weighted_embeddings
 
 def add_embeddings_to_qdrant(texts, model, tokenizer):
     embeddings, documents = embed_documents(texts, model, tokenizer)
     for doc, embedding in zip(documents, embeddings):
+        vector = embedding.squeeze(0).tolist()
+        points = [PointStruct(id=texts[doc], vector=vector, payload={"text": doc})]
         qdrant_client.upsert(
             collection_name=COLLECTION_NAME,
-            points=[rest.PointStruct(id=texts[doc], vector=embedding.numpy().tolist(), payload={"text": doc})]
+            points=points,
+            wait = True
         )
 
 def sync_embeddings(texts, model, tokenizer):

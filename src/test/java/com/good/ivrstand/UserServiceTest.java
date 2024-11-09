@@ -6,7 +6,7 @@ import com.good.ivrstand.domain.Role;
 import com.good.ivrstand.domain.User;
 import com.good.ivrstand.domain.UserRole;
 import com.good.ivrstand.exception.NotConfirmedEmailException;
-import com.good.ivrstand.exception.TokenException;
+import com.good.ivrstand.exception.ResetPasswordTokenException;
 import com.good.ivrstand.exception.UserDuplicateException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -168,7 +168,7 @@ public class UserServiceTest {
 
         userService.updatePassword("mCUMoT5ilyKYdeOa8iFI+w==", "encodedPassword", "token");
 
-        TokenException exception = assertThrows(TokenException.class, () -> {
+        ResetPasswordTokenException exception = assertThrows(ResetPasswordTokenException.class, () -> {
             userService.updatePassword("ykcfU3ayqLU9YpCFhDtu+A==", "encodedPassword", "token");
         });
 

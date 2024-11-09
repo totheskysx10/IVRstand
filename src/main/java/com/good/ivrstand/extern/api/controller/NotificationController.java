@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/notifications")
-@CrossOrigin(origins = {"http://127.0.0.1:5500", "https://good-web-ivr.netlify.app"})
 @Tag(name = "NotificationController", description = "Контроллер для управления уведомлениями")
 public class NotificationController {
 

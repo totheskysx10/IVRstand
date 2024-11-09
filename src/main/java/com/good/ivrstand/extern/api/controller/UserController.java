@@ -3,7 +3,7 @@ package com.good.ivrstand.extern.api.controller;
 import com.good.ivrstand.app.UserService;
 import com.good.ivrstand.domain.User;
 import com.good.ivrstand.exception.NotConfirmedEmailException;
-import com.good.ivrstand.exception.TokenException;
+import com.good.ivrstand.exception.ResetPasswordTokenException;
 import com.good.ivrstand.extern.api.assembler.UserAssembler;
 import com.good.ivrstand.extern.api.dto.UserDTO;
 import com.good.ivrstand.extern.api.dto.UserUpdatePasswordDTO;
@@ -49,7 +49,7 @@ public class UserController {
             return ResponseEntity.ok().build();
         } catch (IllegalArgumentException ex) {
             return ResponseEntity.badRequest().build();
-        } catch (TokenException ex) {
+        } catch (ResetPasswordTokenException ex) {
             return ResponseEntity.notFound().build();
         }
     }

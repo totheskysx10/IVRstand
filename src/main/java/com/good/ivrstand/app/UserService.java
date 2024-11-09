@@ -4,13 +4,12 @@ import com.good.ivrstand.domain.EmailData;
 import com.good.ivrstand.domain.User;
 import com.good.ivrstand.domain.UserRole;
 import com.good.ivrstand.exception.NotConfirmedEmailException;
-import com.good.ivrstand.exception.TokenException;
+import com.good.ivrstand.exception.ResetPasswordTokenException;
 import com.good.ivrstand.exception.UserDuplicateException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
 /**
@@ -134,7 +133,7 @@ public class UserService implements UserDetailsService {
             userRepository.save(user);
             log.info("Обновлён пароль для пользователя с id {}", id);
         } else
-            throw new TokenException("Ошибка токена сброса!");
+            throw new ResetPasswordTokenException("Ошибка токена сброса пароля!");
     }
 
     /**

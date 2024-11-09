@@ -79,7 +79,6 @@ public class ItemController {
         }
     }
 
-
     @Operation(summary = "Удалить услугу", description = "Удаляет услугу по ее идентификатору.")
     @ApiResponse(responseCode = "204", description = "Услуга успешно удалена")
     @DeleteMapping("/{id}")

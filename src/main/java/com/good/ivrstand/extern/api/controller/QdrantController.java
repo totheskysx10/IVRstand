@@ -1,6 +1,6 @@
 package com.good.ivrstand.extern.api.controller;
 
-import com.good.ivrstand.app.QdrantService;
+import com.good.ivrstand.app.service.QdrantService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;

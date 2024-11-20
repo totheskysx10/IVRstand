@@ -1,10 +1,11 @@
 package com.good.ivrstand;
 
-import com.good.ivrstand.app.*;
+import com.good.ivrstand.app.repository.UserRepository;
+import com.good.ivrstand.app.service.*;
 import com.good.ivrstand.domain.EmailData;
 import com.good.ivrstand.domain.Role;
 import com.good.ivrstand.domain.User;
-import com.good.ivrstand.domain.UserRole;
+import com.good.ivrstand.domain.enumeration.UserRole;
 import com.good.ivrstand.exception.NotConfirmedEmailException;
 import com.good.ivrstand.exception.ResetPasswordTokenException;
 import com.good.ivrstand.exception.UserDuplicateException;
@@ -172,7 +173,7 @@ public class UserServiceTest {
             userService.updatePassword("ykcfU3ayqLU9YpCFhDtu+A==", "encodedPassword", "token");
         });
 
-        assertEquals("Ошибка токена сброса!", exception.getMessage());
+        assertEquals("Ошибка токена сброса пароля!", exception.getMessage());
         assertEquals("encodedPassword", user1.getPassword());
     }
 

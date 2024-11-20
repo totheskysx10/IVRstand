@@ -1,6 +1,6 @@
 package com.good.ivrstand.extern.api.dto;
 
-import com.good.ivrstand.domain.UserRole;
+import com.good.ivrstand.domain.enumeration.UserRole;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 import org.springframework.hateoas.RepresentationModel;

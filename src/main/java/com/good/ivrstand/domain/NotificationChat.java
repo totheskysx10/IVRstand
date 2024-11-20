@@ -1,5 +1,6 @@
 package com.good.ivrstand.domain;
 
+import com.good.ivrstand.domain.enumeration.NotificationCategory;
 import jakarta.persistence.*;
 import lombok.*;
 

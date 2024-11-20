@@ -1,7 +1,7 @@
 package com.good.ivrstand.extern.infrastructure.authentication;
 
-import com.good.ivrstand.app.EncodeService;
-import com.good.ivrstand.app.UserService;
+import com.good.ivrstand.app.service.EncodeService;
+import com.good.ivrstand.app.service.UserService;
 import com.good.ivrstand.domain.User;
 import com.good.ivrstand.exception.DifferentPasswordsException;
 import com.good.ivrstand.exception.TokenRefreshException;

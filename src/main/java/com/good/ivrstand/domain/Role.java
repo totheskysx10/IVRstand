@@ -1,6 +1,7 @@
 package com.good.ivrstand.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.good.ivrstand.domain.enumeration.UserRole;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;

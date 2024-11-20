@@ -1,6 +1,6 @@
 package com.good.ivrstand.extern.api.controller;
 
-import com.good.ivrstand.app.UserService;
+import com.good.ivrstand.app.service.UserService;
 import com.good.ivrstand.domain.User;
 import com.good.ivrstand.exception.NotConfirmedEmailException;
 import com.good.ivrstand.exception.ResetPasswordTokenException;

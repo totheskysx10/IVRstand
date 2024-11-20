@@ -1,7 +1,7 @@
 package com.good.ivrstand;
 
-import com.good.ivrstand.app.TokenService;
-import com.good.ivrstand.app.UserRepository;
+import com.good.ivrstand.app.service.TokenService;
+import com.good.ivrstand.app.repository.UserRepository;
 import com.good.ivrstand.domain.User;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -11,7 +11,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.scheduling.TaskScheduler;
 
 import java.time.Instant;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledFuture;
 
 import static org.junit.jupiter.api.Assertions.*;

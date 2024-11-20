@@ -1,6 +1,6 @@
 package com.good.ivrstand.extern.api.controller;
 
-import com.good.ivrstand.app.CategoryService;
+import com.good.ivrstand.app.service.CategoryService;
 import com.good.ivrstand.domain.Category;
 import com.good.ivrstand.extern.api.assembler.CategoryAssembler;
 import com.good.ivrstand.extern.api.dto.CategoryDTO;

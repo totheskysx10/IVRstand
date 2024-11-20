@@ -1,6 +1,6 @@
 package com.good.ivrstand.extern.infrastructure.authentication;
 
-import com.good.ivrstand.app.UserService;
+import com.good.ivrstand.app.service.UserService;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.security.SignatureException;
 import jakarta.servlet.FilterChain;

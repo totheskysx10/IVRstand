@@ -1,7 +1,7 @@
 package com.good.ivrstand;
 
 import com.good.ivrstand.domain.EmailData;
-import com.good.ivrstand.extern.infrastructure.DefaultEmailService;
+import com.good.ivrstand.extern.infrastructure.service.DefaultEmailService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

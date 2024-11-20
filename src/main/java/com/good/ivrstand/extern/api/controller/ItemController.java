@@ -1,7 +1,7 @@
 package com.good.ivrstand.extern.api.controller;
 
-import com.good.ivrstand.app.EncodeService;
-import com.good.ivrstand.app.ItemService;
+import com.good.ivrstand.app.service.EncodeService;
+import com.good.ivrstand.app.service.ItemService;
 import com.good.ivrstand.domain.Item;
 import com.good.ivrstand.extern.api.assembler.ItemAssembler;
 import com.good.ivrstand.extern.api.dto.DescriptionUpdateDTO;

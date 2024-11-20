@@ -1,10 +1,8 @@
 package com.good.ivrstand;
 
-import com.good.ivrstand.app.AdditionService;
-import com.good.ivrstand.app.ItemService;
+import com.good.ivrstand.app.service.AdditionService;
+import com.good.ivrstand.app.service.ItemService;
 import com.good.ivrstand.domain.Addition;
-import com.good.ivrstand.domain.Category;
-import com.good.ivrstand.domain.Item;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;

@@ -15,9 +15,9 @@ import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 @Component
 public class BotInitializer {
 
-    private final BotService bot;
+    private final TelegramBot bot;
 
-    public BotInitializer(BotService bot) {
+    public BotInitializer(TelegramBot bot) {
         this.bot = bot;
     }
 

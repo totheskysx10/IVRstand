@@ -9,6 +9,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 
 /**
  * Сервис для работы с озвучкой
@@ -38,7 +39,9 @@ public class SpeechService {
                 .replace("\"}", "");
         String[] resultArray = result.split("\\\\n\\\\n|\\\\n");
 
-        return resultArray;
+        return Arrays.stream(resultArray)
+                .filter(line -> !line.trim().isEmpty())
+                .toArray(String[]::new);
     }
 
     /**

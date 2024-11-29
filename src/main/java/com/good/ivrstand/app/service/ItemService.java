@@ -516,16 +516,4 @@ public class ItemService {
             }
         }
     }
-
-    // TODO remove after DB adaptation
-    public void setAudioAndHash() {
-        Pageable pageableCheckQuantity = PageRequest.of(0, 999);
-        Page<Item> itemsPage = getAllItemsInBase(pageableCheckQuantity);
-        List<Item> items = itemsPage.getContent();
-        for (Item i : items) {
-            i.setAudio(new ArrayList<>());
-            i.setDescriptionHash(encodeService.generateHashForAudio(i.getDescription()));
-            itemRepository.save(i);
-        }
-    }
 }

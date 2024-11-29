@@ -268,11 +268,4 @@ public class ItemController {
         itemService.removeTitleAudio(id);
         return ResponseEntity.ok().build();
     }
-
-    // TODO remove after DB adaptation
-    @PostMapping("/fix-db")
-    public ResponseEntity<Void> removeTitleAudio() {
-        itemService.setAudioAndHash();
-        return ResponseEntity.ok().build();
-    }
 }

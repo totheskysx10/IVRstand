@@ -198,11 +198,4 @@ public class AdditionController {
         additionService.removeTitleAudio(id);
         return ResponseEntity.ok().build();
     }
-
-    // TODO remove after DB adaptation
-    @PostMapping("/fix-db")
-    public ResponseEntity<Void> removeTitleAudio() {
-        additionService.setAudioAndHash();
-        return ResponseEntity.ok().build();
-    }
 }

@@ -287,21 +287,4 @@ public class AdditionService {
             }
         }
     }
-
-    // TODO remove after DB adaptation
-
-    public Page<Addition> getAllItemsInBase(Pageable pageable) {
-        return additionRepository.findAll(pageable);
-    }
-
-    public void setAudioAndHash() {
-        Pageable pageableCheckQuantity = PageRequest.of(0, 999);
-        Page<Addition> additionsPage = getAllItemsInBase(pageableCheckQuantity);
-        List<Addition> additions = additionsPage.getContent();
-        for (Addition i : additions) {
-            i.setAudio(new ArrayList<>());
-            i.setDescriptionHash(encodeService.generateHashForAudio(i.getDescription()));
-            additionRepository.save(i);
-        }
-    }
 }

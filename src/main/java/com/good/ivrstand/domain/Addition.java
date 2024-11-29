@@ -92,7 +92,6 @@ public class Addition {
      * Аудио описания дополнения.
      */
     @Getter
-    @Setter // TODO remove after DB adaptation
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "addition_audio", joinColumns = @JoinColumn(name = "addition_id"))
     @Column(name = "audio")

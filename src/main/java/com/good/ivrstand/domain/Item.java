@@ -105,7 +105,6 @@ public class Item {
      * Аудио описания услуги.
      */
     @Getter
-    @Setter // TODO remove after DB adaptation
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "item_audio", joinColumns = @JoinColumn(name = "item_id"))
     @Column(name = "audio")

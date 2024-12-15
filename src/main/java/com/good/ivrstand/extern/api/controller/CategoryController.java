@@ -2,6 +2,7 @@ package com.good.ivrstand.extern.api.controller;
 
 import com.good.ivrstand.app.service.CategoryService;
 import com.good.ivrstand.domain.Category;
+import com.good.ivrstand.exception.FileDuplicateException;
 import com.good.ivrstand.extern.api.assembler.CategoryAssembler;
 import com.good.ivrstand.extern.api.dto.CategoryDTO;
 import io.swagger.v3.oas.annotations.Operation;
@@ -156,11 +157,18 @@ public class CategoryController {
     }
 
     @Operation(summary = "Сгенерировать аудио заголовка категории", description = "Генерирует аудио заголовка категории по её идентификатору.")
-    @ApiResponse(responseCode = "200", description = "Аудио заголовка категории готово")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Аудио заголовка категории готово"),
+            @ApiResponse(responseCode = "409", description = "Дубликат файла аудио по названию")
+    })
     @PutMapping("/{id}/title-audio/generate")
     public ResponseEntity<Void> generateTitleAudio(@PathVariable long id) throws IOException {
-        categoryService.generateTitleAudio(id);
-        return ResponseEntity.ok().build();
+        try {
+            categoryService.generateTitleAudio(id);
+            return ResponseEntity.ok().build();
+        } catch (FileDuplicateException ex) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+        }
     }
 
     @Operation(summary = "Удалить аудио заголовка категории", description = "Удаляет аудио заголовка категории по её идентификатору.")

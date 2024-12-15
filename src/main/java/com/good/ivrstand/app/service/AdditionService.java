@@ -3,6 +3,7 @@ package com.good.ivrstand.app.service;
 
 import com.good.ivrstand.app.repository.AdditionRepository;
 import com.good.ivrstand.domain.Addition;
+import com.good.ivrstand.exception.FileDuplicateException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -107,7 +108,7 @@ public class AdditionService {
      * @param additionId Идентификатор дополнения.
      * @param desc       Новое описание дополнения.
      */
-    public void updateDescriptionToAddition(long additionId, String desc, boolean enableAudio) throws IOException {
+    public void updateDescriptionToAddition(long additionId, String desc, boolean enableAudio) throws IOException, FileDuplicateException {
         Addition addition = getAdditionById(additionId);
         if (addition != null) {
             addition.setDescription(desc);
@@ -232,7 +233,7 @@ public class AdditionService {
      *
      * @param additionId Идентификатор дополнения.
      */
-    public void generateTitleAudio(long additionId) throws IOException {
+    public void generateTitleAudio(long additionId) throws IOException, FileDuplicateException {
         Addition addition = getAdditionById(additionId);
         if (addition != null) {
             if (addition.getTitleAudio() == null) {
@@ -270,7 +271,7 @@ public class AdditionService {
      * @param addition дополнение
      * @throws IOException исключение
      */
-    private void generateDescriptionAudio(Addition addition) throws IOException {
+    private void generateDescriptionAudio(Addition addition) throws IOException, FileDuplicateException {
         Page<Addition> additionsWithSameDescriptionRequest = additionRepository.findByHashAndAudioExistence(addition.getDescriptionHash(), PageRequest.of(0, 1));
         if (additionsWithSameDescriptionRequest.hasContent()) {
             Addition additionWithSameDescription = additionsWithSameDescriptionRequest.getContent().get(0);

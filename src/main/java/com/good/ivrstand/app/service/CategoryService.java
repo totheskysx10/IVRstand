@@ -1,6 +1,7 @@
 package com.good.ivrstand.app.service;
 
 import com.good.ivrstand.app.repository.CategoryRepository;
+import com.good.ivrstand.exception.FileDuplicateException;
 import com.good.ivrstand.extern.api.flaskRequests.AddTitleRequest;
 import com.good.ivrstand.domain.Category;
 import com.good.ivrstand.domain.Item;
@@ -232,7 +233,7 @@ public class CategoryService {
      *
      * @param categoryId Идентификатор категории.
      */
-    public void generateTitleAudio(long categoryId) throws IOException {
+    public void generateTitleAudio(long categoryId) throws IOException, FileDuplicateException {
         Category category = getCategoryById(categoryId);
         if (category != null) {
             if (category.getTitleAudio() == null) {

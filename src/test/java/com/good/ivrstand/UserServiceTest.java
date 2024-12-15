@@ -85,7 +85,7 @@ public class UserServiceTest {
     }
 
     @Test
-    public void createUserTest() {
+    public void createUserTest() throws UserDuplicateException {
         User user1 = User.builder()
                 .id(1L)
                 .username("test@example.com")
@@ -146,7 +146,7 @@ public class UserServiceTest {
     }
 
     @Test
-    public void updatePasswordTest() {
+    public void updatePasswordTest() throws ResetPasswordTokenException {
         User user1 = User.builder()
                 .id(23L)
                 .username("min@list.ru")
@@ -239,7 +239,7 @@ public class UserServiceTest {
     }
 
     @Test
-    public void giveAdminRulesToUserTest() {
+    public void giveAdminRulesToUserTest() throws NotConfirmedEmailException {
         User user1 = User.builder()
                 .id(23L)
                 .username("min@list.ru")
@@ -284,7 +284,7 @@ public class UserServiceTest {
     }
 
     @Test
-    public void removeAdminRulesFromUserTest() {
+    public void removeAdminRulesFromUserTest() throws NotConfirmedEmailException {
         User user1 = User.builder()
                 .id(23L)
                 .username("min@list.ru")

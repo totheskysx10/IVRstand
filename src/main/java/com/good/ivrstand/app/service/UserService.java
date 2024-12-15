@@ -90,7 +90,7 @@ public class UserService implements UserDetailsService {
      * @throws IllegalArgumentException если пользователь null
      * @throws UserDuplicateException   если пользователь с данным email уже существует
      */
-    public User createUser(User user) {
+    public User createUser(User user) throws UserDuplicateException {
         if (user == null) {
             throw new IllegalArgumentException("Пользователь не может быть null");
         }
@@ -125,7 +125,7 @@ public class UserService implements UserDetailsService {
      * @param encodedPass новый пароль
      * @param token       токен сброса
      */
-    public void updatePassword(String userId, String encodedPass, String token) {
+    public void updatePassword(String userId, String encodedPass, String token) throws ResetPasswordTokenException {
         long id = Long.parseLong(encodeService.decrypt(userId));
         User user = getUserById(id);
         if (user.getResetToken().equals(token)) {
@@ -199,7 +199,7 @@ public class UserService implements UserDetailsService {
      * @param userId ID пользователя
      * @throws NotConfirmedEmailException если email пользователя не подтвержден
      */
-    public void giveAdminRulesToUser(long userId) {
+    public void giveAdminRulesToUser(long userId) throws NotConfirmedEmailException {
         User user = getUserById(userId);
         if (user != null) {
             if (user.isEmailConfirmed()) {

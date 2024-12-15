@@ -53,7 +53,7 @@ public class DefaultS3Service implements S3Service {
      * @throws IOException            если происходит ошибка ввода/вывода
      * @throws FileDuplicateException если файл с таким именем уже существует
      */
-    public String uploadFile(MultipartFile multipartFile, String folderName) throws IOException {
+    public String uploadFile(MultipartFile multipartFile, String folderName) throws IOException, FileDuplicateException {
         String fileName = multipartFile.getOriginalFilename();
         int lastDot = fileName.lastIndexOf('.');
         String name = fileName.substring(0, lastDot);
@@ -84,7 +84,7 @@ public class DefaultS3Service implements S3Service {
      * @param url ссылка на файл, который нужно удалить
      * @throws NoSuchFileException если файл не найден
      */
-    public void deleteFileByUrl(String url) {
+    public void deleteFileByUrl(String url) throws NoSuchFileException {
         URI uri = URI.create(url);
         String path = uri.getPath().substring(1);
         String key = path.substring(path.indexOf(bucketName) + bucketName.length() + 1);

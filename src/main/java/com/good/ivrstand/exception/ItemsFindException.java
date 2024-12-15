@@ -1,6 +1,9 @@
 package com.good.ivrstand.exception;
 
-public class ItemsFindException extends RuntimeException {
+/**
+ * Ошибка поиска услуг
+ */
+public class ItemsFindException extends Exception {
     public ItemsFindException(String message) {
         super(message);
     }

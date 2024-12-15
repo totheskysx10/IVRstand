@@ -1,10 +1,10 @@
 package com.good.ivrstand.extern.infrastructure.clients;
 
-
 import com.good.ivrstand.extern.api.flaskRequests.AddTitleRequest;
 import com.good.ivrstand.extern.api.flaskRequests.TitleRequest;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -45,5 +45,5 @@ public interface FlaskApiVectorSearchClient {
      * Запрос синхронизации базы Qdrant с базой PostreSQL.
      */
     @PostMapping(value = "/sync_database", consumes = MediaType.APPLICATION_JSON_VALUE)
-    void syncDatabase();
+    ResponseEntity<String> syncDatabase();
 }

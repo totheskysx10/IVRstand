@@ -5,6 +5,7 @@ import com.good.ivrstand.app.service.UserService;
 import com.good.ivrstand.domain.User;
 import com.good.ivrstand.exception.DifferentPasswordsException;
 import com.good.ivrstand.exception.TokenRefreshException;
+import com.good.ivrstand.exception.UserDuplicateException;
 import com.good.ivrstand.extern.api.dto.UserRegisterDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -44,7 +45,7 @@ public class AuthService {
      * @param userRegisterDTO объект с данными регистрации
      * @return карта с токеном доступа и токеном обновления
      */
-    public Map<String, String> registerUser(UserRegisterDTO userRegisterDTO) {
+    public Map<String, String> registerUser(UserRegisterDTO userRegisterDTO) throws UserDuplicateException, DifferentPasswordsException {
         if (!userRegisterDTO.getPassword().equals(userRegisterDTO.getPasswordConfirm())) {
             throw new DifferentPasswordsException("Пароли не совпадают!");
         }
@@ -116,7 +117,7 @@ public class AuthService {
      * @param refreshToken токен сброса
      * @return карта с токеном доступа и токеном обновления
      */
-    public Map<String, String> refreshToken(String token, String refreshToken) {
+    public Map<String, String> refreshToken(String token, String refreshToken) throws TokenRefreshException {
         String username = jwtService.extractUsername(token);
         String encodedPassword = jwtService.extractPassword(refreshToken).toString();
         String password = encodeService.decrypt(encodedPassword);

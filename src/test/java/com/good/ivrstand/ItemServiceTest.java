@@ -3,6 +3,8 @@ package com.good.ivrstand;
 import com.good.ivrstand.app.service.CategoryService;
 import com.good.ivrstand.app.service.ItemService;
 import com.good.ivrstand.domain.Item;
+import com.good.ivrstand.exception.FileDuplicateException;
+import com.good.ivrstand.exception.ItemsFindException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -89,10 +91,10 @@ public class ItemServiceTest {
 
     @Sql("/testsss.sql")
     @Test
-    public void testFindItemsByTitle() {
+    public void testFindItemsByTitle() throws ItemsFindException {
         Pageable pageable = PageRequest.of(0, 10);
         String request = "testItem";
-        Page<Item> itemsPage = itemService.findItemsByTitle(request, pageable, 0);
+        Page<Item> itemsPage = itemService.findItemsByTitle(request, pageable);
         List<Item> items = itemsPage.getContent();
 
         assertEquals(3, items.size());
@@ -111,7 +113,7 @@ public class ItemServiceTest {
 
     @Sql("/testsss.sql")
     @Test
-    public void testUpdateDescriptionToItem() throws IOException {
+    public void testUpdateDescriptionToItem() throws IOException, FileDuplicateException {
         itemService.updateDescriptionToItem(1, "DEEEESC", false);
 
         Item updatedItem = itemService.getItemById(1);

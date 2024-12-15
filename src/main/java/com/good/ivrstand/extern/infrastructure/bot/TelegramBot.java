@@ -77,7 +77,7 @@ public class TelegramBot extends TelegramLongPollingBot {
     /**
      * Отправляет сообщения о вызове помощи на IVR-стенде
      */
-    public void sendHelpMessage() {
+    public void sendHelpMessage() throws NoChatsException {
         List<NotificationChat> chats = notificationChatRepository.findAll();
 
         List<String> chatIds = new ArrayList<>();

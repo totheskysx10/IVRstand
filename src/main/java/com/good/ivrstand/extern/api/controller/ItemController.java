@@ -3,6 +3,8 @@ package com.good.ivrstand.extern.api.controller;
 import com.good.ivrstand.app.service.EncodeService;
 import com.good.ivrstand.app.service.ItemService;
 import com.good.ivrstand.domain.Item;
+import com.good.ivrstand.exception.FileDuplicateException;
+import com.good.ivrstand.exception.ItemsFindException;
 import com.good.ivrstand.extern.api.assembler.ItemAssembler;
 import com.good.ivrstand.extern.api.dto.DescriptionUpdateDTO;
 import com.good.ivrstand.extern.api.dto.ItemDTO;
@@ -20,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 
 @RestController
 @RequestMapping("/items")
@@ -122,19 +125,24 @@ public class ItemController {
     @Operation(summary = "Найти услуги по заголовку (заголовок можно ввести частично)", description = "Поиск услуг по заголовку (или его части).")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Успешное выполнение запроса"),
-            @ApiResponse(responseCode = "204", description = "Пустой возврат")
+            @ApiResponse(responseCode = "204", description = "Пустой возврат"),
+            @ApiResponse(responseCode = "500", description = "Ошибка при поиске услуг")
     })
     @GetMapping("/search")
-    public ResponseEntity<Page<ItemDTO>> findItemsByTitle(@RequestParam String title, Pageable pageable) {
-        Page<ItemDTO> items = itemService.findItemsByTitle(title, pageable, 0).map(itemAssembler::toModel);
+    public ResponseEntity<Object> findItemsByTitle(@RequestParam String title, Pageable pageable) {
+        try {
+            Page<ItemDTO> items = itemService.findItemsByTitle(title, pageable).map(itemAssembler::toModel);
+            if (items.isEmpty()) {
+                return ResponseEntity.noContent().build();
+            }
 
-        if (items.isEmpty()) {
-            return ResponseEntity.noContent().build();
+            return ResponseEntity.ok(items);
+        } catch (ItemsFindException e) {
+            String errorMessage = "Ошибка при поиске услуг: " + e.getMessage();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Collections.singletonMap("error", errorMessage));
         }
-
-        return ResponseEntity.ok(items);
     }
-
     @Operation(summary = "Найти услуги без категории", description = "Поиск услуг, которые не принадлежат ни одной категории.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Успешное выполнение запроса"),
@@ -168,7 +176,10 @@ public class ItemController {
     }
 
     @Operation(summary = "Обновить описание услуги", description = "Обновляет описание услуги по ее идентификатору. Если включить флаг enableAudio, сгенерируется речь описания, иначе - удалится (если есть) или не будет сгененрирована.")
-    @ApiResponse(responseCode = "200", description = "Описание услуги успешно обновлено")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Описание услуги успешно обновлено"),
+            @ApiResponse(responseCode = "409", description = "Дубликат файла аудио по названию")
+    })
     @PutMapping("/{id}/description")
     public ResponseEntity<Void> updateDescriptionToItem(
             @PathVariable long id,
@@ -177,8 +188,12 @@ public class ItemController {
         String description = descriptionUpdateDTO.getDescription();
         boolean enableAudio = descriptionUpdateDTO.isEnableAudio();
 
-        itemService.updateDescriptionToItem(id, description, enableAudio);
-        return ResponseEntity.ok().build();
+        try {
+            itemService.updateDescriptionToItem(id, description, enableAudio);
+            return ResponseEntity.ok().build();
+        } catch (FileDuplicateException ex) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+        }
     }
 
     @Operation(summary = "Обновить ссылку на GIF-превью услуги", description = "Обновляет ссылку на GIF-превью услуги по ее идентификатору.")
@@ -254,11 +269,18 @@ public class ItemController {
     }
 
     @Operation(summary = "Сгенерировать аудио заголовка услуги", description = "Генерирует аудио заголовка услуги по её идентификатору.")
-    @ApiResponse(responseCode = "200", description = "Аудио заголовка услуги готово")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Аудио заголовка услуги готово"),
+            @ApiResponse(responseCode = "409", description = "Дубликат файла аудио по названию")
+    })
     @PutMapping("/{id}/title-audio/generate")
     public ResponseEntity<Void> generateTitleAudio(@PathVariable long id) throws IOException {
-        itemService.generateTitleAudio(id);
-        return ResponseEntity.ok().build();
+        try {
+            itemService.generateTitleAudio(id);
+            return ResponseEntity.ok().build();
+        } catch (FileDuplicateException ex) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+        }
     }
 
     @Operation(summary = "Удалить аудио заголовка услуги", description = "Удаляет аудио заголовка услуги по её идентификатору.")

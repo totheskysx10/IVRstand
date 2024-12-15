@@ -4,6 +4,7 @@ import com.good.ivrstand.app.service.AdditionService;
 import com.good.ivrstand.app.service.EncodeService;
 import com.good.ivrstand.app.service.ItemService;
 import com.good.ivrstand.domain.Addition;
+import com.good.ivrstand.exception.FileDuplicateException;
 import com.good.ivrstand.extern.api.assembler.AdditionAssembler;
 import com.good.ivrstand.extern.api.dto.AdditionDTO;
 import com.good.ivrstand.extern.api.dto.DescriptionUpdateDTO;
@@ -106,7 +107,10 @@ public class AdditionController {
     }
 
     @Operation(summary = "Обновить описание дополнения", description = "Обновляет описание дополнения по его идентификатору. Если включить флаг enableAudio, сгенерируется речь описания, иначе - удалится (если есть) или не будет сгененрирована.")
-    @ApiResponse(responseCode = "200", description = "Описание дополнения успешно обновлено")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Описание дополнения успешно обновлено"),
+            @ApiResponse(responseCode = "409", description = "Дубликат файла аудио по названию")
+    })
     @PutMapping("/{id}/description")
     public ResponseEntity<Void> updateDescriptionToAddition(
             @PathVariable long id,
@@ -115,8 +119,12 @@ public class AdditionController {
         String description = descriptionUpdateDTO.getDescription();
         boolean enableAudio = descriptionUpdateDTO.isEnableAudio();
 
-        additionService.updateDescriptionToAddition(id, description, enableAudio);
-        return ResponseEntity.ok().build();
+        try {
+            additionService.updateDescriptionToAddition(id, description, enableAudio);
+            return ResponseEntity.ok().build();
+        } catch (FileDuplicateException ex) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+        }
     }
 
     @Operation(summary = "Обновить ссылку на GIF-превью дополнения", description = "Обновляет ссылку на GIF-превью дополнения по его идентификатору.")
@@ -184,11 +192,18 @@ public class AdditionController {
     }
 
     @Operation(summary = "Сгенерировать аудио заголовка дополнения", description = "Генерирует аудио заголовка дополнения по его идентификатору.")
-    @ApiResponse(responseCode = "200", description = "Аудио заголовка дополнения готово")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Аудио заголовка дополнения готово"),
+            @ApiResponse(responseCode = "409", description = "Дубликат файла аудио по названию")
+    })
     @PutMapping("/{id}/title-audio/generate")
     public ResponseEntity<Void> generateTitleAudio(@PathVariable long id) throws IOException {
-        additionService.generateTitleAudio(id);
-        return ResponseEntity.ok().build();
+        try {
+            additionService.generateTitleAudio(id);
+            return ResponseEntity.ok().build();
+        } catch (FileDuplicateException ex) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+        }
     }
 
     @Operation(summary = "Удалить аудио заголовка дополнения", description = "Удаляет аудио заголовка дополнения по его идентификатору.")

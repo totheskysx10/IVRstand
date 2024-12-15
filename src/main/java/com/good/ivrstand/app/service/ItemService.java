@@ -2,6 +2,7 @@ package com.good.ivrstand.app.service;
 
 import com.good.ivrstand.app.repository.ItemRepository;
 import com.good.ivrstand.domain.*;
+import com.good.ivrstand.exception.FileDuplicateException;
 import com.good.ivrstand.exception.ItemsFindException;
 import com.good.ivrstand.extern.api.flaskRequests.AddTitleRequest;
 import com.good.ivrstand.extern.api.flaskRequests.TitleRequest;
@@ -179,10 +180,9 @@ public class ItemService {
      *
      * @param title    Часть заголовка для поиска.
      * @param pageable Настройки пагинации.
-     * @param attempts попытки синхронизации БД
      * @return страница найденных услуг
      */
-    public Page<Item> findItemsByTitle(String title, Pageable pageable, int attempts) {
+    public Page<Item> findItemsByTitle(String title, Pageable pageable) throws ItemsFindException {
         List<Long> result = flaskApiVectorSearchService.getItemIds(title);
 
         List<Item> items = new ArrayList<>();
@@ -208,14 +208,9 @@ public class ItemService {
 
         if (shouldSync) {
             qdrantService.syncDatabase();
-            attempts += 1;
-            if (attempts < 3) {
-                return findItemsByTitle(title, pageable, attempts);
-            } else
-                throw new ItemsFindException("Проблема не в синхронизации БД!");
-        } else {
-            return page;
         }
+
+        return page;
     }
 
     /**
@@ -245,7 +240,7 @@ public class ItemService {
      * @param itemId Идентификатор услуги.
      * @param desc   Новое описание услуги.
      */
-    public void updateDescriptionToItem(long itemId, String desc, boolean enableAudio) throws IOException {
+    public void updateDescriptionToItem(long itemId, String desc, boolean enableAudio) throws IOException, FileDuplicateException {
         Item item = getItemById(itemId);
         if (item != null) {
             deleteQdrantTitle(item);
@@ -461,7 +456,7 @@ public class ItemService {
      *
      * @param itemId Идентификатор услуги.
      */
-    public void generateTitleAudio(long itemId) throws IOException {
+    public void generateTitleAudio(long itemId) throws IOException, FileDuplicateException {
         Item item = getItemById(itemId);
         if (item != null) {
             if (item.getTitleAudio() == null) {
@@ -499,7 +494,7 @@ public class ItemService {
      * @param item услуга
      * @throws IOException исключение
      */
-    private void generateDescriptionAudio(Item item) throws IOException {
+    private void generateDescriptionAudio(Item item) throws IOException, FileDuplicateException {
         Page<Item> itemsWithSameDescriptionRequest = itemRepository.findByHashAndAudioExistence(item.getDescriptionHash(), PageRequest.of(0, 1));
         if (itemsWithSameDescriptionRequest.hasContent()) {
             Item itemWithSameDescription = itemsWithSameDescriptionRequest.getContent().get(0);

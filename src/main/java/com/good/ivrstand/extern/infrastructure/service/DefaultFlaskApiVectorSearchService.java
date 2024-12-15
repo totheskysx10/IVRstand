@@ -1,9 +1,11 @@
 package com.good.ivrstand.extern.infrastructure.service;
 
 import com.good.ivrstand.app.service.FlaskApiVectorSearchService;
+import com.good.ivrstand.exception.ItemsFindException;
 import com.good.ivrstand.extern.api.flaskRequests.AddTitleRequest;
 import com.good.ivrstand.extern.api.flaskRequests.TitleRequest;
 import com.good.ivrstand.extern.infrastructure.clients.FlaskApiVectorSearchClient;
+import feign.FeignException;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
@@ -53,9 +55,18 @@ public class DefaultFlaskApiVectorSearchService implements FlaskApiVectorSearchS
     }
 
     /**
-     * Вызывает в Feign-клиенте метод синхронизации базы Qdrant с базой PostreSQL.
+     * Вызывает метод синхронизации базы Qdrant с базой PostgreSQL через Feign-клиент.
+     *
+     * Если база данных уже в процессе синхронизации (HTTP код 429 - Too Many Requests),
+     * выбрасывает исключение {@link ItemsFindException} с соответствующим сообщением.
+     *
+     * @throws ItemsFindException если база данных уже синхронизируется
      */
-    public void syncDatabase() {
-        flaskApiVectorSearchClient.syncDatabase();
+    public void syncDatabase() throws ItemsFindException {
+        try {
+            flaskApiVectorSearchClient.syncDatabase();
+        } catch (FeignException.TooManyRequests e) {
+            throw new ItemsFindException("БД уже в процессе синхронизации, ожидайте 5-7 минут");
+        }
     }
 }

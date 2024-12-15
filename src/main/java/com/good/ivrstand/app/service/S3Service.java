@@ -20,7 +20,7 @@ public interface S3Service {
      * @throws IOException            если происходит ошибка ввода/вывода
      * @throws FileDuplicateException если файл с таким именем уже существует
      */
-    String uploadFile(MultipartFile multipartFile, String folderName) throws IOException;
+    String uploadFile(MultipartFile multipartFile, String folderName) throws IOException, FileDuplicateException;
 
     /**
      * Удаляет файл из S3 по указанному URL.
@@ -28,7 +28,7 @@ public interface S3Service {
      * @param url ссылка на файл, который нужно удалить
      * @throws NoSuchFileException если файл не найден
      */
-    void deleteFileByUrl(String url);
+    void deleteFileByUrl(String url) throws NoSuchFileException;
 
     /**
      * Возвращает ссылку на файл в S3.

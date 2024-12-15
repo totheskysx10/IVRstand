@@ -1,5 +1,6 @@
 package com.good.ivrstand.app.service;
 
+import com.good.ivrstand.exception.ItemsFindException;
 import com.good.ivrstand.extern.api.flaskRequests.AddTitleRequest;
 import com.good.ivrstand.extern.api.flaskRequests.TitleRequest;
 
@@ -35,6 +36,6 @@ public interface FlaskApiVectorSearchService {
     /**
      * Синхронизирует базу данных Qdrant с данными в PostgreSQL
      */
-    void syncDatabase();
+    void syncDatabase() throws ItemsFindException;
 }
 

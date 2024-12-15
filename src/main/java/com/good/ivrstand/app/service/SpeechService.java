@@ -1,5 +1,6 @@
 package com.good.ivrstand.app.service;
 
+import com.good.ivrstand.exception.FileDuplicateException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.springframework.mock.web.MockMultipartFile;
@@ -51,7 +52,7 @@ public class SpeechService {
      * @param text текст для озвучки
      * @return ссылка на аудиофайл
      */
-    public String generateAudio(String text) throws IOException {
+    public String generateAudio(String text) throws IOException, FileDuplicateException {
         if (text.isEmpty()) {
             return "";
         }

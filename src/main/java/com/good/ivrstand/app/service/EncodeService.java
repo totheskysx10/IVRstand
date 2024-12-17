@@ -18,14 +18,19 @@ import java.util.HexFormat;
 public class EncodeService {
     private static final String ALGORITHM = "AES";
 
-    @Value("${auth.password-encrypt-key}")
-    private String secretKey;
+    private final String secretKey;
+
+    public EncodeService(@Value("${auth.password-encrypt-key}") String secretKey) {
+        this.secretKey = secretKey;
+    }
+
 
     /**
      * Шифрует текст алгоритмом AES по заданному ключу
      *
      * @param plainText текст
      * @return зашифрованный текст
+     * @throws RuntimeException ошибка при шифровании
      */
     public String encrypt(String plainText) {
         try {
@@ -35,9 +40,8 @@ public class EncodeService {
             byte[] encryptedBytes = cipher.doFinal(plainText.getBytes());
             return Base64.getEncoder().encodeToString(encryptedBytes);
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new RuntimeException("Ошибка при шифровании текста: " + plainText, e);
         }
-        return null;
     }
 
     /**
@@ -45,6 +49,7 @@ public class EncodeService {
      *
      * @param encryptedText шифрованный текст
      * @return расшифрованный текст
+     * @throws RuntimeException ошибка при дешифровании
      */
     public String decrypt(String encryptedText) {
         try {
@@ -56,9 +61,8 @@ public class EncodeService {
             byte[] decryptedBytes = cipher.doFinal(encryptedBytes);
             return new String(decryptedBytes);
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new RuntimeException("Ошибка при дешифровании текста: " + encryptedText, e);
         }
-        return null;
     }
 
     /**

@@ -1,4 +1,4 @@
-package com.good.ivrstand.app.service;
+package com.good.ivrstand.app.service.externinterfaces;
 
 import com.good.ivrstand.exception.FileDuplicateException;
 import com.good.ivrstand.exception.NoSuchFileException;

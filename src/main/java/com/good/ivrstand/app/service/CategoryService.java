@@ -1,7 +1,11 @@
 package com.good.ivrstand.app.service;
 
 import com.good.ivrstand.app.repository.CategoryRepository;
+import com.good.ivrstand.app.service.externinterfaces.FlaskApiVectorSearchService;
+import com.good.ivrstand.exception.CategoryUpdateException;
 import com.good.ivrstand.exception.FileDuplicateException;
+import com.good.ivrstand.exception.ItemCategoryAddDeleteException;
+import com.good.ivrstand.exception.notfound.CategoryNotFoundException;
 import com.good.ivrstand.extern.api.flaskRequests.AddTitleRequest;
 import com.good.ivrstand.domain.Category;
 import com.good.ivrstand.domain.Item;
@@ -62,12 +66,12 @@ public class CategoryService {
      *
      * @param categoryId Идентификатор категории.
      * @return Найденная категория.
-     * @throws IllegalArgumentException Если категория с указанным идентификатором не найдена.
+     * @throws CategoryNotFoundException Если категория с указанным идентификатором не найдена.
      */
-    public Category getCategoryById(long categoryId) {
+    public Category getCategoryById(long categoryId) throws CategoryNotFoundException {
         Category foundCategory = categoryRepository.findById(categoryId);
         if (foundCategory == null) {
-            throw new IllegalArgumentException("Категория с id " + categoryId + " не найдена");
+            throw new CategoryNotFoundException("Категория с id " + categoryId + " не найдена");
         } else {
             log.debug("Найдена категория с id {}", categoryId);
             return foundCategory;
@@ -80,27 +84,22 @@ public class CategoryService {
      * дочерние категории становятся детьми их дедушки
      *
      * @param categoryId Идентификатор категории.
-     * @throws IllegalArgumentException Если категория с указанным идентификатором не найдена.
      */
-    public void deleteCategory(long categoryId) {
-        Category foundCategory = categoryRepository.findById(categoryId);
-        if (foundCategory == null) {
-            throw new IllegalArgumentException("Категория с id " + categoryId + " не найдена");
-        } else {
-            for (Item i : foundCategory.getItemsInCategory()) {
-                TitleRequest titleRequest = new TitleRequest(i.getTitle() + " " + i.getCategory().getTitle() + " " + i.getDescription());
-                flaskApiVectorSearchService.deleteTitle(titleRequest);
-                i.setCategory(null);
-                AddTitleRequest addTitleRequest = new AddTitleRequest(i.getTitle() + " " + i.getDescription(), i.getId());
-                flaskApiVectorSearchService.addTitle(addTitleRequest);
-            }
-            for (Category c : foundCategory.getChildrenCategories()) {
-                c.setParentCategory(c.getParentCategory().getParentCategory());
-            }
-            categoryRepository.save(foundCategory);
-            categoryRepository.deleteById(categoryId);
-            log.info("Удалена категория с id {}", categoryId);
+    public void deleteCategory(long categoryId) throws CategoryNotFoundException {
+        Category foundCategory = getCategoryById(categoryId);
+        for (Item i : foundCategory.getItemsInCategory()) {
+            TitleRequest titleRequest = new TitleRequest(i.getTitle() + " " + i.getCategory().getTitle() + " " + i.getDescription());
+            flaskApiVectorSearchService.deleteTitle(titleRequest);
+            i.setCategory(null);
+            AddTitleRequest addTitleRequest = new AddTitleRequest(i.getTitle() + " " + i.getDescription(), i.getId());
+            flaskApiVectorSearchService.addTitle(addTitleRequest);
         }
+        for (Category c : foundCategory.getChildrenCategories()) {
+            c.setParentCategory(c.getParentCategory().getParentCategory());
+        }
+        categoryRepository.save(foundCategory);
+        categoryRepository.deleteById(categoryId);
+        log.info("Удалена категория с id {}", categoryId);
     }
 
     /**
@@ -138,49 +137,44 @@ public class CategoryService {
      *
      * @param categoryId Идентификатор подкатегории.
      * @param parentId   Идентификатор категорию.
-     * @throws IllegalArgumentException Если подкатегория или категория с указанным идентификатором не найдены.
+     * @throws ItemCategoryAddDeleteException Если подкатегория уже в другой категории или категория имеет услуги
+     * @throws IllegalArgumentException Если идентификаторы категорий совпадают
      */
-    public void addToCategory(long categoryId, long parentId) {
+    public void addToCategory(long categoryId, long parentId) throws ItemCategoryAddDeleteException, CategoryNotFoundException {
         if (categoryId == parentId) {
             throw new IllegalArgumentException("Идентификаторы категорий совпадают: " + categoryId);
         }
 
-        Category category = categoryRepository.findById(categoryId);
+        Category category = getCategoryById(categoryId);
         Category parent = getCategoryById(parentId);
 
         if (parent.getItemsInCategory().isEmpty()) {
-            if (category == null)
-                throw new IllegalArgumentException("Категория с id " + categoryId + " отсутствует");
-            else if (parent == null)
-                throw new IllegalArgumentException("Категория с id " + parentId + " отсутствует");
-            else if (category.getParentCategory() == null) {
+            if (category.getParentCategory() == null) {
                 category.setParentCategory(parent);
                 categoryRepository.save(category);
                 categoryRepository.save(parent);
                 log.info("Подкатегория с id {} добавлена в категорию с id {}", categoryId, parentId);
             } else
-                log.error("Подкатегория с id {} уже в другой категории!", categoryId);
+                throw new ItemCategoryAddDeleteException(String.format("Подкатегория с id %s уже в другой категории!", categoryId));
         } else
-            log.error("В категории с id {} есть услуги - продолжение дерева невозможно!", parentId);
+            throw new ItemCategoryAddDeleteException(String.format("В категории с id %s есть услуги - продолжение дерева невозможно!", parentId));
     }
 
     /**
      * Удаляет подкатегорию из категории.
      *
      * @param categoryId Идентификатор подкатегории.
-     * @throws IllegalArgumentException Если подкатегория с указанным идентификатором не найдена.
+     * @throws ItemCategoryAddDeleteException Если подкатегория не относится к категории
      */
-    public void removeFromCategory(long categoryId) {
-        Category category = categoryRepository.findById(categoryId);
+    public void removeFromCategory(long categoryId) throws ItemCategoryAddDeleteException, CategoryNotFoundException {
+        Category category = getCategoryById(categoryId);
 
-        if (category == null)
-            throw new IllegalArgumentException("Услуга с id " + categoryId + " отсутствует");
-        else if (category.getParentCategory() != null) {
+        if (category.getParentCategory() != null) {
             category.setParentCategory(null);
             categoryRepository.save(category);
             log.info("Подкатегория с id {} удалена из категории", categoryId);
         } else
-            log.error("Подкатегория с id {} не относится ни к одной из категорий!", categoryId);
+            throw new ItemCategoryAddDeleteException(String.format("Подкатегория с id %s не относится ни к одной из категорий!", categoryId));
     }
 
     /**
@@ -189,13 +183,11 @@ public class CategoryService {
      * @param categoryId Идентификатор категории.
      * @param gifLink    Новая ссылка на GIF.
      */
-    public void updateGifLinkToCategory(long categoryId, String gifLink) {
+    public void updateGifLinkToCategory(long categoryId, String gifLink) throws CategoryNotFoundException {
         Category category = getCategoryById(categoryId);
-        if (category != null) {
-            category.setGifLink(gifLink);
-            categoryRepository.save(category);
-            log.info("Ссылка на GIF обновлена для категории с id {}", categoryId);
-        }
+        category.setGifLink(gifLink);
+        categoryRepository.save(category);
+        log.info("Ссылка на GIF обновлена для категории с id {}", categoryId);
     }
 
     /**
@@ -204,13 +196,11 @@ public class CategoryService {
      * @param categoryId Идентификатор категории.
      * @param gifPreview Новая ссылка на GIF превью.
      */
-    public void updateGifPreviewToCategory(long categoryId, String gifPreview) {
+    public void updateGifPreviewToCategory(long categoryId, String gifPreview) throws CategoryNotFoundException {
         Category category = getCategoryById(categoryId);
-        if (category != null) {
-            category.setGifPreview(gifPreview);
-            categoryRepository.save(category);
-            log.info("Ссылка на GIF-превью обновлена для категории с id {}", categoryId);
-        }
+        category.setGifPreview(gifPreview);
+        categoryRepository.save(category);
+        log.info("Ссылка на GIF-превью обновлена для категории с id {}", categoryId);
     }
 
     /**
@@ -219,48 +209,44 @@ public class CategoryService {
      * @param categoryId Идентификатор категории.
      * @param icon       Новая ссылка на главную иконку.
      */
-    public void updateMainIconToCategory(long categoryId, String icon) {
+    public void updateMainIconToCategory(long categoryId, String icon) throws CategoryNotFoundException {
         Category category = getCategoryById(categoryId);
-        if (category != null) {
-            category.setMainIconLink(icon);
-            categoryRepository.save(category);
-            log.info("Ссылка на главную иконку обновлена для категории с id {}", categoryId);
-        }
+        category.setMainIconLink(icon);
+        categoryRepository.save(category);
+        log.info("Ссылка на главную иконку обновлена для категории с id {}", categoryId);
     }
 
     /**
      * Генерирует аудио заголовка категории.
      *
      * @param categoryId Идентификатор категории.
+     * @throws CategoryUpdateException если аудио заголовка уже есть у категории
      */
-    public void generateTitleAudio(long categoryId) throws IOException, FileDuplicateException {
+    public void generateTitleAudio(long categoryId) throws IOException, FileDuplicateException, CategoryUpdateException, CategoryNotFoundException {
         Category category = getCategoryById(categoryId);
-        if (category != null) {
-            if (category.getTitleAudio() == null) {
-                String titleAudio = speechService.generateAudio(category.getTitle());
-                category.setTitleAudio(titleAudio);
-                categoryRepository.save(category);
-                log.info("Сгенерировано аудио заголовка для категории с id {}", categoryId);
-            } else
-                log.warn("У категории {} уже есть аудио заголовка!", categoryId);
-        }
+        if (category.getTitleAudio() == null) {
+            String titleAudio = speechService.generateAudio(category.getTitle());
+            category.setTitleAudio(titleAudio);
+            categoryRepository.save(category);
+            log.info("Сгенерировано аудио заголовка для категории с id {}", categoryId);
+        } else
+            throw new CategoryUpdateException(String.format("У категории %s уже есть аудио заголовка!", categoryId));
     }
 
     /**
      * Удаляет аудио заголовка категории.
      *
      * @param categoryId Идентификатор категории.
+     * @throws CategoryUpdateException если аудио заголовка уже нет у категории
      */
-    public void removeTitleAudio(long categoryId) {
+    public void removeTitleAudio(long categoryId) throws CategoryUpdateException, CategoryNotFoundException {
         Category category = getCategoryById(categoryId);
-        if (category != null) {
-            if (category.getTitleAudio() == null) {
-                log.warn("У категории {} нет аудио заголовка!", categoryId);
-            } else {
-                category.setTitleAudio(null);
-                categoryRepository.save(category);
-                log.info("У категории {} удалено аудио заголовка", categoryId);
-            }
+        if (category.getTitleAudio() == null) {
+            throw new CategoryUpdateException(String.format("У категории %s нет аудио заголовка!", categoryId));
+        } else {
+            category.setTitleAudio(null);
+            categoryRepository.save(category);
+            log.info("У категории {} удалено аудио заголовка", categoryId);
         }
     }
 }

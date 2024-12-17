@@ -2,7 +2,10 @@ package com.good.ivrstand.extern.api.controller;
 
 import com.good.ivrstand.app.service.CategoryService;
 import com.good.ivrstand.domain.Category;
+import com.good.ivrstand.exception.CategoryUpdateException;
 import com.good.ivrstand.exception.FileDuplicateException;
+import com.good.ivrstand.exception.ItemCategoryAddDeleteException;
+import com.good.ivrstand.exception.notfound.CategoryNotFoundException;
 import com.good.ivrstand.extern.api.assembler.CategoryAssembler;
 import com.good.ivrstand.extern.api.dto.CategoryDTO;
 import io.swagger.v3.oas.annotations.Operation;
@@ -55,25 +58,32 @@ public class CategoryController {
     @Operation(summary = "Получить категорию по ID", description = "Получает информацию о категории по ее идентификатору.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Категория найдена"),
-            @ApiResponse(responseCode = "204", description = "Категория не найдена")
+            @ApiResponse(responseCode = "404", description = "Категория не найдена")
     })
     @GetMapping("/{id}")
     public ResponseEntity<CategoryDTO> getCategoryById(@PathVariable long id) {
         try {
             Category category = categoryService.getCategoryById(id);
             return ResponseEntity.ok(categoryAssembler.toModel(category));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.noContent().build();
+        } catch (CategoryNotFoundException e) {
+            return ResponseEntity.notFound().build();
         }
     }
 
 
     @Operation(summary = "Удалить категорию", description = "Удаляет категорию по ее идентификатору.")
-    @ApiResponse(responseCode = "204", description = "Категория успешно удалена")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Категория успешно удалена"),
+            @ApiResponse(responseCode = "404", description = "Категория не найдена")
+    })
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteCategory(@PathVariable long id) {
-        categoryService.deleteCategory(id);
-        return ResponseEntity.noContent().build();
+        try {
+            categoryService.deleteCategory(id);
+            return ResponseEntity.ok().build();
+        } catch (CategoryNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @Operation(summary = "Получить все категории", description = "Получает список всех категорий.")
@@ -117,65 +127,116 @@ public class CategoryController {
     }
 
     @Operation(summary = "Установить родительскую категорию", description = "Устанавливает указанную категорию в качестве родительской для другой категории.")
-    @ApiResponse(responseCode = "200", description = "Родительская категория успешно установлена")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Родительская категория успешно установлена"),
+            @ApiResponse(responseCode = "409", description = "Подкатегория уже в категории или категория, в которую добавляют, имеет услуги"),
+            @ApiResponse(responseCode = "404", description = "Категория/подкатегория не найдена")
+    })
     @PutMapping("/{categoryId}/parent/set/{parentId}")
     public ResponseEntity<Void> addToCategory(@PathVariable long categoryId, @PathVariable long parentId) {
-        categoryService.addToCategory(categoryId, parentId);
-        return ResponseEntity.ok().build();
+        try {
+            categoryService.addToCategory(categoryId, parentId);
+            return ResponseEntity.ok().build();
+        } catch (ItemCategoryAddDeleteException e) {
+            return new ResponseEntity<>(HttpStatus.CONFLICT);
+        } catch (CategoryNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @Operation(summary = "Удалить дочернюю категорию из родительской категории", description = "Удаляет указанную категорию из списка дочерних категорий родительской категории.")
-    @ApiResponse(responseCode = "200", description = "Подкатегория успешно удалена из категории")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Подкатегория успешно удалена из категории"),
+            @ApiResponse(responseCode = "409", description = "Категория не лежит ни в одной из категорий"),
+            @ApiResponse(responseCode = "404", description = "Категория не найдена")
+    })
     @PutMapping("/children/remove/{childId}")
     public ResponseEntity<Void> removeFromCategory(@PathVariable long childId) {
-        categoryService.removeFromCategory(childId);
-        return ResponseEntity.ok().build();
+        try {
+            categoryService.removeFromCategory(childId);
+            return ResponseEntity.ok().build();
+        } catch (ItemCategoryAddDeleteException e) {
+            return new ResponseEntity<>(HttpStatus.CONFLICT);
+        } catch (CategoryNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @Operation(summary = "Обновить ссылку на GIF-превью категории", description = "Обновляет ссылку на GIF-превью категории по её идентификатору.")
-    @ApiResponse(responseCode = "200", description = "Ссылка на GIF-превью категории успешно обновлена")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Ссылка на GIF-превью категории успешно обновлена"),
+            @ApiResponse(responseCode = "404", description = "Категория не найдена")
+    })
     @PutMapping("/{id}/gif-preview")
     public ResponseEntity<Void> updateCategoryGifPreview(@PathVariable long id, @RequestBody String gifPreview) {
-        categoryService.updateGifPreviewToCategory(id, gifPreview);
-        return ResponseEntity.ok().build();
+        try {
+            categoryService.updateGifPreviewToCategory(id, gifPreview);
+            return ResponseEntity.ok().build();
+        } catch (CategoryNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @Operation(summary = "Обновить ссылку на GIF категории", description = "Обновляет ссылку на GIF категории по её идентификатору.")
-    @ApiResponse(responseCode = "200", description = "Ссылка на GIF категории успешно обновлена")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Ссылка на GIF категории успешно обновлена"),
+            @ApiResponse(responseCode = "404", description = "Категория не найдена")
+    })
     @PutMapping("/{id}/gif")
     public ResponseEntity<Void> updateCategoryGifLink(@PathVariable long id, @RequestBody String gifLink) {
-        categoryService.updateGifLinkToCategory(id, gifLink);
-        return ResponseEntity.ok().build();
+        try {
+            categoryService.updateGifLinkToCategory(id, gifLink);
+            return ResponseEntity.ok().build();
+        } catch (CategoryNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @Operation(summary = "Обновить ссылку на главную иконку категории", description = "Обновляет ссылку на главную иконку категории по ее идентификатору.")
     @ApiResponse(responseCode = "200", description = "Ссылка на главную иконку категории успешно обновлена")
     @PutMapping("/{id}/main-icon")
     public ResponseEntity<Void> updateCategoryMainIcon(@PathVariable long id, @RequestBody String link) {
-        categoryService.updateMainIconToCategory(id, link);
-        return ResponseEntity.ok().build();
+        try {
+            categoryService.updateMainIconToCategory(id, link);
+            return ResponseEntity.ok().build();
+        } catch (CategoryNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @Operation(summary = "Сгенерировать аудио заголовка категории", description = "Генерирует аудио заголовка категории по её идентификатору.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Аудио заголовка категории готово"),
-            @ApiResponse(responseCode = "409", description = "Дубликат файла аудио по названию")
+            @ApiResponse(responseCode = "409", description = "У категории уже есть аудио заголовка. Иногда (читать как никогда) падает при дубликате заголовка аудио"),
+            @ApiResponse(responseCode = "404", description = "Категория не найдена")
     })
     @PutMapping("/{id}/title-audio/generate")
     public ResponseEntity<Void> generateTitleAudio(@PathVariable long id) throws IOException {
         try {
             categoryService.generateTitleAudio(id);
             return ResponseEntity.ok().build();
-        } catch (FileDuplicateException ex) {
+        } catch (FileDuplicateException | CategoryUpdateException ex) {
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
+        } catch (CategoryNotFoundException e) {
+            return ResponseEntity.notFound().build();
         }
     }
 
     @Operation(summary = "Удалить аудио заголовка категории", description = "Удаляет аудио заголовка категории по её идентификатору.")
-    @ApiResponse(responseCode = "200", description = "Аудио заголовка категории удалено")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Аудио заголовка категории удалено"),
+            @ApiResponse(responseCode = "409", description = "У категории уже нет аудио заголовка"),
+            @ApiResponse(responseCode = "404", description = "Категория не найдена")
+    })
     @PutMapping("/{id}/title-audio/remove")
     public ResponseEntity<Void> removeTitleAudio(@PathVariable long id) {
-        categoryService.removeTitleAudio(id);
-        return ResponseEntity.ok().build();
+        try {
+            categoryService.removeTitleAudio(id);
+            return ResponseEntity.ok().build();
+        } catch (CategoryUpdateException e) {
+            return new ResponseEntity<>(HttpStatus.CONFLICT);
+        } catch (CategoryNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 }

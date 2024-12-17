@@ -9,6 +9,7 @@ import org.springframework.security.authorization.AuthorizationDecision;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
@@ -65,7 +66,7 @@ public class SecurityConfig {
                 )
                 .sessionManagement(manager -> manager.sessionCreationPolicy(STATELESS))
                 .addFilterBefore(jwtAuthorizationFilter, UsernamePasswordAuthenticationFilter.class)
-                .csrf((csrf) -> csrf.disable());
+                .csrf(AbstractHttpConfigurer::disable);
 
         SecurityFilterChain filterChain = http.build();
         log.info("Security filter chain configured successfully");

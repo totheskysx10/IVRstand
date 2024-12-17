@@ -1,5 +1,7 @@
-package com.good.ivrstand.app.service;
+package com.good.ivrstand.extern.infrastructure.service;
 
+import com.good.ivrstand.app.service.externinterfaces.FlaskApiVectorSearchService;
+import com.good.ivrstand.app.service.externinterfaces.QdrantService;
 import com.good.ivrstand.exception.ItemsFindException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -11,11 +13,11 @@ import java.util.concurrent.*;
  */
 @Component
 @Slf4j
-public class QdrantService {
+public class DefaultQdrantService implements QdrantService {
 
     private final FlaskApiVectorSearchService flaskApiVectorSearchService;
 
-    public QdrantService(FlaskApiVectorSearchService flaskApiVectorSearchService) {
+    public DefaultQdrantService(FlaskApiVectorSearchService flaskApiVectorSearchService) {
         this.flaskApiVectorSearchService = flaskApiVectorSearchService;
     }
 

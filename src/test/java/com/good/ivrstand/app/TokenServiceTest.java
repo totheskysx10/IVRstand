@@ -1,4 +1,4 @@
-package com.good.ivrstand;
+package com.good.ivrstand.app;
 
 import com.good.ivrstand.app.service.TokenService;
 import com.good.ivrstand.app.repository.UserRepository;

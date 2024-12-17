@@ -1,4 +1,4 @@
-package com.good.ivrstand.app.service;
+package com.good.ivrstand.app.service.externinterfaces;
 
 import com.good.ivrstand.domain.EmailData;
 

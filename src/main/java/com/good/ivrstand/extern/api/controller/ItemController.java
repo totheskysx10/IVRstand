@@ -4,7 +4,11 @@ import com.good.ivrstand.app.service.EncodeService;
 import com.good.ivrstand.app.service.ItemService;
 import com.good.ivrstand.domain.Item;
 import com.good.ivrstand.exception.FileDuplicateException;
+import com.good.ivrstand.exception.ItemCategoryAddDeleteException;
+import com.good.ivrstand.exception.ItemUpdateException;
 import com.good.ivrstand.exception.ItemsFindException;
+import com.good.ivrstand.exception.notfound.CategoryNotFoundException;
+import com.good.ivrstand.exception.notfound.ItemNotFoundException;
 import com.good.ivrstand.extern.api.assembler.ItemAssembler;
 import com.good.ivrstand.extern.api.dto.DescriptionUpdateDTO;
 import com.good.ivrstand.extern.api.dto.ItemDTO;
@@ -70,40 +74,67 @@ public class ItemController {
     @Operation(summary = "Получить услугу по ID", description = "Получает информацию об услуге по ее идентификатору.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Услуга найдена"),
-            @ApiResponse(responseCode = "204", description = "Услуга не найдена")
+            @ApiResponse(responseCode = "404", description = "Услуга не найдена")
     })
     @GetMapping("/{id}")
     public ResponseEntity<ItemDTO> getItemById(@PathVariable long id) {
         try {
             Item item = itemService.getItemById(id);
             return ResponseEntity.ok(itemAssembler.toModel(item));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.noContent().build();
+        } catch (ItemNotFoundException e) {
+            return ResponseEntity.notFound().build();
         }
     }
 
     @Operation(summary = "Удалить услугу", description = "Удаляет услугу по ее идентификатору.")
-    @ApiResponse(responseCode = "204", description = "Услуга успешно удалена")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Услуга успешно удалена"),
+            @ApiResponse(responseCode = "404", description = "Услуга не найдена")
+    })
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteItem(@PathVariable long id) {
-        itemService.deleteItem(id);
-        return ResponseEntity.noContent().build();
+        try {
+            itemService.deleteItem(id);
+            return ResponseEntity.ok().build();
+        } catch (ItemNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @Operation(summary = "Добавить в категорию", description = "Добавляет услугу в указанную категорию.")
-    @ApiResponse(responseCode = "200", description = "Услуга успешно добавлена в категорию")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Услуга успешно добавлена в категорию"),
+            @ApiResponse(responseCode = "409", description = "Услуга уже в категории или категория не конечная"),
+            @ApiResponse(responseCode = "404", description = "Услуга/категория не найдена")
+    })
     @PutMapping("/{itemId}/category/add/{categoryId}")
     public ResponseEntity<Void> addToCategory(@PathVariable long itemId, @PathVariable long categoryId) {
-        itemService.addToCategory(itemId, categoryId);
-        return ResponseEntity.ok().build();
+        try {
+            itemService.addToCategory(itemId, categoryId);
+            return ResponseEntity.ok().build();
+        } catch (ItemCategoryAddDeleteException e) {
+            return new ResponseEntity<>(HttpStatus.CONFLICT);
+        } catch (ItemNotFoundException | CategoryNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @Operation(summary = "Удалить из категории", description = "Удаляет услугу из категории.")
-    @ApiResponse(responseCode = "200", description = "Услуга успешно удалена из категории")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Услуга успешно удалена из категории"),
+            @ApiResponse(responseCode = "409", description = "Услуга не лежит ни в одной из категорий"),
+            @ApiResponse(responseCode = "404", description = "Услуга не найдена")
+    })
     @PutMapping("/{itemId}/category/remove")
     public ResponseEntity<Void> removeFromCategory(@PathVariable long itemId) {
-        itemService.removeFromCategory(itemId);
-        return ResponseEntity.ok().build();
+        try {
+            itemService.removeFromCategory(itemId);
+            return ResponseEntity.ok().build();
+        } catch (ItemCategoryAddDeleteException e) {
+            return new ResponseEntity<>(HttpStatus.CONFLICT);
+        } catch (ItemNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @Operation(summary = "Получить все услуги", description = "Получает список всех услуг.")
@@ -126,7 +157,8 @@ public class ItemController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Успешное выполнение запроса"),
             @ApiResponse(responseCode = "204", description = "Пустой возврат"),
-            @ApiResponse(responseCode = "500", description = "Ошибка при поиске услуг")
+            @ApiResponse(responseCode = "500", description = "Ошибка синхронизации при поиске услуг"),
+            @ApiResponse(responseCode = "404", description = "Ошибка приложения при поиске")
     })
     @GetMapping("/search")
     public ResponseEntity<Object> findItemsByTitle(@RequestParam String title, Pageable pageable) {
@@ -141,6 +173,8 @@ public class ItemController {
             String errorMessage = "Ошибка при поиске услуг: " + e.getMessage();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Collections.singletonMap("error", errorMessage));
+        } catch (ItemNotFoundException e) {
+            return ResponseEntity.notFound().build();
         }
     }
     @Operation(summary = "Найти услуги без категории", description = "Поиск услуг, которые не принадлежат ни одной категории.")
@@ -178,7 +212,8 @@ public class ItemController {
     @Operation(summary = "Обновить описание услуги", description = "Обновляет описание услуги по ее идентификатору. Если включить флаг enableAudio, сгенерируется речь описания, иначе - удалится (если есть) или не будет сгененрирована.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Описание услуги успешно обновлено"),
-            @ApiResponse(responseCode = "409", description = "Дубликат файла аудио по названию")
+            @ApiResponse(responseCode = "409", description = "Дубликат файла аудио по названию"),
+            @ApiResponse(responseCode = "404", description = "Услуга не найдена")
     })
     @PutMapping("/{id}/description")
     public ResponseEntity<Void> updateDescriptionToItem(
@@ -193,101 +228,185 @@ public class ItemController {
             return ResponseEntity.ok().build();
         } catch (FileDuplicateException ex) {
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
+        } catch (ItemNotFoundException e) {
+            return ResponseEntity.notFound().build();
         }
     }
 
     @Operation(summary = "Обновить ссылку на GIF-превью услуги", description = "Обновляет ссылку на GIF-превью услуги по ее идентификатору.")
-    @ApiResponse(responseCode = "200", description = "Ссылка на GIF-превью услуги успешно обновлена")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Ссылка на GIF-превью услуги успешно обновлена"),
+            @ApiResponse(responseCode = "404", description = "Услуга не найдена")
+    })
     @PutMapping("/{id}/gif-preview")
     public ResponseEntity<Void> updateItemGifPreview(@PathVariable long id, @RequestBody String gifPreview) {
-        itemService.updateGifPreviewToItem(id, gifPreview);
-        return ResponseEntity.ok().build();
+        try {
+            itemService.updateGifPreviewToItem(id, gifPreview);
+            return ResponseEntity.ok().build();
+        } catch (ItemNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @Operation(summary = "Обновить ссылку на GIF услуги", description = "Обновляет ссылку на GIF услуги по ее идентификатору.")
-    @ApiResponse(responseCode = "200", description = "Ссылка на GIF услуги успешно обновлена")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Ссылка на GIF услуги успешно обновлена"),
+            @ApiResponse(responseCode = "404", description = "Услуга не найдена")
+    })
     @PutMapping("/{id}/gif")
     public ResponseEntity<Void> updateItemGifLink(@PathVariable long id, @RequestBody String gifLink) {
-        itemService.updateGifLinkToItem(id, gifLink);
-        return ResponseEntity.ok().build();
+        try {
+            itemService.updateGifLinkToItem(id, gifLink);
+            return ResponseEntity.ok().build();
+        } catch (ItemNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @Operation(summary = "Обновить ссылку на главную иконку услуги", description = "Обновляет ссылку на главную иконку услуги по ее идентификатору.")
-    @ApiResponse(responseCode = "200", description = "Ссылка на главную иконку услуги успешно обновлена")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Ссылка на главную иконку услуги успешно обновлена"),
+            @ApiResponse(responseCode = "404", description = "Услуга не найдена")
+    })
     @PutMapping("/{id}/main-icon")
     public ResponseEntity<Void> updateItemMainIcon(@PathVariable long id, @RequestBody String link) {
-        itemService.updateMainIconToItem(id, link);
-        return ResponseEntity.ok().build();
+        try {
+            itemService.updateMainIconToItem(id, link);
+            return ResponseEntity.ok().build();
+        } catch (ItemNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @Operation(summary = "Добавить иконку услуги", description = "Добавляет иконку для услуги по ее идентификатору.")
-    @ApiResponse(responseCode = "200", description = "Иконка для услуги успешно добавлена")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Иконка для услуги успешно добавлена"),
+            @ApiResponse(responseCode = "409", description = "У услуги уже есть эта иконка"),
+            @ApiResponse(responseCode = "404", description = "Услуга не найдена")
+    })
     @PutMapping("/{id}/icon/add")
     public ResponseEntity<Void> addItemIcon(@PathVariable long id, @RequestBody String iconLink) {
-        itemService.addIcon(id, iconLink);
-        return ResponseEntity.ok().build();
+        try {
+            itemService.addIcon(id, iconLink);
+            return ResponseEntity.ok().build();
+        } catch (ItemUpdateException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+        } catch (ItemNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @Operation(summary = "Удалить иконку услуги", description = "Удаляет иконку для услуги по ее идентификатору.")
-    @ApiResponse(responseCode = "200", description = "Иконка для услуги успешно удалена")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Иконка для услуги успешно удалена"),
+            @ApiResponse(responseCode = "404", description = "Услуга не найдена")
+    })
     @PutMapping("/{id}/icon/remove")
     public ResponseEntity<Void> removeItemIcon(@PathVariable long id, @RequestBody String iconLink) {
-        itemService.removeIcon(id, iconLink);
-        return ResponseEntity.ok().build();
+        try {
+            itemService.removeIcon(id, iconLink);
+            return ResponseEntity.ok().build();
+        } catch (ItemNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @Operation(summary = "Очистить иконки услуги", description = "Очищает иконки услуги по её идентификатору.")
-    @ApiResponse(responseCode = "200", description = "Иконки услуги очищены")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Иконки услуги очищены"),
+            @ApiResponse(responseCode = "404", description = "Услуга не найдена")
+    })
     @PutMapping("/{id}/clear-icons")
     public ResponseEntity<Void> clearIcons(@PathVariable long id) {
-        itemService.clearIcons(id);
-        return ResponseEntity.ok().build();
+        try {
+            itemService.clearIcons(id);
+            return ResponseEntity.ok().build();
+        } catch (ItemNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @Operation(summary = "Добавить ключевое слово услуги", description = "Добавляет ключевое слово для услуги по ее идентификатору.")
-    @ApiResponse(responseCode = "200", description = "Ключевое слово для услуги успешно добавлено")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Ключевое слово для услуги успешно добавлено"),
+            @ApiResponse(responseCode = "409", description = "У услуги уже есть это ключевое слово"),
+            @ApiResponse(responseCode = "404", description = "Услуга не найдена")
+    })
     @PutMapping("/{id}/keyword/add")
     public ResponseEntity<Void> addKeyword(@PathVariable long id, @RequestBody String word) {
-        itemService.addKeyword(id, word);
-        return ResponseEntity.ok().build();
+        try {
+            itemService.addKeyword(id, word);
+            return ResponseEntity.ok().build();
+        } catch (ItemUpdateException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+        } catch (ItemNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @Operation(summary = "Удалить ключевое слово услуги", description = "Удаляет ключевое слово для услуги по ее идентификатору.")
-    @ApiResponse(responseCode = "200", description = "Ключевое слово для услуги успешно удалено")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Ключевое слово для услуги успешно удалено"),
+            @ApiResponse(responseCode = "404", description = "Услуга не найдена")
+    })
     @PutMapping("/{id}/keyword/remove")
     public ResponseEntity<Void> removeKeyword(@PathVariable long id, @RequestBody String word) {
-        itemService.removeKeyword(id, word);
-        return ResponseEntity.ok().build();
+        try {
+            itemService.removeKeyword(id, word);
+            return ResponseEntity.ok().build();
+        } catch (ItemNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @Operation(summary = "Очистить ключевые слова услуги", description = "Очищает ключевые слова услуги по её идентификатору.")
-    @ApiResponse(responseCode = "200", description = "Ключевые слова услуги очищены")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Ключевые слова услуги очищены"),
+            @ApiResponse(responseCode = "404", description = "Услуга не найдена")
+    })
     @PutMapping("/{id}/clear-keywords")
     public ResponseEntity<Void> clearKeywords(@PathVariable long id) {
-        itemService.clearKeywords(id);
-        return ResponseEntity.ok().build();
+        try {
+            itemService.clearKeywords(id);
+            return ResponseEntity.ok().build();
+        } catch (ItemNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @Operation(summary = "Сгенерировать аудио заголовка услуги", description = "Генерирует аудио заголовка услуги по её идентификатору.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Аудио заголовка услуги готово"),
-            @ApiResponse(responseCode = "409", description = "Дубликат файла аудио по названию")
+            @ApiResponse(responseCode = "409", description = "У услуги уже есть аудио заголовка. Иногда (читать как никогда) падает при дубликате заголовка аудио"),
+            @ApiResponse(responseCode = "404", description = "Услуга не найдена")
     })
     @PutMapping("/{id}/title-audio/generate")
     public ResponseEntity<Void> generateTitleAudio(@PathVariable long id) throws IOException {
         try {
             itemService.generateTitleAudio(id);
             return ResponseEntity.ok().build();
-        } catch (FileDuplicateException ex) {
+        } catch (FileDuplicateException | ItemUpdateException ex) {
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
+        } catch (ItemNotFoundException e) {
+            return ResponseEntity.notFound().build();
         }
     }
 
     @Operation(summary = "Удалить аудио заголовка услуги", description = "Удаляет аудио заголовка услуги по её идентификатору.")
-    @ApiResponse(responseCode = "200", description = "Аудио заголовка услуги удалено")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Аудио заголовка услуги удалено"),
+            @ApiResponse(responseCode = "409", description = "У услуги уже нет аудио заголовка"),
+            @ApiResponse(responseCode = "404", description = "Услуга не найдена")
+    })
     @PutMapping("/{id}/title-audio/remove")
     public ResponseEntity<Void> removeTitleAudio(@PathVariable long id) {
-        itemService.removeTitleAudio(id);
-        return ResponseEntity.ok().build();
+        try {
+            itemService.removeTitleAudio(id);
+            return ResponseEntity.ok().build();
+        } catch (ItemUpdateException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+        } catch (ItemNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 }

@@ -20,10 +20,8 @@ import java.util.Set;
 @Component
 public class NotificationService {
 
-    @Value("${telegram.bot.help_password}")
     private String helpPassword;
 
-    @Value("${telegram.bot.search_password}")
     private String searchPassword;
 
     private Set<String> commands;
@@ -38,8 +36,12 @@ public class NotificationService {
 
     private final NotificationChatRepository notificationChatRepository;
 
-    public NotificationService(NotificationChatRepository notificationChatRepository) {
+    public NotificationService(@Value("${telegram.bot.search_password}") String searchPassword,
+                               @Value("${telegram.bot.help_password}") String helpPassword,
+                               NotificationChatRepository notificationChatRepository) {
         this.notificationChatRepository = notificationChatRepository;
+        this.searchPassword = searchPassword;
+        this.helpPassword = helpPassword;
     }
 
     /**

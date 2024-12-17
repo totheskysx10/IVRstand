@@ -31,7 +31,7 @@ public class TokenService {
     /**
      * Запланированные задачи на истечение токенов сброса пароля.
      */
-    private ConcurrentHashMap<Long, ScheduledFuture<?>> scheduledTasks = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<Long, ScheduledFuture<?>> scheduledTasks = new ConcurrentHashMap<>();
 
     public TokenService(TaskScheduler taskScheduler, UserRepository userRepository) {
         this.taskScheduler = taskScheduler;
@@ -50,8 +50,7 @@ public class TokenService {
             sb.append(CHARACTERS.charAt(randomIndex));
         }
 
-        String randomString = sb.toString();
-        return randomString;
+        return sb.toString();
     }
 
     /**

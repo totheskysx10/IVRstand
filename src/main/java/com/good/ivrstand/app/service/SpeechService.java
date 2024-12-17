@@ -1,5 +1,7 @@
 package com.good.ivrstand.app.service;
 
+import com.good.ivrstand.app.service.externinterfaces.FlaskApiTtsService;
+import com.good.ivrstand.app.service.externinterfaces.S3Service;
 import com.good.ivrstand.exception.FileDuplicateException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
@@ -37,7 +39,9 @@ public class SpeechService {
                 .replaceAll("\\\\\\\\icon\\d+", "")
                 .replaceAll("\\\\icon\\d+", "")
                 .replace("{\"", "")
-                .replace("\"}", "");
+                .replace("\"}", "")
+                .replace("{", "")
+                .replace("}", "");
         String[] resultArray = result.split("\\\\n\\\\n|\\\\n");
 
         return Arrays.stream(resultArray)
@@ -50,10 +54,10 @@ public class SpeechService {
      * Загружает файл на S3.
      *
      * @param text текст для озвучки
-     * @return ссылка на аудиофайл
+     * @return ссылка на аудиофайл или пустая строка, если text - пустой
      */
     public String generateAudio(String text) throws IOException, FileDuplicateException {
-        if (text.isEmpty()) {
+        if (text.isBlank()) {
             return "";
         }
 

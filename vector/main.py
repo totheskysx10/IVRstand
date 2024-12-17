@@ -157,7 +157,7 @@ def create_qdrant_collection():
     all_texts = {}
     for texts in texts_generator:
         all_texts.update(texts)
-    #sync_embeddings(all_texts, model, tokenizer)
+    sync_embeddings(all_texts, model, tokenizer)
     del all_texts
     gc.collect()
 

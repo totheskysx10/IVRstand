@@ -1,6 +1,6 @@
 package com.good.ivrstand.extern.api.controller;
 
-import com.good.ivrstand.app.service.S3Service;
+import com.good.ivrstand.app.service.externinterfaces.S3Service;
 import com.good.ivrstand.exception.FileDuplicateException;
 import com.good.ivrstand.exception.NoSuchFileException;
 import io.swagger.v3.oas.annotations.Operation;

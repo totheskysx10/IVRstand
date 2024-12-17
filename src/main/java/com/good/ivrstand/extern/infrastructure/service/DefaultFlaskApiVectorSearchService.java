@@ -1,6 +1,6 @@
 package com.good.ivrstand.extern.infrastructure.service;
 
-import com.good.ivrstand.app.service.FlaskApiVectorSearchService;
+import com.good.ivrstand.app.service.externinterfaces.FlaskApiVectorSearchService;
 import com.good.ivrstand.exception.ItemsFindException;
 import com.good.ivrstand.extern.api.flaskRequests.AddTitleRequest;
 import com.good.ivrstand.extern.api.flaskRequests.TitleRequest;

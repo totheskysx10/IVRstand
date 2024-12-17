@@ -28,8 +28,7 @@ public class SecurityContextService {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null) {
             Object context = authentication.getPrincipal();
-            if (context instanceof User) {
-                User contextUser = (User) context;
+            if (context instanceof User contextUser) {
                 String username = contextUser.getUsername();
 
                 User user = userRepository.findByUsernameIgnoreCase(username);

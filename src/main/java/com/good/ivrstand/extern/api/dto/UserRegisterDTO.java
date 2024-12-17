@@ -1,19 +1,18 @@
 package com.good.ivrstand.extern.api.dto;
 
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import lombok.Data;
 
 @Data
 public class UserRegisterDTO {
 
     @NotBlank
+    @NotNull
     @Email
     private String username;
 
     @NotBlank
+    @NotNull
     @Size(min = 8, message = "Не меньше 8 знаков")
     @Pattern(regexp = ".*[A-ZА-Я].*", message = "Пароль должен содержать хотя бы одну заглавную букву (русскую или английскую)")
     @Pattern(regexp = ".*[a-zа-я].*", message = "Пароль должен содержать хотя бы одну строчную букву (русскую или английскую)")
@@ -21,6 +20,7 @@ public class UserRegisterDTO {
     private String password;
 
     @NotBlank
+    @NotNull
     @Size(min = 8, message = "Не меньше 8 знаков")
     @Pattern(regexp = ".*[A-ZА-Я].*", message = "Пароль должен содержать хотя бы одну заглавную букву (русскую или английскую)")
     @Pattern(regexp = ".*[a-zа-я].*", message = "Пароль должен содержать хотя бы одну строчную букву (русскую или английскую)")
@@ -29,9 +29,11 @@ public class UserRegisterDTO {
 
     @Size(max = 100)
     @NotBlank
+    @NotNull
     private String firstName;
 
     @Size(max = 100)
     @NotBlank
+    @NotNull
     private String lastName;
 }

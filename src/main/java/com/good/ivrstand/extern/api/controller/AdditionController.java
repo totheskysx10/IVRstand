@@ -4,7 +4,9 @@ import com.good.ivrstand.app.service.AdditionService;
 import com.good.ivrstand.app.service.EncodeService;
 import com.good.ivrstand.app.service.ItemService;
 import com.good.ivrstand.domain.Addition;
+import com.good.ivrstand.exception.AdditionUpdateException;
 import com.good.ivrstand.exception.FileDuplicateException;
+import com.good.ivrstand.exception.notfound.AdditionNotFoundException;
 import com.good.ivrstand.extern.api.assembler.AdditionAssembler;
 import com.good.ivrstand.extern.api.dto.AdditionDTO;
 import com.good.ivrstand.extern.api.dto.DescriptionUpdateDTO;
@@ -78,38 +80,46 @@ public class AdditionController {
     @Operation(summary = "Получить дополнение по ID", description = "Получает дополнение по его идентификатору.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Дополнение найдено"),
-            @ApiResponse(responseCode = "204", description = "Дополнение не найдено")
+            @ApiResponse(responseCode = "404", description = "Дополнение не найдено")
     })
     @GetMapping("/{id}")
     public ResponseEntity<AdditionDTO> getAdditionById(@PathVariable long id) {
         try {
             Addition addition = additionService.getAdditionById(id);
             return ResponseEntity.ok(additionAssembler.toModel(addition));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.noContent().build();
+        } catch (AdditionNotFoundException e) {
+            return ResponseEntity.notFound().build();
         }
     }
 
     @Operation(summary = "Удалить дополнение", description = "Удаляет дополнение по его идентификатору.")
-    @ApiResponse(responseCode = "204", description = "Дополнение успешно удалено")
+    @ApiResponse(responseCode = "200", description = "Дополнение успешно удалено")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteAddition(@PathVariable long id) {
         additionService.deleteAddition(id);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok().build();
     }
 
     @Operation(summary = "Обновить заголовок", description = "Обновляет заголвок дополнения по его идентификатору.")
-    @ApiResponse(responseCode = "200", description = "Заголовок дополнения успешно обновлен")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Заголовок дополнения успешно обновлен"),
+            @ApiResponse(responseCode = "500", description = "Ошибка при обновлении аудио в момент обновления заголовка")
+    })
     @PutMapping("/{id}/title")
     public ResponseEntity<Void> updateAdditionTitle(@PathVariable long id, @RequestBody String title) {
-        additionService.updateTitleToAddition(id, title);
-        return ResponseEntity.ok().build();
+        try {
+            additionService.updateTitleToAddition(id, title);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     @Operation(summary = "Обновить описание дополнения", description = "Обновляет описание дополнения по его идентификатору. Если включить флаг enableAudio, сгенерируется речь описания, иначе - удалится (если есть) или не будет сгененрирована.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Описание дополнения успешно обновлено"),
-            @ApiResponse(responseCode = "409", description = "Дубликат файла аудио по названию")
+            @ApiResponse(responseCode = "409", description = "Дубликат файла аудио по названию"),
+            @ApiResponse(responseCode = "404", description = "Дополнение не найдено")
     })
     @PutMapping("/{id}/description")
     public ResponseEntity<Void> updateDescriptionToAddition(
@@ -124,31 +134,54 @@ public class AdditionController {
             return ResponseEntity.ok().build();
         } catch (FileDuplicateException ex) {
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
+        } catch (AdditionNotFoundException e) {
+            return ResponseEntity.notFound().build();
         }
     }
 
     @Operation(summary = "Обновить ссылку на GIF-превью дополнения", description = "Обновляет ссылку на GIF-превью дополнения по его идентификатору.")
-    @ApiResponse(responseCode = "200", description = "Ссылка на GIF-превью дополнения успешно обновлена")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Ссылка на GIF-превью дополнения успешно обновлена"),
+            @ApiResponse(responseCode = "404", description = "Дополнение не найдено")
+    })
     @PutMapping("/{id}/gif-preview")
     public ResponseEntity<Void> updateAdditionGifPreview(@PathVariable long id, @RequestBody String gifPreview) {
-        additionService.updateGifPreviewToAddition(id, gifPreview);
-        return ResponseEntity.ok().build();
+        try {
+            additionService.updateGifPreviewToAddition(id, gifPreview);
+            return ResponseEntity.ok().build();
+        } catch (AdditionNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @Operation(summary = "Обновить ссылку на GIF дополнения", description = "Обновляет ссылку на GIF дополнения по его идентификатору.")
-    @ApiResponse(responseCode = "200", description = "Ссылка на GIF дополнения успешно обновлена")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Ссылка на GIF дополнения успешно обновлена"),
+            @ApiResponse(responseCode = "404", description = "Дополнение не найдено")
+    })
     @PutMapping("/{id}/gif")
     public ResponseEntity<Void> updateAdditionGifLink(@PathVariable long id, @RequestBody String gifLink) {
-        additionService.updateGifLinkToAddition(id, gifLink);
-        return ResponseEntity.ok().build();
+        try {
+            additionService.updateGifLinkToAddition(id, gifLink);
+            return ResponseEntity.ok().build();
+        } catch (AdditionNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @Operation(summary = "Обновить ссылку на главную иконку дополнения", description = "Обновляет ссылку на главную иконку дополнения по его идентификатору.")
-    @ApiResponse(responseCode = "200", description = "Ссылка на главную иконку дополнения успешно обновлена")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Ссылка на главную иконку дополнения успешно обновлена"),
+            @ApiResponse(responseCode = "404", description = "Дополнение не найдено")
+    })
     @PutMapping("/{id}/main-icon")
     public ResponseEntity<Void> updateAdditionMainIcon(@PathVariable long id, @RequestBody String link) {
-        additionService.updateMainIconToAddition(id, link);
-        return ResponseEntity.ok().build();
+        try {
+            additionService.updateMainIconToAddition(id, link);
+            return ResponseEntity.ok().build();
+        } catch (AdditionNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @Operation(summary = "Найти дополнения по их услуге", description = "Поиск дополнений, которые принадлежат определённой услуге.")
@@ -168,49 +201,86 @@ public class AdditionController {
     }
 
     @Operation(summary = "Добавить иконку дополнения", description = "Добавляет иконку для дополнения по его идентификатору.")
-    @ApiResponse(responseCode = "200", description = "Иконка для дополнения успешно добавлена")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Иконка для дополнения успешно добавлена"),
+            @ApiResponse(responseCode = "409", description = "У дополнения уже есть эта иконка"),
+            @ApiResponse(responseCode = "404", description = "Дополнение не найдено")
+    })
     @PutMapping("/{id}/icon/add")
     public ResponseEntity<Void> addAdditionIcon(@PathVariable long id, @RequestBody String iconLink) {
-        additionService.addIcon(id, iconLink);
-        return ResponseEntity.ok().build();
+        try {
+            additionService.addIcon(id, iconLink);
+            return ResponseEntity.ok().build();
+        } catch (AdditionUpdateException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+        } catch (AdditionNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @Operation(summary = "Удалить иконку дополнения", description = "Удаляет иконку для дополнения по его идентификатору.")
-    @ApiResponse(responseCode = "200", description = "Иконка для дополнения успешно удалена")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Иконка для дополнения успешно удалена"),
+            @ApiResponse(responseCode = "404", description = "Дополнение не найдено")
+    })
     @PutMapping("/{id}/icon/remove")
     public ResponseEntity<Void> removeAdditionIcon(@PathVariable long id, @RequestBody String iconLink) {
-        additionService.removeIcon(id, iconLink);
-        return ResponseEntity.ok().build();
+        try {
+            additionService.removeIcon(id, iconLink);
+            return ResponseEntity.ok().build();
+        } catch (AdditionNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @Operation(summary = "Очистить иконки дополнения", description = "Очищает иконки дополнения по его идентификатору.")
-    @ApiResponse(responseCode = "200", description = "Иконки дополнения очищены")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Иконки дополнения очищены"),
+            @ApiResponse(responseCode = "404", description = "Дополнение не найдено")
+    })
     @PutMapping("/{id}/clear-icons")
     public ResponseEntity<Void> clearIcons(@PathVariable long id) {
-        additionService.clearIcons(id);
-        return ResponseEntity.ok().build();
+        try {
+            additionService.clearIcons(id);
+            return ResponseEntity.ok().build();
+        } catch (AdditionNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @Operation(summary = "Сгенерировать аудио заголовка дополнения", description = "Генерирует аудио заголовка дополнения по его идентификатору.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Аудио заголовка дополнения готово"),
-            @ApiResponse(responseCode = "409", description = "Дубликат файла аудио по названию")
+            @ApiResponse(responseCode = "409", description = "У дополнения уже есть аудио заголовка. Иногда (читать как никогда) падает при дубликате заголовка аудио"),
+            @ApiResponse(responseCode = "404", description = "Дополнение не найдено")
     })
     @PutMapping("/{id}/title-audio/generate")
     public ResponseEntity<Void> generateTitleAudio(@PathVariable long id) throws IOException {
         try {
             additionService.generateTitleAudio(id);
             return ResponseEntity.ok().build();
-        } catch (FileDuplicateException ex) {
+        } catch (FileDuplicateException | AdditionUpdateException ex) {
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
+        } catch (AdditionNotFoundException e) {
+            return ResponseEntity.notFound().build();
         }
     }
 
     @Operation(summary = "Удалить аудио заголовка дополнения", description = "Удаляет аудио заголовка дополнения по его идентификатору.")
-    @ApiResponse(responseCode = "200", description = "Аудио заголовка дополнения удалено")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Аудио заголовка дополнения удалено"),
+            @ApiResponse(responseCode = "409", description = "У дополнения уже нет аудио заголовка"),
+            @ApiResponse(responseCode = "404", description = "Дополнение не найдено")
+    })
     @PutMapping("/{id}/title-audio/remove")
     public ResponseEntity<Void> removeTitleAudio(@PathVariable long id) {
-        additionService.removeTitleAudio(id);
-        return ResponseEntity.ok().build();
+        try {
+            additionService.removeTitleAudio(id);
+            return ResponseEntity.ok().build();
+        } catch (AdditionUpdateException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+        } catch (AdditionNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 }

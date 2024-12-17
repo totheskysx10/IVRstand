@@ -1,6 +1,6 @@
 package com.good.ivrstand.extern.infrastructure.service;
 
-import com.good.ivrstand.app.service.MailBuilder;
+import com.good.ivrstand.app.service.externinterfaces.MailBuilder;
 import com.good.ivrstand.domain.EmailData;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;

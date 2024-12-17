@@ -6,6 +6,7 @@ import com.good.ivrstand.domain.enumeration.NotificationCategory;
 import com.good.ivrstand.domain.NotificationChat;
 import com.good.ivrstand.exception.NoChatsException;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -63,7 +64,7 @@ public class TelegramBot extends TelegramLongPollingBot {
      * @param message сообщение
      * @param id      id чата
      */
-    public void sendMessageToChat(String message, String id) {
+    private void sendMessageToChat(String message, String id) {
         SendMessage tgMessage = new SendMessage();
         tgMessage.setText(message);
         tgMessage.setChatId(id);
@@ -75,9 +76,10 @@ public class TelegramBot extends TelegramLongPollingBot {
     }
 
     /**
-     * Отправляет сообщения о вызове помощи на IVR-стенде
+     * Отправляет сообщения о вызове помощи на IVR-стенде при публикации события
      */
-    public void sendHelpMessage() throws NoChatsException {
+    @EventListener
+    private void sendHelpMessage(HelpEvent event) throws NoChatsException {
         List<NotificationChat> chats = notificationChatRepository.findAll();
 
         List<String> chatIds = new ArrayList<>();

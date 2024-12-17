@@ -1,7 +1,9 @@
-package com.good.ivrstand;
+package com.good.ivrstand.app;
 
 import com.good.ivrstand.app.repository.UserRepository;
 import com.good.ivrstand.app.service.*;
+import com.good.ivrstand.app.service.externinterfaces.EmailService;
+import com.good.ivrstand.app.service.externinterfaces.MailBuilder;
 import com.good.ivrstand.domain.EmailData;
 import com.good.ivrstand.domain.Role;
 import com.good.ivrstand.domain.User;
@@ -9,6 +11,7 @@ import com.good.ivrstand.domain.enumeration.UserRole;
 import com.good.ivrstand.exception.NotConfirmedEmailException;
 import com.good.ivrstand.exception.ResetPasswordTokenException;
 import com.good.ivrstand.exception.UserDuplicateException;
+import com.good.ivrstand.exception.notfound.UserNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -21,7 +24,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.util.ArrayList;
 
-import static org.junit.Assert.assertNotNull;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
@@ -70,7 +72,7 @@ public class UserServiceTest {
     }
 
     @Test
-    public void getUserByIdTest() {
+    public void getUserByIdTest() throws UserNotFoundException {
         User user = User.builder()
                 .id(1L)
                 .username("test@example.com")
@@ -146,7 +148,7 @@ public class UserServiceTest {
     }
 
     @Test
-    public void updatePasswordTest() throws ResetPasswordTokenException {
+    public void updatePasswordTest() throws ResetPasswordTokenException, UserNotFoundException {
         User user1 = User.builder()
                 .id(23L)
                 .username("min@list.ru")
@@ -178,7 +180,7 @@ public class UserServiceTest {
     }
 
     @Test
-    public void sendPasswordResetMessageTest() {
+    public void sendPasswordResetMessageTest() throws UserNotFoundException {
         User user1 = User.builder()
                 .id(23L)
                 .username("min@list.ru")
@@ -200,7 +202,7 @@ public class UserServiceTest {
     }
 
     @Test
-    public void sendConfirmEmailMessageTest() {
+    public void sendConfirmEmailMessageTest() throws UserNotFoundException {
         User user1 = User.builder()
                 .id(23L)
                 .username("min@list.ru")
@@ -221,7 +223,7 @@ public class UserServiceTest {
     }
 
     @Test
-    public void confirmEmailTest() {
+    public void confirmEmailTest() throws UserNotFoundException {
         User user1 = User.builder()
                 .id(23L)
                 .username("min@list.ru")
@@ -239,7 +241,7 @@ public class UserServiceTest {
     }
 
     @Test
-    public void giveAdminRulesToUserTest() throws NotConfirmedEmailException {
+    public void giveAdminRulesToUserTest() throws NotConfirmedEmailException, UserNotFoundException {
         User user1 = User.builder()
                 .id(23L)
                 .username("min@list.ru")
@@ -284,7 +286,7 @@ public class UserServiceTest {
     }
 
     @Test
-    public void removeAdminRulesFromUserTest() throws NotConfirmedEmailException {
+    public void removeAdminRulesFromUserTest() throws NotConfirmedEmailException, UserNotFoundException {
         User user1 = User.builder()
                 .id(23L)
                 .username("min@list.ru")
@@ -314,7 +316,7 @@ public class UserServiceTest {
     }
 
     @Test
-    public void updateFirstNameTest() {
+    public void updateFirstNameTest() throws UserNotFoundException {
         User user1 = User.builder()
                 .id(23L)
                 .username("min@list.ru")
@@ -333,7 +335,7 @@ public class UserServiceTest {
     }
 
     @Test
-    public void updateLastNameTest() {
+    public void updateLastNameTest() throws UserNotFoundException {
         User user1 = User.builder()
                 .id(23L)
                 .username("min@list.ru")

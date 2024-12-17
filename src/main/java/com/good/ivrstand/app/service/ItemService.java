@@ -1,9 +1,12 @@
 package com.good.ivrstand.app.service;
 
 import com.good.ivrstand.app.repository.ItemRepository;
+import com.good.ivrstand.app.service.externinterfaces.FlaskApiVectorSearchService;
+import com.good.ivrstand.app.service.externinterfaces.QdrantService;
 import com.good.ivrstand.domain.*;
-import com.good.ivrstand.exception.FileDuplicateException;
-import com.good.ivrstand.exception.ItemsFindException;
+import com.good.ivrstand.exception.*;
+import com.good.ivrstand.exception.notfound.CategoryNotFoundException;
+import com.good.ivrstand.exception.notfound.ItemNotFoundException;
 import com.good.ivrstand.extern.api.flaskRequests.AddTitleRequest;
 import com.good.ivrstand.extern.api.flaskRequests.TitleRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -32,7 +35,13 @@ public class ItemService {
     private final EncodeService encodeService;
 
     @Autowired
-    public ItemService(ItemRepository itemRepository, CategoryService categoryService, FlaskApiVectorSearchService flaskApiVectorSearchService, AdditionService additionService, QdrantService qdrantService, SpeechService speechService, EncodeService encodeService) {
+    public ItemService(ItemRepository itemRepository,
+                       CategoryService categoryService,
+                       FlaskApiVectorSearchService flaskApiVectorSearchService,
+                       AdditionService additionService,
+                       QdrantService qdrantService,
+                       SpeechService speechService,
+                       EncodeService encodeService) {
         this.itemRepository = itemRepository;
         this.categoryService = categoryService;
         this.flaskApiVectorSearchService = flaskApiVectorSearchService;
@@ -76,12 +85,12 @@ public class ItemService {
      *
      * @param itemId Идентификатор услуги.
      * @return Найденная услуга.
-     * @throws IllegalArgumentException Если услуга с указанным идентификатором не найдена.
+     * @throws ItemNotFoundException Если услуга с указанным идентификатором не найдена.
      */
-    public Item getItemById(long itemId) {
+    public Item getItemById(long itemId) throws ItemNotFoundException {
         Item foundItem = itemRepository.findById(itemId);
         if (foundItem == null) {
-            throw new IllegalArgumentException("Услуга с id " + itemId + " не найдена");
+            throw new ItemNotFoundException("Услуга с id " + itemId + " не найдена");
         } else {
             log.debug("Найдена услуга с id {}", itemId);
             return foundItem;
@@ -93,21 +102,17 @@ public class ItemService {
      * Если к услуге привязаны дополнения, удаляет и их.
      *
      * @param itemId Идентификатор услуги.
-     * @throws IllegalArgumentException Если услуга с указанным идентификатором не найдена.
      */
-    public void deleteItem(long itemId) {
-        Item foundItem = itemRepository.findById(itemId);
-        if (foundItem == null) {
-            throw new IllegalArgumentException("Услуга с id " + itemId + " не найдена");
-        } else {
-            if (foundItem.getAdditions().size() != 0)
-                foundItem.getAdditions().stream()
-                        .map(Addition::getId)
-                        .forEach(additionService::deleteAddition);
-            itemRepository.deleteById(itemId);
-            deleteQdrantTitle(foundItem);
-            log.info("Удалена услуга с id {}", itemId);
-        }
+    public void deleteItem(long itemId) throws ItemNotFoundException {
+        Item foundItem = getItemById(itemId);
+
+        if (!foundItem.getAdditions().isEmpty())
+            foundItem.getAdditions().stream()
+                    .map(Addition::getId)
+                    .forEach(additionService::deleteAddition);
+        itemRepository.deleteById(itemId);
+        deleteQdrantTitle(foundItem);
+        log.info("Удалена услуга с id {}", itemId);
     }
 
     /**
@@ -115,50 +120,42 @@ public class ItemService {
      *
      * @param itemId     Идентификатор услуги.
      * @param categoryId Идентификатор категории.
-     * @throws IllegalArgumentException Если услуга или категория с указанным идентификатором не найдены.
+     * @throws ItemCategoryAddDeleteException если услуга уже в другой категории или категория не конечная
      */
-    public void addToCategory(long itemId, long categoryId) {
-        Item item = itemRepository.findById(itemId);
+    public void addToCategory(long itemId, long categoryId) throws ItemCategoryAddDeleteException, ItemNotFoundException, CategoryNotFoundException {
+        Item item = getItemById(itemId);
         Category category = categoryService.getCategoryById(categoryId);
 
         if (category.getChildrenCategories().isEmpty()) {
-            if (item == null)
-                throw new IllegalArgumentException("Услуга с id " + itemId + " отсутствует");
-            else if (item.getCategory() == null) {
+            if (item.getCategory() == null) {
+                deleteQdrantTitle(item);
                 item.setCategory(category);
                 itemRepository.save(item);
-                TitleRequest titleRequest = new TitleRequest(formatTitle(item));
-                flaskApiVectorSearchService.deleteTitle(titleRequest);
-                AddTitleRequest addTitleRequest = new AddTitleRequest(formatTitle(item), item.getId());
-                flaskApiVectorSearchService.addTitle(addTitleRequest);
+                addQdrantTitle(item);
                 log.info("Услуга с id {} добавлена в категорию с id {}", itemId, categoryId);
             } else
-                log.error("Услуга с id {} уже в другой категории!", itemId);
+                throw new ItemCategoryAddDeleteException(String.format("Услуга с id %s уже в другой категории!", itemId));
         } else
-            log.error("В категории с id {} есть подкатегории - услугу можно добавить только в конечную подкатегорию!", categoryId);
+            throw new ItemCategoryAddDeleteException(String.format("В категории с id %s есть подкатегории - услугу можно добавить только в конечную подкатегорию!", categoryId));
     }
 
     /**
      * Удаляет услугу из категории.
      *
      * @param itemId Идентификатор услуги.
-     * @throws IllegalArgumentException Если услуга с указанным идентификатором не найдена.
+     * @throws ItemCategoryAddDeleteException если услуга ни в одной категории не находится
      */
-    public void removeFromCategory(long itemId) {
-        Item item = itemRepository.findById(itemId);
+    public void removeFromCategory(long itemId) throws ItemCategoryAddDeleteException, ItemNotFoundException {
+        Item item = getItemById(itemId);
 
-        if (item == null)
-            throw new IllegalArgumentException("Услуга с id " + itemId + " отсутствует");
-        else if (item.getCategory() != null) {
-            TitleRequest titleRequest = new TitleRequest(formatTitle(item));
-            flaskApiVectorSearchService.deleteTitle(titleRequest);
+        if (item.getCategory() != null) {
+            deleteQdrantTitle(item);
             item.setCategory(null);
             itemRepository.save(item);
-            AddTitleRequest addTitleRequest = new AddTitleRequest(formatTitle(item), item.getId());
-            flaskApiVectorSearchService.addTitle(addTitleRequest);
+            addQdrantTitle(item);
             log.info("Услуга с id {} удалена из категории", itemId);
         } else
-            log.error("Услуга с id {} не относится ни к одной из категорий!", itemId);
+            throw new ItemCategoryAddDeleteException(String.format("Услуга с id %s не относится ни к одной из категорий!", itemId));
     }
 
     /**
@@ -182,7 +179,7 @@ public class ItemService {
      * @param pageable Настройки пагинации.
      * @return страница найденных услуг
      */
-    public Page<Item> findItemsByTitle(String title, Pageable pageable) throws ItemsFindException {
+    public Page<Item> findItemsByTitle(String title, Pageable pageable) throws ItemsFindException, ItemNotFoundException {
         List<Long> result = flaskApiVectorSearchService.getItemIds(title);
 
         List<Item> items = new ArrayList<>();
@@ -240,21 +237,19 @@ public class ItemService {
      * @param itemId Идентификатор услуги.
      * @param desc   Новое описание услуги.
      */
-    public void updateDescriptionToItem(long itemId, String desc, boolean enableAudio) throws IOException, FileDuplicateException {
+    public void updateDescriptionToItem(long itemId, String desc, boolean enableAudio) throws IOException, FileDuplicateException, ItemNotFoundException {
         Item item = getItemById(itemId);
-        if (item != null) {
-            deleteQdrantTitle(item);
-            item.setDescription(desc);
-            item.setDescriptionHash(encodeService.generateHashForAudio(desc));
-            if (enableAudio) {
-                generateDescriptionAudio(item);
-            } else {
-                item.getAudio().clear();
-            }
-            itemRepository.save(item);
-            addQdrantTitle(item);
-            log.info("Описание обновлено для услуги с id {}", itemId);
+        deleteQdrantTitle(item);
+        item.setDescription(desc);
+        item.setDescriptionHash(encodeService.generateHashForAudio(desc));
+        if (enableAudio) {
+            generateDescriptionAudio(item);
+        } else {
+            item.getAudio().clear();
         }
+        itemRepository.save(item);
+        addQdrantTitle(item);
+        log.info("Описание обновлено для услуги с id {}", itemId);
     }
 
     /**
@@ -263,13 +258,11 @@ public class ItemService {
      * @param itemId  Идентификатор услуги.
      * @param gifLink Новая ссылка на GIF услуги.
      */
-    public void updateGifLinkToItem(long itemId, String gifLink) {
+    public void updateGifLinkToItem(long itemId, String gifLink) throws ItemNotFoundException {
         Item item = getItemById(itemId);
-        if (item != null) {
-            item.setGifLink(gifLink);
-            itemRepository.save(item);
-            log.info("Ссылка на GIF обновлена для услуги с id {}", itemId);
-        }
+        item.setGifLink(gifLink);
+        itemRepository.save(item);
+        log.info("Ссылка на GIF обновлена для услуги с id {}", itemId);
     }
 
     /**
@@ -278,13 +271,11 @@ public class ItemService {
      * @param itemId Идентификатор услуги.
      * @param icon   Новая ссылка на главную иконку.
      */
-    public void updateMainIconToItem(long itemId, String icon) {
+    public void updateMainIconToItem(long itemId, String icon) throws ItemNotFoundException {
         Item item = getItemById(itemId);
-        if (item != null) {
-            item.setMainIconLink(icon);
-            itemRepository.save(item);
-            log.info("Ссылка на главную иконку обновлена для услуги с id {}", itemId);
-        }
+        item.setMainIconLink(icon);
+        itemRepository.save(item);
+        log.info("Ссылка на главную иконку обновлена для услуги с id {}", itemId);
     }
 
     /**
@@ -293,13 +284,11 @@ public class ItemService {
      * @param itemId     Идентификатор услуги.
      * @param gifPreview Новая ссылка на GIF превью услуги.
      */
-    public void updateGifPreviewToItem(long itemId, String gifPreview) {
+    public void updateGifPreviewToItem(long itemId, String gifPreview) throws ItemNotFoundException {
         Item item = getItemById(itemId);
-        if (item != null) {
-            item.setGifPreview(gifPreview);
-            itemRepository.save(item);
-            log.info("Ссылка на GIF-превью обновлена для услуги с id {}", itemId);
-        }
+        item.setGifPreview(gifPreview);
+        itemRepository.save(item);
+        log.info("Ссылка на GIF-превью обновлена для услуги с id {}", itemId);
     }
 
     /**
@@ -307,17 +296,16 @@ public class ItemService {
      *
      * @param itemId   Идентификатор услуги.
      * @param iconLink Иконка.
+     * @throws ItemUpdateException если эта иконка уже есть у услуги
      */
-    public void addIcon(long itemId, String iconLink) {
+    public void addIcon(long itemId, String iconLink) throws ItemUpdateException, ItemNotFoundException {
         Item item = getItemById(itemId);
-        if (item != null) {
-            if (!item.getIconLinks().contains(iconLink)) {
-                item.getIconLinks().add(iconLink);
-                itemRepository.save(item);
-                log.info("Добавлена иконка для услуги с id {}", itemId);
-            } else
-                log.warn("Иконка для услуги с id {} уже была добавлена раннее!", itemId);
-        }
+        if (!item.getIconLinks().contains(iconLink)) {
+            item.getIconLinks().add(iconLink);
+            itemRepository.save(item);
+            log.info("Добавлена иконка для услуги с id {}", itemId);
+        } else
+            throw new ItemUpdateException(String.format("Иконка для услуги с id %s уже была добавлена раннее!", itemId));
     }
 
     /**
@@ -326,14 +314,12 @@ public class ItemService {
      * @param itemId   Идентификатор услуги.
      * @param iconLink Иконка.
      */
-    public void removeIcon(long itemId, String iconLink) {
+    public void removeIcon(long itemId, String iconLink) throws ItemNotFoundException {
         Item item = getItemById(itemId);
-        if (item != null) {
-            if (item.getIconLinks().contains(iconLink)) {
-                item.getIconLinks().remove(iconLink);
-                itemRepository.save(item);
-                log.info("Удалена иконка для услуги с id {}", itemId);
-            }
+        if (item.getIconLinks().contains(iconLink)) {
+            item.getIconLinks().remove(iconLink);
+            itemRepository.save(item);
+            log.info("Удалена иконка для услуги с id {}", itemId);
         }
     }
 
@@ -342,13 +328,11 @@ public class ItemService {
      *
      * @param itemId Идентификатор услуги.
      */
-    public void clearIcons(long itemId) {
+    public void clearIcons(long itemId) throws ItemNotFoundException {
         Item item = getItemById(itemId);
-        if (item != null) {
-            item.getIconLinks().clear();
-            itemRepository.save(item);
-            log.info("Очищены иконки у услуги {}", itemId);
-        }
+        item.getIconLinks().clear();
+        itemRepository.save(item);
+        log.info("Очищены иконки у услуги {}", itemId);
     }
 
     /**
@@ -356,19 +340,18 @@ public class ItemService {
      *
      * @param itemId  Идентификатор услуги.
      * @param keyword Слово.
+     * @throws ItemUpdateException если это слово уже есть у услуги
      */
-    public void addKeyword(long itemId, String keyword) {
+    public void addKeyword(long itemId, String keyword) throws ItemUpdateException, ItemNotFoundException {
         Item item = getItemById(itemId);
-        if (item != null) {
-            if (!item.getKeywords().contains(keyword)) {
-                deleteQdrantTitle(item);
-                item.getKeywords().add(keyword);
-                itemRepository.save(item);
-                addQdrantTitle(item);
-                log.info("Добавлено ключевое слово для услуги с id {}", itemId);
-            } else
-                log.warn("Ключевое слово для услуги с id {} уже было добавлено раннее!", itemId);
-        }
+        if (!item.getKeywords().contains(keyword)) {
+            deleteQdrantTitle(item);
+            item.getKeywords().add(keyword);
+            itemRepository.save(item);
+            addQdrantTitle(item);
+            log.info("Добавлено ключевое слово для услуги с id {}", itemId);
+        } else
+            throw new ItemUpdateException(String.format("Ключевое слово для услуги с id %s уже было добавлено раннее!", itemId));
     }
 
     /**
@@ -377,16 +360,15 @@ public class ItemService {
      * @param itemId  Идентификатор услуги.
      * @param keyword Слово.
      */
-    public void removeKeyword(long itemId, String keyword) {
+    public void removeKeyword(long itemId, String keyword) throws ItemNotFoundException {
         Item item = getItemById(itemId);
-        if (item != null) {
-            if (item.getKeywords().contains(keyword)) {
-                deleteQdrantTitle(item);
-                item.getKeywords().remove(keyword);
-                itemRepository.save(item);
-                addQdrantTitle(item);
-                log.info("Удалено ключевое слово для услуги с id {}", itemId);
-            }
+
+        if (item.getKeywords().contains(keyword)) {
+            deleteQdrantTitle(item);
+            item.getKeywords().remove(keyword);
+            itemRepository.save(item);
+            addQdrantTitle(item);
+            log.info("Удалено ключевое слово для услуги с id {}", itemId);
         }
     }
 
@@ -395,14 +377,47 @@ public class ItemService {
      *
      * @param itemId Идентификатор услуги.
      */
-    public void clearKeywords(long itemId) {
+    public void clearKeywords(long itemId) throws ItemNotFoundException {
         Item item = getItemById(itemId);
-        if (item != null) {
-            deleteQdrantTitle(item);
-            item.getKeywords().clear();
+
+        deleteQdrantTitle(item);
+        item.getKeywords().clear();
+        itemRepository.save(item);
+        addQdrantTitle(item);
+        log.info("Очищены ключевые слова у услуги {}", itemId);
+    }
+
+    /**
+     * Генерирует аудио заголовка услуги.
+     *
+     * @param itemId Идентификатор услуги.
+     * @throws ItemUpdateException если аудио заголовка уже есть у услуги
+     */
+    public void generateTitleAudio(long itemId) throws IOException, FileDuplicateException, ItemUpdateException, ItemNotFoundException {
+        Item item = getItemById(itemId);
+        if (item.getTitleAudio() == null) {
+            String titleAudio = speechService.generateAudio(item.getTitle());
+            item.setTitleAudio(titleAudio);
             itemRepository.save(item);
-            addQdrantTitle(item);
-            log.info("Очищены ключевые слова у услуги {}", itemId);
+            log.info("Сгенерировано аудио заголовка для услуги с id {}", itemId);
+        } else
+            throw new ItemUpdateException(String.format("У услуги %s уже есть аудио заголовка!", itemId));
+    }
+
+    /**
+     * Удаляет аудио заголовка услуги.
+     *
+     * @param itemId Идентификатор услуги.
+     * @throws ItemUpdateException если аудио заголовка уже нет у услуги
+     */
+    public void removeTitleAudio(long itemId) throws ItemUpdateException, ItemNotFoundException {
+        Item item = getItemById(itemId);
+        if (item.getTitleAudio() == null) {
+            throw new ItemUpdateException(String.format("У услуги %s нет аудио заголовка!", itemId));
+        } else {
+            item.setTitleAudio(null);
+            itemRepository.save(item);
+            log.info("У услуги {} удалено аудио заголовка", itemId);
         }
     }
 
@@ -452,47 +467,10 @@ public class ItemService {
     }
 
     /**
-     * Генерирует аудио заголовка услуги.
-     *
-     * @param itemId Идентификатор услуги.
-     */
-    public void generateTitleAudio(long itemId) throws IOException, FileDuplicateException {
-        Item item = getItemById(itemId);
-        if (item != null) {
-            if (item.getTitleAudio() == null) {
-                String titleAudio = speechService.generateAudio(item.getTitle());
-                item.setTitleAudio(titleAudio);
-                itemRepository.save(item);
-                log.info("Сгенерировано аудио заголовка для услуги с id {}", itemId);
-            } else
-                log.warn("У услуги {} уже есть аудио заголовка!", itemId);
-        }
-    }
-
-    /**
-     * Удаляет аудио заголовка услуги.
-     *
-     * @param itemId Идентификатор услуги.
-     */
-    public void removeTitleAudio(long itemId) {
-        Item item = getItemById(itemId);
-        if (item != null) {
-            if (item.getTitleAudio() == null) {
-                log.warn("У услуги {} нет аудио заголовка!", itemId);
-            } else {
-                item.setTitleAudio(null);
-                itemRepository.save(item);
-                log.info("У услуги {} удалено аудио заголовка", itemId);
-            }
-        }
-    }
-
-    /**
      * Генерирует аудио для описания услуги.
      * По хэш-функции проверяет, не было ли раннее сгенерировано такое аудио.
      *
      * @param item услуга
-     * @throws IOException исключение
      */
     private void generateDescriptionAudio(Item item) throws IOException, FileDuplicateException {
         Page<Item> itemsWithSameDescriptionRequest = itemRepository.findByHashAndAudioExistence(item.getDescriptionHash(), PageRequest.of(0, 1));

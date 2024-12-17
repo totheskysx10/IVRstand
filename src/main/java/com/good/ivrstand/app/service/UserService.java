@@ -1,12 +1,15 @@
 package com.good.ivrstand.app.service;
 
 import com.good.ivrstand.app.repository.UserRepository;
+import com.good.ivrstand.app.service.externinterfaces.EmailService;
+import com.good.ivrstand.app.service.externinterfaces.MailBuilder;
 import com.good.ivrstand.domain.EmailData;
 import com.good.ivrstand.domain.User;
 import com.good.ivrstand.domain.enumeration.UserRole;
 import com.good.ivrstand.exception.NotConfirmedEmailException;
 import com.good.ivrstand.exception.ResetPasswordTokenException;
 import com.good.ivrstand.exception.UserDuplicateException;
+import com.good.ivrstand.exception.notfound.UserNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -44,7 +47,7 @@ public class UserService implements UserDetailsService {
      * @return пользователь
      */
     public UserDetailsService userDetailsService() {
-        return this::loadUserByUsername;
+        return this;
     }
 
     /**
@@ -69,13 +72,13 @@ public class UserService implements UserDetailsService {
      *
      * @param id ID пользователя
      * @return пользователь
-     * @throws IllegalArgumentException если пользователь с данным ID не найден
+     * @throws UserNotFoundException если пользователь с данным ID не найден
      */
-    public User getUserById(long id) {
+    public User getUserById(long id) throws UserNotFoundException {
         User user = userRepository.findById(id);
 
         if (user == null)
-            throw new IllegalArgumentException("Пользователь с id " + id + " не найден");
+            throw new UserNotFoundException("Пользователь с id " + id + " не найден");
         else {
             log.debug("Найден пользователь с id {}", id);
             return user;
@@ -125,7 +128,7 @@ public class UserService implements UserDetailsService {
      * @param encodedPass новый пароль
      * @param token       токен сброса
      */
-    public void updatePassword(String userId, String encodedPass, String token) throws ResetPasswordTokenException {
+    public void updatePassword(String userId, String encodedPass, String token) throws ResetPasswordTokenException, UserNotFoundException {
         long id = Long.parseLong(encodeService.decrypt(userId));
         User user = getUserById(id);
         if (user.getResetToken().equals(token)) {
@@ -142,13 +145,13 @@ public class UserService implements UserDetailsService {
      * Отправляет сообщение для сброса пароля на email.
      *
      * @param email email пользователя
-     * @throws IllegalArgumentException если пользователь с данным email не найден
+     * @throws UserNotFoundException если пользователь с данным email не найден
      */
-    public void sendPasswordResetMessage(String email) {
+    public void sendPasswordResetMessage(String email) throws UserNotFoundException {
         User user = userRepository.findByUsernameIgnoreCase(email);
 
         if (user == null)
-            throw new IllegalArgumentException("Пользователь не может быть null");
+            throw new UserNotFoundException("Пользователь не может быть null");
 
         String id = encodeService.encrypt(user.getId().toString());
         String token = tokenService.generateResetPasswordToken();
@@ -166,7 +169,7 @@ public class UserService implements UserDetailsService {
      *
      * @param userId зашифрованный ID пользователя
      */
-    public void confirmEmail(String userId) {
+    public void confirmEmail(String userId) throws UserNotFoundException {
         long id = Long.parseLong(encodeService.decrypt(userId));
         User user = getUserById(id);
         user.setEmailConfirmed(true);
@@ -178,13 +181,13 @@ public class UserService implements UserDetailsService {
      * Отправляет сообщение для подтверждения email на email пользователя.
      *
      * @param email email пользователя
-     * @throws IllegalArgumentException если пользователь с данным email не найден
+     * @throws UserNotFoundException если пользователь с данным email не найден
      */
-    public void sendConfirmEmailMessage(String email) {
+    public void sendConfirmEmailMessage(String email) throws UserNotFoundException {
         User user = userRepository.findByUsernameIgnoreCase(email);
 
         if (user == null)
-            throw new IllegalArgumentException("Пользователь не может быть null");
+            throw new UserNotFoundException("Пользователь не может быть null");
 
         String id = encodeService.encrypt(user.getId().toString());
 
@@ -199,7 +202,7 @@ public class UserService implements UserDetailsService {
      * @param userId ID пользователя
      * @throws NotConfirmedEmailException если email пользователя не подтвержден
      */
-    public void giveAdminRulesToUser(long userId) throws NotConfirmedEmailException {
+    public void giveAdminRulesToUser(long userId) throws NotConfirmedEmailException, UserNotFoundException {
         User user = getUserById(userId);
         if (user != null) {
             if (user.isEmailConfirmed()) {
@@ -218,14 +221,12 @@ public class UserService implements UserDetailsService {
      *
      * @param userId ID пользователя
      */
-    public void removeAdminRulesFromUser(long userId) {
+    public void removeAdminRulesFromUser(long userId) throws UserNotFoundException {
         User user = getUserById(userId);
-        if (user != null) {
-            if (user.getRoles().contains(roleService.findRoleByName(UserRole.ROLE_ADMIN))) {
-                user.getRoles().remove(roleService.findRoleByName(UserRole.ROLE_ADMIN));
-                userRepository.save(user);
-                log.info("Пользователь с id {} больше не админ", userId);
-            }
+        if (user.getRoles().contains(roleService.findRoleByName(UserRole.ROLE_ADMIN))) {
+            user.getRoles().remove(roleService.findRoleByName(UserRole.ROLE_ADMIN));
+            userRepository.save(user);
+            log.info("Пользователь с id {} больше не админ", userId);
         }
     }
 
@@ -235,13 +236,11 @@ public class UserService implements UserDetailsService {
      * @param userId Идентификатор пользователя.
      * @param name   Имя.
      */
-    public void updateFirstName(long userId, String name) {
+    public void updateFirstName(long userId, String name) throws UserNotFoundException {
         User user = getUserById(userId);
-        if (user != null) {
-            user.setFirstName(name);
-            userRepository.save(user);
-            log.info("Имя обновлено для пользователя с id {}", userId);
-        }
+        user.setFirstName(name);
+        userRepository.save(user);
+        log.info("Имя обновлено для пользователя с id {}", userId);
     }
 
     /**
@@ -250,12 +249,10 @@ public class UserService implements UserDetailsService {
      * @param userId  Идентификатор пользователя.
      * @param surname Фамилия.
      */
-    public void updateLastName(long userId, String surname) {
+    public void updateLastName(long userId, String surname) throws UserNotFoundException {
         User user = getUserById(userId);
-        if (user != null) {
-            user.setLastName(surname);
-            userRepository.save(user);
-            log.info("Фамилия обновлена для пользователя с id {}", userId);
-        }
+        user.setLastName(surname);
+        userRepository.save(user);
+        log.info("Фамилия обновлена для пользователя с id {}", userId);
     }
 }

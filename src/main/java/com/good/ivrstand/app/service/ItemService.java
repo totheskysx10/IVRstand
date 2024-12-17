@@ -475,7 +475,7 @@ public class ItemService {
     private void generateDescriptionAudio(Item item) throws IOException, FileDuplicateException {
         Page<Item> itemsWithSameDescriptionRequest = itemRepository.findByHashAndAudioExistence(item.getDescriptionHash(), PageRequest.of(0, 1));
         if (itemsWithSameDescriptionRequest.hasContent()) {
-            Item itemWithSameDescription = itemsWithSameDescriptionRequest.getContent().get(0);
+            Item itemWithSameDescription = itemsWithSameDescriptionRequest.getContent().getFirst();
             List<String> sameAudio = new ArrayList<>(itemWithSameDescription.getAudio());
             item.getAudio().clear();
             for (String audioLink : sameAudio) {

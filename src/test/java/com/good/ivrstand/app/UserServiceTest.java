@@ -132,9 +132,7 @@ public class UserServiceTest {
 
         when(userRepository.findByUsernameIgnoreCase(user2.getUsername())).thenReturn(user2);
 
-        UserDuplicateException exceptionEmail = assertThrows(UserDuplicateException.class, () -> {
-            userService.createUser(user2);
-        });
+        UserDuplicateException exceptionEmail = assertThrows(UserDuplicateException.class, () -> userService.createUser(user2));
 
         assertEquals("Пользователь с логином test@example.com уже есть в базе!", exceptionEmail.getMessage());
     }
@@ -178,9 +176,8 @@ public class UserServiceTest {
 
         userService.updatePassword("mCUMoT5ilyKYdeOa8iFI+w==", "encodedPassword", "token");
 
-        ResetPasswordTokenException exception = assertThrows(ResetPasswordTokenException.class, () -> {
-            userService.updatePassword("ykcfU3ayqLU9YpCFhDtu+A==", "encodedPassword", "token");
-        });
+        ResetPasswordTokenException exception = assertThrows(ResetPasswordTokenException.class, () ->
+                userService.updatePassword("ykcfU3ayqLU9YpCFhDtu+A==", "encodedPassword", "token"));
 
         assertEquals("Ошибка токена сброса пароля!", exception.getMessage());
         assertEquals("encodedPassword", user1.getPassword());
@@ -203,12 +200,13 @@ public class UserServiceTest {
 
         verify(emailService, times(1)).sendEmail("min@list.ru",
                 "IVRstand - Восстановление пароля",
-                "<html>\n" +
-                        "    <body>\n" +
-                        "        <p>Чтобы сменить пароль и восстановить доступ, пройдите по ссылке (действует в течение 20 минут):</p>\n" +
-                        "        <a href=\"resetmCUMoT5ilyKYdeOa8iFI+w==&token=token1\">Сбросить пароль</a>\n" +
-                        "    </body>\n" +
-                        "</html>");
+                """
+                        <html>
+                            <body>
+                                <p>Чтобы сменить пароль и восстановить доступ, пройдите по ссылке (действует в течение 20 минут):</p>
+                                <a href="resetmCUMoT5ilyKYdeOa8iFI+w==&token=token1">Сбросить пароль</a>
+                            </body>
+                        </html>""");
     }
 
     @Test
@@ -226,12 +224,13 @@ public class UserServiceTest {
         userService.sendConfirmEmailMessage(user1.getUsername());
 
         verify(emailService, times(1)).sendEmail("min@list.ru", "IVRstand - Подтверждение почты",
-                "<html>\n" +
-                        "    <body>\n" +
-                        "        <p>Чтобы подтвердить адрес электронной почты, пройдите по ссылке:</p>\n" +
-                        "        <a href=\"confirmmCUMoT5ilyKYdeOa8iFI+w==\">Подтвердить</a>\n" +
-                        "    </body>\n" +
-                        "</html>");
+                """
+                        <html>
+                            <body>
+                                <p>Чтобы подтвердить адрес электронной почты, пройдите по ссылке:</p>
+                                <a href="confirmmCUMoT5ilyKYdeOa8iFI+w==">Подтвердить</a>
+                            </body>
+                        </html>""");
     }
 
     @Test
@@ -289,9 +288,7 @@ public class UserServiceTest {
 
         userService.giveAdminRulesToUser(24);
 
-        NotConfirmedEmailException exception = assertThrows(NotConfirmedEmailException.class, () -> {
-            userService.giveAdminRulesToUser(23);
-        });
+        NotConfirmedEmailException exception = assertThrows(NotConfirmedEmailException.class, () -> userService.giveAdminRulesToUser(23));
 
         assertEquals("Пользователь без подтверждения Email не может быть админом!", exception.getMessage());
         assertEquals(2, user2.getRoles().size());

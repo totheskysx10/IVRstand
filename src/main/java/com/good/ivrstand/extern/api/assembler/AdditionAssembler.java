@@ -3,6 +3,7 @@ package com.good.ivrstand.extern.api.assembler;
 import com.good.ivrstand.domain.Addition;
 import com.good.ivrstand.extern.api.controller.AdditionController;
 import com.good.ivrstand.extern.api.dto.AdditionDTO;
+import lombok.NonNull;
 import org.springframework.hateoas.server.mvc.RepresentationModelAssemblerSupport;
 import org.springframework.stereotype.Component;
 
@@ -17,7 +18,7 @@ public class AdditionAssembler extends RepresentationModelAssemblerSupport<Addit
     }
 
     @Override
-    public AdditionDTO toModel(Addition addition) {
+    public @NonNull AdditionDTO toModel(@NonNull Addition addition) {
         AdditionDTO additionDTO = instantiateModel(addition);
 
         additionDTO.setId(addition.getId());

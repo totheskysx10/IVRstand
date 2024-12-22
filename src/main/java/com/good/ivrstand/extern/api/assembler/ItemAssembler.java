@@ -4,6 +4,7 @@ import com.good.ivrstand.domain.Addition;
 import com.good.ivrstand.domain.Item;
 import com.good.ivrstand.extern.api.dto.ItemDTO;
 import com.good.ivrstand.extern.api.controller.ItemController;
+import lombok.NonNull;
 import org.springframework.hateoas.server.mvc.RepresentationModelAssemblerSupport;
 import org.springframework.stereotype.Component;
 
@@ -20,7 +21,7 @@ public class ItemAssembler extends RepresentationModelAssemblerSupport<Item, Ite
     }
 
     @Override
-    public ItemDTO toModel(Item item) {
+    public @NonNull ItemDTO toModel(@NonNull Item item) {
         ItemDTO itemDTO = instantiateModel(item);
 
         itemDTO.setId(item.getId());
@@ -30,7 +31,7 @@ public class ItemAssembler extends RepresentationModelAssemblerSupport<Item, Ite
         itemDTO.setGifLink(item.getGifLink());
         if (item.getCategory() != null)
             itemDTO.setCategoryId(item.getCategory().getId());
-        if (item.getAdditions().size() != 0)
+        if (!item.getAdditions().isEmpty())
             itemDTO.setAdditionIds(item.getAdditions().stream()
                     .map(Addition::getId)
                     .collect(Collectors.toList()));

@@ -20,9 +20,9 @@ import java.util.Set;
 @Component
 public class NotificationService {
 
-    private String helpPassword;
+    private final String helpPassword;
 
-    private String searchPassword;
+    private final String searchPassword;
 
     private Set<String> commands;
 

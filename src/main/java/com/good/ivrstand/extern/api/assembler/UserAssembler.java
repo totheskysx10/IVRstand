@@ -4,6 +4,7 @@ import com.good.ivrstand.domain.Role;
 import com.good.ivrstand.domain.User;
 import com.good.ivrstand.extern.api.dto.UserDTO;
 import com.good.ivrstand.extern.api.controller.UserController;
+import lombok.NonNull;
 import org.springframework.hateoas.server.mvc.RepresentationModelAssemblerSupport;
 import org.springframework.stereotype.Component;
 
@@ -20,7 +21,7 @@ public class UserAssembler extends RepresentationModelAssemblerSupport<User, Use
     }
 
     @Override
-    public UserDTO toModel(User user) {
+    public @NonNull UserDTO toModel(@NonNull User user) {
         UserDTO userDTO = instantiateModel(user);
 
         userDTO.setId(user.getId());

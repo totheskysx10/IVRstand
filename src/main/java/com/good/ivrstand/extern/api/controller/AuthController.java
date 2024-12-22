@@ -16,6 +16,7 @@ import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -40,6 +41,7 @@ public class AuthController {
             @ApiResponse(responseCode = "400", description = "Пароли не совпадают"),
             @ApiResponse(responseCode = "204", description = "Пользователь не создан")
     })
+    @Transactional
     @PostMapping("/sign-up")
     public ResponseEntity<Map<String, String>> registerUser(@Valid @RequestBody UserRegisterDTO userRegisterDTO) {
         Map<String, String> response = new HashMap<>();

@@ -18,6 +18,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -39,6 +40,7 @@ public class CategoryController {
 
     @Operation(summary = "Создать категорию", description = "Создает новую категорию. Если включить флаг enableAudio, сгенерируется речь для для заголовка.")
     @ApiResponse(responseCode = "201", description = "Категория успешно создана")
+    @Transactional
     @PostMapping
     public ResponseEntity<CategoryDTO> createCategory(@RequestBody @Valid CategoryDTO categoryDTO) {
         Category newCategory = Category.builder()
@@ -132,6 +134,7 @@ public class CategoryController {
             @ApiResponse(responseCode = "409", description = "Подкатегория уже в категории или категория, в которую добавляют, имеет услуги"),
             @ApiResponse(responseCode = "404", description = "Категория/подкатегория не найдена")
     })
+    @Transactional
     @PutMapping("/{categoryId}/parent/set/{parentId}")
     public ResponseEntity<Void> addToCategory(@PathVariable long categoryId, @PathVariable long parentId) {
         try {
@@ -150,6 +153,7 @@ public class CategoryController {
             @ApiResponse(responseCode = "409", description = "Категория не лежит ни в одной из категорий"),
             @ApiResponse(responseCode = "404", description = "Категория не найдена")
     })
+    @Transactional
     @PutMapping("/children/remove/{childId}")
     public ResponseEntity<Void> removeFromCategory(@PathVariable long childId) {
         try {

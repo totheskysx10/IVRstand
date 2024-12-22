@@ -22,6 +22,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -47,6 +48,7 @@ public class ItemController {
     @Operation(summary = "Создать услугу", description = "Создает новую услугу. Если включить флаг enableAudio, сгенерируется речь для для заголовка и описания.")
     @ApiResponse(responseCode = "201", description = "Услуга успешно создана")
     @ApiResponse(responseCode = "409", description = "Ошибка валидации")
+    @Transactional
     @PostMapping
     public ResponseEntity<ItemDTO> createItem(@RequestBody @Valid ItemDTO itemDTO) {
         try {
@@ -107,6 +109,7 @@ public class ItemController {
             @ApiResponse(responseCode = "409", description = "Услуга уже в категории или категория не конечная"),
             @ApiResponse(responseCode = "404", description = "Услуга/категория не найдена")
     })
+    @Transactional
     @PutMapping("/{itemId}/category/add/{categoryId}")
     public ResponseEntity<Void> addToCategory(@PathVariable long itemId, @PathVariable long categoryId) {
         try {
@@ -125,6 +128,7 @@ public class ItemController {
             @ApiResponse(responseCode = "409", description = "Услуга не лежит ни в одной из категорий"),
             @ApiResponse(responseCode = "404", description = "Услуга не найдена")
     })
+    @Transactional
     @PutMapping("/{itemId}/category/remove")
     public ResponseEntity<Void> removeFromCategory(@PathVariable long itemId) {
         try {

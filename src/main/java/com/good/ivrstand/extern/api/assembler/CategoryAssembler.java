@@ -5,8 +5,8 @@ import com.good.ivrstand.domain.Category;
 import com.good.ivrstand.domain.Item;
 import com.good.ivrstand.extern.api.controller.CategoryController;
 import com.good.ivrstand.extern.api.dto.CategoryDTO;
+import lombok.NonNull;
 import org.springframework.hateoas.server.mvc.RepresentationModelAssemblerSupport;
-import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.stereotype.Component;
 
 import java.util.stream.Collectors;
@@ -22,7 +22,7 @@ public class CategoryAssembler extends RepresentationModelAssemblerSupport<Categ
     }
 
     @Override
-    public CategoryDTO toModel(Category category) {
+    public @NonNull CategoryDTO toModel(@NonNull Category category) {
         CategoryDTO categoryDTO = instantiateModel(category);
 
         categoryDTO.setId(category.getId());
@@ -40,7 +40,7 @@ public class CategoryAssembler extends RepresentationModelAssemblerSupport<Categ
         categoryDTO.setMainIconLink(category.getMainIconLink());
         categoryDTO.setTitleAudio(category.getTitleAudio());
 
-        categoryDTO.add(WebMvcLinkBuilder.linkTo(methodOn(CategoryController.class).getCategoryById(category.getId())).withSelfRel());
+        categoryDTO.add(linkTo(methodOn(CategoryController.class).getCategoryById(category.getId())).withSelfRel());
 
         return categoryDTO;
     }

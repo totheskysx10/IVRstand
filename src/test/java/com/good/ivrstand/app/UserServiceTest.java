@@ -3,8 +3,6 @@ package com.good.ivrstand.app;
 import com.good.ivrstand.app.repository.UserRepository;
 import com.good.ivrstand.app.service.*;
 import com.good.ivrstand.app.service.externinterfaces.EmailService;
-import com.good.ivrstand.app.service.externinterfaces.MailBuilder;
-import com.good.ivrstand.domain.EmailData;
 import com.good.ivrstand.domain.Role;
 import com.good.ivrstand.domain.User;
 import com.good.ivrstand.domain.enumeration.UserRole;
@@ -12,9 +10,9 @@ import com.good.ivrstand.exception.NotConfirmedEmailException;
 import com.good.ivrstand.exception.ResetPasswordTokenException;
 import com.good.ivrstand.exception.UserDuplicateException;
 import com.good.ivrstand.exception.notfound.UserNotFoundException;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
@@ -32,7 +30,6 @@ import static org.mockito.Mockito.*;
 @MockitoSettings(strictness = Strictness.LENIENT)
 public class UserServiceTest {
 
-    @InjectMocks
     private UserService userService;
 
     @Mock
@@ -51,10 +48,20 @@ public class UserServiceTest {
     private EmailService emailService;
 
     @Mock
-    private MailBuilder mailBuilder;
-
-    @Mock
     private EncodeService encodeService;
+
+    @BeforeEach
+    public void setUp() {
+        this.userService = new UserService(
+                userRepository,
+                roleService,
+                emailService,
+                tokenService,
+                encodeService,
+                "reset",
+                "confirm"
+        );
+    }
 
 
     @Test
@@ -188,17 +195,20 @@ public class UserServiceTest {
                 .resetToken("token")
                 .build();
 
-        EmailData emailData = new EmailData("min@list.ru", "Subject", "Message");
-
         when(userRepository.findByUsernameIgnoreCase("min@list.ru")).thenReturn(user1);
         when(tokenService.generateResetPasswordToken()).thenReturn("token1");
         when(encodeService.encrypt("23")).thenReturn("mCUMoT5ilyKYdeOa8iFI+w==");
-        when(mailBuilder.buildResetPasswordMessage(anyString(), anyString(), eq("token1")))
-                .thenReturn(emailData);
 
         userService.sendPasswordResetMessage(user1.getUsername());
 
-        verify(emailService, times(1)).sendEmail(emailData);
+        verify(emailService, times(1)).sendEmail("min@list.ru",
+                "IVRstand - Восстановление пароля",
+                "<html>\n" +
+                        "    <body>\n" +
+                        "        <p>Чтобы сменить пароль и восстановить доступ, пройдите по ссылке (действует в течение 20 минут):</p>\n" +
+                        "        <a href=\"resetmCUMoT5ilyKYdeOa8iFI+w==&token=token1\">Сбросить пароль</a>\n" +
+                        "    </body>\n" +
+                        "</html>");
     }
 
     @Test
@@ -210,16 +220,18 @@ public class UserServiceTest {
                 .resetToken("token")
                 .build();
 
-        EmailData emailData = new EmailData("min@list.ru", "Subject", "Message");
-
         when(userRepository.findByUsernameIgnoreCase("min@list.ru")).thenReturn(user1);
         when(encodeService.encrypt("23")).thenReturn("mCUMoT5ilyKYdeOa8iFI+w==");
-        when(mailBuilder.buildConfirmEmailMessage(anyString(), anyString()))
-                .thenReturn(emailData);
 
         userService.sendConfirmEmailMessage(user1.getUsername());
 
-        verify(emailService, times(1)).sendEmail(emailData);
+        verify(emailService, times(1)).sendEmail("min@list.ru", "IVRstand - Подтверждение почты",
+                "<html>\n" +
+                        "    <body>\n" +
+                        "        <p>Чтобы подтвердить адрес электронной почты, пройдите по ссылке:</p>\n" +
+                        "        <a href=\"confirmmCUMoT5ilyKYdeOa8iFI+w==\">Подтвердить</a>\n" +
+                        "    </body>\n" +
+                        "</html>");
     }
 
     @Test

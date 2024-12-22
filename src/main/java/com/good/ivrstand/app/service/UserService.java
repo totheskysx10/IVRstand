@@ -2,8 +2,7 @@ package com.good.ivrstand.app.service;
 
 import com.good.ivrstand.app.repository.UserRepository;
 import com.good.ivrstand.app.service.externinterfaces.EmailService;
-import com.good.ivrstand.app.service.externinterfaces.MailBuilder;
-import com.good.ivrstand.domain.EmailData;
+import com.good.ivrstand.domain.enumeration.EmailData;
 import com.good.ivrstand.domain.User;
 import com.good.ivrstand.domain.enumeration.UserRole;
 import com.good.ivrstand.exception.NotConfirmedEmailException;
@@ -11,6 +10,7 @@ import com.good.ivrstand.exception.ResetPasswordTokenException;
 import com.good.ivrstand.exception.UserDuplicateException;
 import com.good.ivrstand.exception.notfound.UserNotFoundException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -26,17 +26,25 @@ public class UserService implements UserDetailsService {
     private final UserRepository userRepository;
     private final RoleService roleService;
     private final EmailService emailService;
-    private final MailBuilder mailBuilder;
     private final TokenService tokenService;
     private final EncodeService encodeService;
+    private final String resetPasswordLink;
+    private final String confirmEmailLink;
 
-    public UserService(UserRepository userRepository, RoleService roleService, EmailService emailService, MailBuilder mailBuilder, TokenService tokenService, EncodeService encodeService) {
+    public UserService(UserRepository userRepository,
+                       RoleService roleService,
+                       EmailService emailService,
+                       TokenService tokenService,
+                       EncodeService encodeService,
+                       @Value("${auth.reset-password.link}") String resetPasswordLink,
+                       @Value("${auth.confirm-email.link}") String confirmEmailLink) {
         this.userRepository = userRepository;
         this.roleService = roleService;
         this.emailService = emailService;
-        this.mailBuilder = mailBuilder;
         this.tokenService = tokenService;
         this.encodeService = encodeService;
+        this.resetPasswordLink = resetPasswordLink;
+        this.confirmEmailLink = confirmEmailLink;
     }
 
     /**
@@ -156,8 +164,8 @@ public class UserService implements UserDetailsService {
         String id = encodeService.encrypt(user.getId().toString());
         String token = tokenService.generateResetPasswordToken();
 
-        EmailData emailData = mailBuilder.buildResetPasswordMessage(user.getUsername(), id, token);
-        emailService.sendEmail(emailData);
+        String message = String.format(EmailData.RESET_PASSWORD.getEmailMessage(), resetPasswordLink, id, token);
+        emailService.sendEmail(email, EmailData.RESET_PASSWORD.getEmailSubject(), message);
         tokenService.scheduleTokenInvalidation(user.getId(), 20 * 60 * 1000);
         user.setResetToken(token);
         userRepository.save(user);
@@ -191,8 +199,8 @@ public class UserService implements UserDetailsService {
 
         String id = encodeService.encrypt(user.getId().toString());
 
-        EmailData emailData = mailBuilder.buildConfirmEmailMessage(user.getUsername(), id);
-        emailService.sendEmail(emailData);
+        String message = String.format(EmailData.CONFIRM_EMAIL.getEmailMessage(), confirmEmailLink, id);
+        emailService.sendEmail(email, EmailData.CONFIRM_EMAIL.getEmailSubject(), message);
         log.info("Отправлено письмо о подтверждении email");
     }
 

@@ -1,17 +1,14 @@
 package com.good.ivrstand.app;
 
-import com.good.ivrstand.domain.EmailData;
 import com.good.ivrstand.extern.infrastructure.service.DefaultEmailService;
+import jakarta.mail.internet.MimeMessage;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
-
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class EmailServiceTest {
@@ -19,17 +16,26 @@ public class EmailServiceTest {
     @Mock
     private JavaMailSender javaMailSender;
 
-    @InjectMocks
+    @Mock
+    private MimeMessage mimeMessage;
+
     private DefaultEmailService emailService;
 
+    @BeforeEach
+    public void setUp() {
+        this.emailService = new DefaultEmailService(javaMailSender, "test@mail.ru");
+    }
+
     @Test
-    public void testSendEmail_Success() {
-        String address = "recipient@example.com";
+    public void testSendEmail() {
+        String receiver = "test@domain.com";
         String subject = "Test Subject";
-        String message = "Test Message";
+        String content = "Test Content";
 
-        emailService.sendEmail(new EmailData(address, subject, message));
+        when(javaMailSender.createMimeMessage()).thenReturn(mimeMessage);
 
-        verify(javaMailSender).send(any(SimpleMailMessage.class));
+        emailService.sendEmail(receiver, subject, content);
+
+        verify(javaMailSender, times(1)).send(any(MimeMessage.class));
     }
 }

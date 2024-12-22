@@ -26,7 +26,10 @@ public class TelegramBot extends TelegramLongPollingBot {
     private final NotificationService notificationService;
     private final String username;
 
-    public TelegramBot(@Value("${telegram.bot.token}") String botToken, NotificationChatRepository notificationChatRepository, NotificationService notificationService, @Value("${telegram.bot.username}") String username) {
+    public TelegramBot(NotificationChatRepository notificationChatRepository,
+                       NotificationService notificationService,
+                       @Value("${telegram.bot.token}") String botToken,
+                       @Value("${telegram.bot.username}") String username) {
         super(botToken);
         this.username = username;
         this.notificationChatRepository = notificationChatRepository;

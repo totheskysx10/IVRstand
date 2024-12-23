@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.*;
 
 /**
  * Сервис векторного поиска
@@ -55,18 +56,32 @@ public class DefaultFlaskApiVectorSearchService implements FlaskApiVectorSearchS
     }
 
     /**
-     * Вызывает метод синхронизации базы Qdrant с базой PostgreSQL через Feign-клиент.
+     * Выполняет синхронизацию базы Qdrant с PostgreSQL асинхронно с возможностью частичного ожидания.
      *
-     * Если база данных уже в процессе синхронизации (HTTP код 429 - Too Many Requests),
-     * выбрасывает исключение {@link ItemsFindException} с соответствующим сообщением.
-     *
-     * @throws ItemsFindException если база данных уже синхронизируется
+     * @throws ItemsFindException если:
+     *                            <ul>
+     *                              <li>База данных уже синхронизируется (HTTP 429).</li>
+     *                              <li>Синхронизация заняла больше 3000 мс.</li>
+     *                            </ul>
      */
     public void syncDatabase() throws ItemsFindException {
+        CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
+            try {
+                flaskApiVectorSearchClient.syncDatabase();
+            } catch (FeignException.TooManyRequests e) {
+                throw new RuntimeException("Too many requests error");
+            }
+        });
+
         try {
-            flaskApiVectorSearchClient.syncDatabase();
-        } catch (FeignException.TooManyRequests e) {
+            future.get(3000, TimeUnit.MILLISECONDS);
+        } catch (ExecutionException e) {
             throw new ItemsFindException("БД уже в процессе синхронизации, ожидайте 5-7 минут");
+        } catch (TimeoutException e) {
+            throw new ItemsFindException("Идёт синхронизация БД, ожидайте 5-7 минут");
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new ItemsFindException("Синхронизация была прервана");
         }
     }
 }

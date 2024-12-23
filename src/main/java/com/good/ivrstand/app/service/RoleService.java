@@ -21,7 +21,7 @@ public class RoleService {
      * Проверяет наличие ролей ROLE_USER и ROLE_ADMIN в базе данных,
      * и создает их, если они не существуют.
      */
-    private void checkRoles() {
+    private void checkRolesAndCreateIfNotExist() {
         if (!roleRepository.existsByName(UserRole.ROLE_USER)) {
             Role roleUser = Role.builder()
                     .name(UserRole.ROLE_USER)
@@ -44,7 +44,7 @@ public class RoleService {
      * @return найденная роль
      */
     public Role findRoleByName(UserRole name) {
-        checkRoles();
+        checkRolesAndCreateIfNotExist();
         return roleRepository.findByName(name);
     }
 }

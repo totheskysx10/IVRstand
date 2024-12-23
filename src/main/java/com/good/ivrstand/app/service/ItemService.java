@@ -2,7 +2,6 @@ package com.good.ivrstand.app.service;
 
 import com.good.ivrstand.app.repository.ItemRepository;
 import com.good.ivrstand.app.service.externinterfaces.FlaskApiVectorSearchService;
-import com.good.ivrstand.app.service.externinterfaces.QdrantService;
 import com.good.ivrstand.domain.*;
 import com.good.ivrstand.exception.*;
 import com.good.ivrstand.exception.notfound.CategoryNotFoundException;
@@ -30,23 +29,20 @@ public class ItemService {
     private final CategoryService categoryService;
     private final FlaskApiVectorSearchService flaskApiVectorSearchService;
     private final AdditionService additionService;
-    private final QdrantService qdrantService;
     private final SpeechService speechService;
     private final EncodeService encodeService;
 
     @Autowired
     public ItemService(ItemRepository itemRepository,
                        CategoryService categoryService,
-                       FlaskApiVectorSearchService flaskApiVectorSearchService,
                        AdditionService additionService,
-                       QdrantService qdrantService,
+                       FlaskApiVectorSearchService flaskApiVectorSearchService,
                        SpeechService speechService,
                        EncodeService encodeService) {
         this.itemRepository = itemRepository;
         this.categoryService = categoryService;
-        this.flaskApiVectorSearchService = flaskApiVectorSearchService;
         this.additionService = additionService;
-        this.qdrantService = qdrantService;
+        this.flaskApiVectorSearchService = flaskApiVectorSearchService;
         this.speechService = speechService;
         this.encodeService = encodeService;
     }
@@ -204,7 +200,7 @@ public class ItemService {
                 : itemsFoundQuantity != 4;
 
         if (shouldSync) {
-            qdrantService.syncDatabase();
+            flaskApiVectorSearchService.syncDatabase();
         }
 
         return page;

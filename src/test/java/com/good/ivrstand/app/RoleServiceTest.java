@@ -26,7 +26,7 @@ public class RoleServiceTest {
     private RoleService roleService;
 
     @Test
-    void testCheckRoles() {
+    void testCheckRolesAndCreateIfNotExist() {
         when(roleRepository.existsByName(UserRole.ROLE_USER)).thenReturn(false);
         when(roleRepository.existsByName(UserRole.ROLE_ADMIN)).thenReturn(false);
 
@@ -37,7 +37,7 @@ public class RoleServiceTest {
     }
 
     @Test
-    void testCheckRolesNotCreateRolesWhenExist() {
+    void testCheckRolesNotCreateRolesAndCreateIfNotExistWhenExist() {
         when(roleRepository.existsByName(UserRole.ROLE_USER)).thenReturn(true);
         when(roleRepository.existsByName(UserRole.ROLE_ADMIN)).thenReturn(true);
 

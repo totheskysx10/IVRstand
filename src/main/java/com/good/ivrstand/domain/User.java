@@ -1,12 +1,14 @@
 package com.good.ivrstand.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.good.ivrstand.exception.UserRolesException;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -51,7 +53,6 @@ public class User implements UserDetails {
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id")
     )
-    @Getter
     @JsonIgnore
     private List<Role> roles;
 
@@ -151,5 +152,38 @@ public class User implements UserDetails {
     @Override
     public boolean isEnabled() {
         return true;
+    }
+
+    /**
+     * Возвращает неизменяемую коллекцию с ролями пользователя
+     */
+    public List<Role> getRoles() {
+        return Collections.unmodifiableList(roles);
+    }
+
+    /**
+     * Добавляет роль пользователю
+     * @param role роль
+     * @throws UserRolesException если роль уже есть
+     */
+    public void addRole(Role role) throws UserRolesException {
+        if (roles.contains(role)) {
+            throw new UserRolesException("Пользователь уже имеет роль " + role.getName());
+        }
+
+        roles.add(role);
+    }
+
+    /**
+     * Удаляет роль пользователя
+     * @param role роль
+     * @throws UserRolesException если роли уже нет
+     */
+    public void removeRole(Role role) throws UserRolesException {
+        if (!roles.contains(role)) {
+            throw new UserRolesException("Пользователь уже не имеет роли " + role.getName());
+        }
+
+        roles.remove(role);
     }
 }

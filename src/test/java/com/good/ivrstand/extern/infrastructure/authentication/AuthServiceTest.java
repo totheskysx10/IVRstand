@@ -6,6 +6,7 @@ import com.good.ivrstand.domain.User;
 import com.good.ivrstand.exception.DifferentPasswordsException;
 import com.good.ivrstand.exception.TokenRefreshException;
 import com.good.ivrstand.exception.UserDuplicateException;
+import com.good.ivrstand.exception.UserRolesException;
 import com.good.ivrstand.extern.api.dto.UserRegisterDTO;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -51,7 +52,7 @@ class AuthServiceTest {
     private AuthService authService;
 
     @Test
-    void registerUser() throws UserDuplicateException, DifferentPasswordsException {
+    void registerUser() throws UserDuplicateException, DifferentPasswordsException, UserRolesException {
         UserRegisterDTO userRegisterDTO = new UserRegisterDTO();
         userRegisterDTO.setUsername("testUser");
         userRegisterDTO.setPassword("password123");

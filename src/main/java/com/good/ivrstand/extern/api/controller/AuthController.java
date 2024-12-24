@@ -2,6 +2,7 @@ package com.good.ivrstand.extern.api.controller;
 
 import com.good.ivrstand.exception.DifferentPasswordsException;
 import com.good.ivrstand.exception.UserDuplicateException;
+import com.good.ivrstand.exception.UserRolesException;
 import com.good.ivrstand.extern.api.dto.*;
 import com.good.ivrstand.extern.infrastructure.authentication.AuthService;
 import com.good.ivrstand.extern.infrastructure.authentication.TokenType;
@@ -37,7 +38,7 @@ public class AuthController {
     @Operation(summary = "Создать пользователя", description = "Создает нового пользователя.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Пользователь успешно создан"),
-            @ApiResponse(responseCode = "409", description = "Ошибка валидации - пользователь есть в базе"),
+            @ApiResponse(responseCode = "409", description = "Ошибка валидации - пользователь есть в базе и у него уже есть роль юзера"),
             @ApiResponse(responseCode = "400", description = "Пароли не совпадают"),
             @ApiResponse(responseCode = "204", description = "Пользователь не создан")
     })
@@ -48,8 +49,8 @@ public class AuthController {
         try {
             response = authService.registerUser(userRegisterDTO);
             return new ResponseEntity<>(response, HttpStatus.CREATED);
-        } catch (UserDuplicateException e) {
-            response.put("error", "Пользователь уже существует");
+        } catch (UserDuplicateException | UserRolesException e) {
+            response.put("error", "Пользователь уже существует/у него уже есть роль простого юзера");
             return new ResponseEntity<>(response, HttpStatus.CONFLICT);
         } catch (IllegalArgumentException ex) {
             response.put("error", "Пользователь не создан");

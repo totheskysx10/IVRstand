@@ -4,6 +4,7 @@ import com.good.ivrstand.app.service.UserService;
 import com.good.ivrstand.domain.User;
 import com.good.ivrstand.exception.NotConfirmedEmailException;
 import com.good.ivrstand.exception.ResetPasswordTokenException;
+import com.good.ivrstand.exception.UserRolesException;
 import com.good.ivrstand.exception.notfound.UserNotFoundException;
 import com.good.ivrstand.extern.api.assembler.UserAssembler;
 import com.good.ivrstand.extern.api.dto.UserDTO;
@@ -126,6 +127,7 @@ public class UserController {
     @Operation(summary = "Назначить администратора", description = "Назначает пользователя администратором.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Пользователь успешно назначен администратором"),
+            @ApiResponse(responseCode = "409", description = "Пользователь уже админ"),
             @ApiResponse(responseCode = "403", description = "Email не подтвержден"),
             @ApiResponse(responseCode = "404", description = "Пользователь не найден")
     })
@@ -138,12 +140,15 @@ public class UserController {
             return new ResponseEntity<>("Почта не подтверждена", HttpStatus.FORBIDDEN);
         } catch (UserNotFoundException e) {
             return ResponseEntity.notFound().build();
+        } catch (UserRolesException e) {
+            return new ResponseEntity<>(HttpStatus.CONFLICT);
         }
     }
 
     @Operation(summary = "Снять права администратора", description = "Снимает с пользователя права администратора.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Права администратора успешно сняты"),
+            @ApiResponse(responseCode = "409", description = "Пользователь уже не админ"),
             @ApiResponse(responseCode = "404", description = "Пользователь не найден")
     })
     @PutMapping("/no-admin/{userId}")
@@ -153,6 +158,8 @@ public class UserController {
             return ResponseEntity.ok().build();
         } catch (UserNotFoundException e) {
             return ResponseEntity.notFound().build();
+        } catch (UserRolesException e) {
+            return new ResponseEntity<>(HttpStatus.CONFLICT);
         }
     }
 

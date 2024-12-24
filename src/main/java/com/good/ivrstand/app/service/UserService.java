@@ -8,6 +8,7 @@ import com.good.ivrstand.domain.enumeration.UserRole;
 import com.good.ivrstand.exception.NotConfirmedEmailException;
 import com.good.ivrstand.exception.ResetPasswordTokenException;
 import com.good.ivrstand.exception.UserDuplicateException;
+import com.good.ivrstand.exception.UserRolesException;
 import com.good.ivrstand.exception.notfound.UserNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -67,10 +68,10 @@ public class UserService implements UserDetailsService {
      */
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = userRepository.findByUsername(username);
+        User user = userRepository.findByUsernameIgnoreCase(username);
 
         if (user == null)
-            throw new UsernameNotFoundException("User not found");
+            throw new UsernameNotFoundException("Пользователь с username " + username + " не найден");
 
         return user;
     }
@@ -87,10 +88,10 @@ public class UserService implements UserDetailsService {
 
         if (user == null)
             throw new UserNotFoundException("Пользователь с id " + id + " не найден");
-        else {
-            log.debug("Найден пользователь с id {}", id);
-            return user;
-        }
+
+        log.debug("Найден пользователь с id {}", id);
+        return user;
+
     }
 
     /**
@@ -101,7 +102,7 @@ public class UserService implements UserDetailsService {
      * @throws IllegalArgumentException если пользователь null
      * @throws UserDuplicateException   если пользователь с данным email уже существует
      */
-    public User createUser(User user) throws UserDuplicateException {
+    public User createUser(User user) throws UserDuplicateException, UserRolesException {
         if (user == null) {
             throw new IllegalArgumentException("Пользователь не может быть null");
         }
@@ -111,7 +112,7 @@ public class UserService implements UserDetailsService {
         if (userFromDb != null)
             throw new UserDuplicateException("Пользователь с логином " + userFromDb.getUsername() + " уже есть в базе!");
 
-        user.getRoles().add(roleService.findRoleByName(UserRole.ROLE_USER));
+        user.addRole(roleService.findRoleByName(UserRole.ROLE_USER));
         User createdUser = userRepository.save(user);
         log.info("Создан пользователь с id {}", createdUser.getId());
         return createdUser;
@@ -153,7 +154,6 @@ public class UserService implements UserDetailsService {
      * Отправляет сообщение для сброса пароля на email.
      *
      * @param email email пользователя
-     * @throws UserNotFoundException если пользователь с данным email не найден
      */
     public void sendPasswordResetMessage(String email) throws UserNotFoundException {
         User user = userRepository.findByUsernameIgnoreCase(email);
@@ -210,18 +210,15 @@ public class UserService implements UserDetailsService {
      * @param userId ID пользователя
      * @throws NotConfirmedEmailException если email пользователя не подтвержден
      */
-    public void giveAdminRulesToUser(long userId) throws NotConfirmedEmailException, UserNotFoundException {
+    public void giveAdminRulesToUser(long userId) throws NotConfirmedEmailException, UserNotFoundException, UserRolesException {
         User user = getUserById(userId);
-        if (user != null) {
-            if (user.isEmailConfirmed()) {
-                if (!user.getRoles().contains(roleService.findRoleByName(UserRole.ROLE_ADMIN))) {
-                    user.getRoles().add(roleService.findRoleByName(UserRole.ROLE_ADMIN));
-                    userRepository.save(user);
-                    log.info("Пользователь с id {} теперь админ", userId);
-                }
-            } else
-                throw new NotConfirmedEmailException("Пользователь без подтверждения Email не может быть админом!");
+        if (!user.isEmailConfirmed()) {
+            throw new NotConfirmedEmailException("Пользователь без подтверждения Email не может быть админом!");
         }
+
+        user.addRole(roleService.findRoleByName(UserRole.ROLE_ADMIN));
+        userRepository.save(user);
+        log.info("Пользователь с id {} теперь админ", userId);
     }
 
     /**
@@ -229,13 +226,11 @@ public class UserService implements UserDetailsService {
      *
      * @param userId ID пользователя
      */
-    public void removeAdminRulesFromUser(long userId) throws UserNotFoundException {
+    public void removeAdminRulesFromUser(long userId) throws UserNotFoundException, UserRolesException {
         User user = getUserById(userId);
-        if (user.getRoles().contains(roleService.findRoleByName(UserRole.ROLE_ADMIN))) {
-            user.getRoles().remove(roleService.findRoleByName(UserRole.ROLE_ADMIN));
-            userRepository.save(user);
-            log.info("Пользователь с id {} больше не админ", userId);
-        }
+        user.removeRole(roleService.findRoleByName(UserRole.ROLE_ADMIN));
+        userRepository.save(user);
+        log.info("Пользователь с id {} больше не админ", userId);
     }
 
     /**

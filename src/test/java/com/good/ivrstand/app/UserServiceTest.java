@@ -9,6 +9,7 @@ import com.good.ivrstand.domain.enumeration.UserRole;
 import com.good.ivrstand.exception.NotConfirmedEmailException;
 import com.good.ivrstand.exception.ResetPasswordTokenException;
 import com.good.ivrstand.exception.UserDuplicateException;
+import com.good.ivrstand.exception.UserRolesException;
 import com.good.ivrstand.exception.notfound.UserNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -63,7 +64,6 @@ public class UserServiceTest {
         );
     }
 
-
     @Test
     public void loadUserByUsernameTest() {
         User user = User.builder()
@@ -72,7 +72,7 @@ public class UserServiceTest {
                 .emailConfirmed(true)
                 .build();
 
-        when(userRepository.findByUsername("test@example.com")).thenReturn(user);
+        when(userRepository.findByUsernameIgnoreCase("test@example.com")).thenReturn(user);
         UserDetails userDetails = userService.loadUserByUsername("test@example.com");
 
         assertEquals("test@example.com", userDetails.getUsername());
@@ -94,7 +94,7 @@ public class UserServiceTest {
     }
 
     @Test
-    public void createUserTest() throws UserDuplicateException {
+    public void createUserTest() throws UserDuplicateException, UserRolesException {
         User user1 = User.builder()
                 .id(1L)
                 .username("test@example.com")
@@ -115,8 +115,7 @@ public class UserServiceTest {
                 .name(UserRole.ROLE_USER)
                 .build();
 
-        user1.getRoles().add(roleUser);
-        user2.getRoles().add(roleUser);
+        user2.addRole(roleUser);
 
         when(roleService.findRoleByName(UserRole.ROLE_USER)).thenReturn(roleUser);
         when(bCryptPasswordEncoder.encode(anyString())).thenReturn("encodedPassword");
@@ -252,7 +251,7 @@ public class UserServiceTest {
     }
 
     @Test
-    public void giveAdminRulesToUserTest() throws NotConfirmedEmailException, UserNotFoundException {
+    public void giveAdminRulesToUserTest() throws NotConfirmedEmailException, UserNotFoundException, UserRolesException {
         User user1 = User.builder()
                 .id(23L)
                 .username("min@list.ru")
@@ -280,8 +279,8 @@ public class UserServiceTest {
                 .name(UserRole.ROLE_ADMIN)
                 .build();
 
-        user1.getRoles().add(roleUser);
-        user2.getRoles().add(roleUser);
+        user1.addRole(roleUser);
+        user2.addRole(roleUser);
 
         when(roleService.findRoleByName(UserRole.ROLE_USER)).thenReturn(roleUser);
         when(roleService.findRoleByName(UserRole.ROLE_ADMIN)).thenReturn(roleAdmin);
@@ -295,7 +294,32 @@ public class UserServiceTest {
     }
 
     @Test
-    public void removeAdminRulesFromUserTest() throws NotConfirmedEmailException, UserNotFoundException {
+    public void giveAdminRulesToAdminTest() throws UserRolesException {
+        User user1 = User.builder()
+                .id(23L)
+                .username("min@list.ru")
+                .password("test")
+                .resetToken("no-token")
+                .emailConfirmed(true)
+                .roles(new ArrayList<>())
+                .build();
+
+        when(userRepository.findById(23)).thenReturn(user1);
+        Role roleAdmin = Role.builder()
+                .name(UserRole.ROLE_ADMIN)
+                .build();
+
+        user1.addRole(roleAdmin);
+
+        when(roleService.findRoleByName(UserRole.ROLE_ADMIN)).thenReturn(roleAdmin);
+
+        Exception exception = assertThrows(UserRolesException.class, () -> userService.giveAdminRulesToUser(23));
+
+        assertEquals("Пользователь уже имеет роль ROLE_ADMIN", exception.getMessage());
+    }
+
+    @Test
+    public void removeAdminRulesFromUserTest() throws UserNotFoundException, UserRolesException {
         User user1 = User.builder()
                 .id(23L)
                 .username("min@list.ru")
@@ -313,15 +337,44 @@ public class UserServiceTest {
                 .name(UserRole.ROLE_ADMIN)
                 .build();
 
-        user1.getRoles().add(roleUser);
+        user1.addRole(roleUser);
+        user1.addRole(roleAdmin);
+
+        when(roleService.findRoleByName(UserRole.ROLE_ADMIN)).thenReturn(roleAdmin);
+        when(roleService.findRoleByName(UserRole.ROLE_ADMIN)).thenReturn(roleUser);
+
+        userService.removeAdminRulesFromUser(23);
+
+        assertEquals(1, user1.getRoles().size());
+    }
+
+    @Test
+    public void removeAdminRulesFromNotAdminTest() throws UserRolesException {
+        User user1 = User.builder()
+                .id(23L)
+                .username("min@list.ru")
+                .password("test")
+                .resetToken("no-token")
+                .emailConfirmed(true)
+                .roles(new ArrayList<>())
+                .build();
+
+        when(userRepository.findById(23)).thenReturn(user1);
+        Role roleUser = Role.builder()
+                .name(UserRole.ROLE_USER)
+                .build();
+        Role roleAdmin = Role.builder()
+                .name(UserRole.ROLE_ADMIN)
+                .build();
+
+        user1.addRole(roleUser);
 
         when(roleService.findRoleByName(UserRole.ROLE_USER)).thenReturn(roleUser);
         when(roleService.findRoleByName(UserRole.ROLE_ADMIN)).thenReturn(roleAdmin);
 
-        userService.giveAdminRulesToUser(23);
-        userService.removeAdminRulesFromUser(23);
+        Exception exception = assertThrows(UserRolesException.class, () -> userService.removeAdminRulesFromUser(23));
 
-        assertEquals(1, user1.getRoles().size());
+        assertEquals("Пользователь уже не имеет роли ROLE_ADMIN", exception.getMessage());
     }
 
     @Test

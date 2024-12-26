@@ -53,7 +53,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/categories/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/additions/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/notifications/**").permitAll()
-                        .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers("/auth/**", "/jwt/**").permitAll()
                         .requestMatchers("/users/delete/{userId}", "/users/name/{userId}", "/users/surname/{userId}")
                         .access((authentication, context) -> {
                             long userId = Long.parseLong(context.getVariables().get("userId"));

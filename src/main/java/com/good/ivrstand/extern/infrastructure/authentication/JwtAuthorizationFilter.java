@@ -68,7 +68,7 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
                     return;
                 }
 
-                if (jwtService.validateAndCompareToken(jwt, userDetails)) {
+                if (jwtService.isTokenValidAndMatchesUser(jwt, userDetails)) {
                     SecurityContext context = SecurityContextHolder.createEmptyContext();
                     UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                             userDetails,

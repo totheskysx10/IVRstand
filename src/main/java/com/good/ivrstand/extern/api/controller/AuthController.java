@@ -5,16 +5,13 @@ import com.good.ivrstand.exception.UserDuplicateException;
 import com.good.ivrstand.exception.UserRolesException;
 import com.good.ivrstand.extern.api.dto.*;
 import com.good.ivrstand.extern.infrastructure.authentication.AuthService;
-import com.good.ivrstand.extern.infrastructure.authentication.TokenType;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
-import io.jsonwebtoken.security.SignatureException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,7 +23,6 @@ import java.util.Map;
 @RestController
 @RequestMapping("/auth")
 @Tag(name = "AuthController", description = "Контроллер для управления авторизацией")
-@Slf4j
 public class AuthController {
 
     private final AuthService authService;
@@ -124,50 +120,6 @@ public class AuthController {
         } catch (Exception e) {
             response.put("error", "Ошибка валидации токенов");
             return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
-        }
-    }
-
-    @Operation(summary = "Проверить токен доступа", description = "Проверяет токен доступа.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Проверка произведена"),
-            @ApiResponse(responseCode = "400", description = "Некорректные токены")
-    })
-    @PostMapping("/validate-token")
-    public ResponseEntity<Map<String, Boolean>> validateToken(@RequestBody TokenDTO tokenDTO) {
-        String token = tokenDTO.getToken();
-        Map<String, Boolean> response = new HashMap<>();
-        try {
-            boolean validationResult = authService.validateToken(token, TokenType.ACCESS_TOKEN);
-            response.put("valid", validationResult);
-            return new ResponseEntity<>(response, HttpStatus.OK);
-        } catch (ExpiredJwtException | SignatureException e) {
-            response.put("valid", false);
-            return new ResponseEntity<>(response, HttpStatus.OK);
-        } catch (MalformedJwtException e) {
-            response.put("valid", false);
-            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-        }
-    }
-
-    @Operation(summary = "Проверить токен сброса", description = "Проверяет токен сброса.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Проверка произведена"),
-            @ApiResponse(responseCode = "400", description = "Некорректные токены")
-    })
-    @PostMapping("/validate-refresh-token")
-    public ResponseEntity<Map<String, Boolean>> validateRefreshToken(@RequestBody RefreshTokenDTO refreshTokenDTO) {
-        String token = refreshTokenDTO.getRefreshToken();
-        Map<String, Boolean> response = new HashMap<>();
-        try {
-            boolean validationResult = authService.validateToken(token, TokenType.REFRESH_TOKEN);
-            response.put("valid", validationResult);
-            return new ResponseEntity<>(response, HttpStatus.OK);
-        } catch (ExpiredJwtException | SignatureException e) {
-            response.put("valid", false);
-            return new ResponseEntity<>(response, HttpStatus.OK);
-        } catch (MalformedJwtException e) {
-            response.put("valid", false);
-            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
     }
 }

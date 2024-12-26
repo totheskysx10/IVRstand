@@ -69,39 +69,27 @@ public class JwtService {
      * @param userDetails детали пользователя
      * @return true, если токен годен
      */
-    public boolean validateAndCompareToken(String token, UserDetails userDetails) {
+    public boolean isTokenValidAndMatchesUser(String token, UserDetails userDetails) {
         String username = extractUsername(token);
-        return (username.equals(userDetails.getUsername()) && !isTokenExpired(token, signKey));
+        return (username.equals(userDetails.getUsername()) && isTokenValid(token, TokenType.ACCESS_TOKEN));
     }
 
     /**
-     * Проверяет токен доступа на просроченность.
+     * Проверяет валидность токена.
      *
      * @param token токен
+     * @param tokenType тип токена
      * @return true, если токен годен
      */
-    public boolean validateToken(String token) {
-        return (!isTokenExpired(token, signKey));
-    }
+    public boolean isTokenValid(String token, TokenType tokenType) {
+        boolean validationResult = false;
 
-    /**
-     * Проверяет токен обновления на просроченность.
-     *
-     * @param refreshToken токен
-     * @return true, если токен годен
-     */
-    public boolean validateRefreshToken(String refreshToken) {
-        return (!isTokenExpired(refreshToken, refreshKey));
-    }
+        switch (tokenType) {
+            case ACCESS_TOKEN -> validationResult = !(extractExpiration(token, signKey).before(new Date()));
+            case REFRESH_TOKEN -> validationResult = !(extractExpiration(token, refreshKey).before(new Date()));
+        }
 
-    /**
-     * Проверяет токен на просроченность (общий метод).
-     *
-     * @param token токен
-     * @return true, если токен просрочен
-     */
-    private boolean isTokenExpired(String token, String key) {
-        return extractExpiration(token, key).before(new Date());
+        return validationResult;
     }
 
     /**

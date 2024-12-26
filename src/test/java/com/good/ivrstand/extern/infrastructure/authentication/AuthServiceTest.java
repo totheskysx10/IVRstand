@@ -113,13 +113,13 @@ class AuthServiceTest {
         when(jwtService.extractPassword(refreshToken)).thenReturn("encryptedPassword");
         when(encodeService.decrypt("encryptedPassword")).thenReturn(password);
         when(encodeService.encrypt(password)).thenReturn("password123");
-        when(jwtService.validateRefreshToken(refreshToken)).thenReturn(true);
+        when(jwtService.isTokenValid(refreshToken, TokenType.REFRESH_TOKEN)).thenReturn(true);
         when(jwtService.generateToken(mockUserDetails)).thenReturn("accessToken");
         when(jwtService.generateRefreshToken(mockUserDetails, "password123")).thenReturn("refreshToken");
 
         Map<String, String> tokens = authService.refreshToken(token, refreshToken);
 
-        verify(jwtService).validateRefreshToken(refreshToken);
+        verify(jwtService).isTokenValid(refreshToken, TokenType.REFRESH_TOKEN);
         assertNotNull(tokens.get("token"));
         assertNotNull(tokens.get("refreshToken"));
     }
@@ -131,7 +131,7 @@ class AuthServiceTest {
 
         when(jwtService.extractUsername(token)).thenReturn("user");
         when(jwtService.extractPassword(refreshToken)).thenReturn("wrongPassword");
-        when(jwtService.validateRefreshToken(refreshToken)).thenReturn(false);
+        when(jwtService.isTokenValid(refreshToken, TokenType.REFRESH_TOKEN)).thenReturn(false);
 
         Exception e = assertThrows(TokenRefreshException.class, () -> authService.refreshToken(token, refreshToken));
         assertEquals("Ошибка обновления токена", e.getMessage());

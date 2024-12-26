@@ -124,29 +124,11 @@ public class AuthService {
         String encodedPassword = jwtService.extractPassword(refreshToken).toString();
         String password = encodeService.decrypt(encodedPassword);
 
-        boolean validationResult = jwtService.validateRefreshToken(refreshToken);
+        boolean validationResult = jwtService.isTokenValid(refreshToken, TokenType.REFRESH_TOKEN);
 
         if (validationResult)
             return loginUser(username, password);
         else
             throw new TokenRefreshException("Ошибка обновления токена");
-    }
-
-    /**
-     * Проверяет, действителен ли токен
-     *
-     * @param token     токен
-     * @param tokenType тип токена
-     * @return true, если токен действителен
-     */
-    public boolean validateToken(String token, TokenType tokenType) {
-        boolean validationResult = false;
-
-        switch (tokenType) {
-            case ACCESS_TOKEN -> validationResult = jwtService.validateToken(token);
-            case REFRESH_TOKEN -> validationResult = jwtService.validateRefreshToken(token);
-        }
-
-        return validationResult;
     }
 }
